@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_gateway_modbus_point_tree" model="ir.ui.view">
+        <field name="name">gateway.modbus.point.tree</field>
+        <field name="model">gateway.modbus.point</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="sequence"/>
+                <field name="name"/>
+                <field name="code"/>
+                <field name="adapter_id"/>
+                <field name="point_kind"/>
+                <field name="function_code"/>
+                <field name="register_address"/>
+                <field name="register_count"/>
+                <field name="data_type"/>
+                <field name="writable"/>
+                <field name="current_value_text"/>
+                <field name="last_snapshot_at"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_gateway_modbus_point_form" model="ir.ui.view">
+        <field name="name">gateway.modbus.point.form</field>
+        <field name="model">gateway.modbus.point</field>
+        <field name="arch" type="xml">
+            <form string="Gateway Modbus Point">
+                <header>
+                    <button name="action_preview_read_plan" type="object" string="Preview Read Plan" class="btn-secondary"/>
+                    <button name="action_preview_write_plan" type="object" string="Preview Write Plan" class="btn-secondary"/>
+                    <button name="action_submit_test_snapshot" type="object" string="Test Snapshot" class="btn-secondary"/>
+                    <button name="action_submit_test_write_ack" type="object" string="Test Write Ack" class="btn-secondary"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="code"/>
+                            <field name="sequence"/>
+                            <field name="active"/>
+                            <field name="state"/>
+                        </group>
+                        <group>
+                            <field name="adapter_id"/>
+                            <field name="signal_id"/>
+                            <field name="point_kind"/>
+                            <field name="register_group"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group string="Register">
+                            <field name="function_code"/>
+                            <field name="register_address"/>
+                            <field name="register_count"/>
+                            <field name="data_type"/>
+                            <field name="bit_index"/>
+                        </group>
+                        <group string="Value Mapping">
+                            <field name="scale_factor"/>
+                            <field name="offset"/>
+                            <field name="unit"/>
+                            <field name="endian"/>
+                            <field name="byte_order"/>
+                            <field name="read_only"/>
+                            <field name="writable"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group>
+                            <field name="current_value_text"/>
+                            <field name="current_value_number"/>
+                        </group>
+                        <group>
+                            <field name="last_snapshot_at"/>
+                        </group>
+                    </group>
+                    <field name="note" nolabel="1"/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+</odoo>

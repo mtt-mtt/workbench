@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_gateway_runtime_probe_session_tree" model="ir.ui.view">
+        <field name="name">gateway.runtime.probe.session.tree</field>
+        <field name="model">gateway.runtime.probe.session</field>
+        <field name="arch" type="xml">
+            <list string="Protocol Probe Sessions">
+                <field name="code"/>
+                <field name="session_key"/>
+                <field name="probe_kind"/>
+                <field name="state"/>
+                <field name="result_state"/>
+                <field name="trigger_kind"/>
+                <field name="adapter_id"/>
+                <field name="device_id"/>
+                <field name="capability"/>
+                <field name="latency_ms"/>
+                <field name="started_at"/>
+                <field name="finished_at"/>
+                <field name="session_summary"/>
+                <field name="result_summary"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_gateway_runtime_probe_session_search" model="ir.ui.view">
+        <field name="name">gateway.runtime.probe.session.search</field>
+        <field name="model">gateway.runtime.probe.session</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="code"/>
+                <field name="session_key"/>
+                <field name="state"/>
+                <field name="result_state"/>
+                <field name="trigger_kind"/>
+                <field name="probe_kind"/>
+                <field name="adapter_id"/>
+                <field name="device_id"/>
+                <field name="capability"/>
+                <field name="source_signal"/>
+                <filter string="Needs Attention" name="needs_attention" domain="['|', ('state', '=', 'running'), ('result_state', 'in', ['warning', 'error'])]"/>
+                <filter string="Running" name="running" domain="[('state', '=', 'running')]"/>
+                <filter string="Failed" name="failed" domain="[('result_state', '=', 'error')]"/>
+                <filter string="Warnings" name="warning" domain="[('result_state', '=', 'warning')]"/>
+                <filter string="Attention" name="attention" domain="[('result_state', 'in', ['warning', 'error'])]"/>
+                <filter string="Recent Probes" name="probe_only" domain="[('trigger_kind', 'in', ['manual', 'probe', 'callback'])]"/>
+                <separator string="Group By"/>
+                <filter string="Result" name="group_result_state" context="{'group_by': 'result_state'}"/>
+                <filter string="Trigger" name="group_trigger_kind" context="{'group_by': 'trigger_kind'}"/>
+                <filter string="Adapter" name="group_adapter" context="{'group_by': 'adapter_id'}"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="view_gateway_runtime_probe_session_form" model="ir.ui.view">
+        <field name="name">gateway.runtime.probe.session.form</field>
+        <field name="model">gateway.runtime.probe.session</field>
+        <field name="arch" type="xml">
+            <form string="Protocol Probe Session">
+                <header>
+                    <button name="action_refresh_probe" type="object" string="Retry Probe" class="btn-primary"/>
+                    <button name="action_open_sessions" type="object" string="All Sessions" class="btn-secondary"/>
+                    <button name="action_open_adapter" type="object" string="Open Adapter" class="btn-secondary"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,running,done,failed,cancelled"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="code"/>
+                            <field name="session_key"/>
+                            <field name="trigger_kind"/>
+                            <field name="probe_kind"/>
+                            <field name="session_summary" readonly="1"/>
+                            <field name="result_state"/>
+                            <field name="result_summary" readonly="1"/>
+                            <field name="capability"/>
+                        </group>
+                        <group>
+                            <field name="adapter_id"/>
+                            <field name="entry_id"/>
+                            <field name="device_id"/>
+                            <field name="app_id"/>
+                            <field name="workstation_id"/>
+                            <field name="protocol"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="source_signal"/>
+                        <field name="source_payload_id"/>
+                        <field name="issue_id"/>
+                        <field name="issue_key"/>
+                        <field name="latency_ms"/>
+                        <field name="started_at"/>
+                        <field name="finished_at"/>
+                        <field name="summary"/>
+                    </group>
+                    <group>
+                        <field name="request_summary" readonly="1"/>
+                        <field name="response_summary" readonly="1"/>
+                    </group>
+                    <field name="request_json" nolabel="1"/>
+                    <field name="response_json" nolabel="1"/>
+                    <field name="payload_json" nolabel="1"/>
+                    <field name="note" nolabel="1"/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+</odoo>

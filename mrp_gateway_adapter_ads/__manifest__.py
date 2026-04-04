@@ -1,0 +1,22 @@
+{
+    "name": "MRP Gateway Adapter ADS",
+    "version": "19.0.0.1.0",
+    "category": "Manufacturing/Configuration",
+    "author": "OpenAI",
+    "summary": "ADS adapter baseline for gateway runtime diagnostics, symbols, subscriptions, and callbacks",
+    "license": "LGPL-3",
+    "depends": ["base", "mrp", "mrp_gateway_runtime", "mrp_gateway_core"],
+    "data": [
+        "security/ir.model.access.csv",
+        "data/ir_sequence_data.xml",
+        "views/ads_actions.xml",
+        "views/ads_menus.xml",
+        "views/ads_adapter_views.xml",
+        "views/ads_symbol_views.xml",
+        "views/ads_subscription_views.xml",
+        "views/ads_notification_views.xml",
+        "views/ads_diagnostic_views.xml",
+    ],
+    "application": False,
+    "installable": True,
+}

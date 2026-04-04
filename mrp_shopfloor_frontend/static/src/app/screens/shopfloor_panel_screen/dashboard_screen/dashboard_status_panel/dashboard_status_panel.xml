@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates xml:space="preserve">
+    <t t-name="mrp_shopfloor_frontend.ShopfloorDashboardStatusPanel" owl="1">
+        <div class="o_mrp_shopfloor_api_grid">
+            <t t-foreach="statusCards" t-as="card" t-key="card.label">
+                <ShopfloorDashboardStatusCard t-props="card"/>
+            </t>
+        </div>
+    </t>
+</templates>

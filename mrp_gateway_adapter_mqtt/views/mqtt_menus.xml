@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_gateway_mqtt_root"
+              name="MQTT"
+              parent="mrp_gateway_core.menu_gateway_configuration"
+              sequence="25"
+              groups="mrp.group_mrp_manager"/>
+
+    <menuitem id="menu_gateway_mqtt_adapters"
+              name="Adapters"
+              parent="menu_gateway_mqtt_root"
+              action="action_gateway_mqtt_adapter"
+              sequence="10"
+              groups="mrp.group_mrp_manager"/>
+
+    <menuitem id="menu_gateway_mqtt_topics"
+              name="Topics"
+              parent="menu_gateway_mqtt_root"
+              action="action_gateway_mqtt_topic"
+              sequence="20"
+              groups="mrp.group_mrp_manager"/>
+
+    <menuitem id="menu_gateway_mqtt_diagnostics"
+              name="Diagnostics"
+              parent="menu_gateway_mqtt_root"
+              action="action_gateway_mqtt_diagnostic"
+              sequence="30"
+              groups="mrp.group_mrp_manager"/>
+</odoo>

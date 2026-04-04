@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates xml:space="preserve">
+    <t t-name="mrp_shopfloor_frontend.ShopfloorStatusBadge" owl="1">
+        <span t-att-class="badgeClass + ' ' + toneClass">
+            <t t-esc="props.label"/>
+            <t t-if="props.detail">
+                <small class="o_mrp_shopfloor_status_chip_detail"><t t-esc="props.detail"/></small>
+            </t>
+        </span>
+    </t>
+</templates>

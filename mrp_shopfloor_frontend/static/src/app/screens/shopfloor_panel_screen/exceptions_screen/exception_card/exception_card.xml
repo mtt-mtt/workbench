@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates xml:space="preserve">
+    <t t-name="mrp_shopfloor_frontend.ShopfloorExceptionCard" owl="1">
+        <article t-att-class="cardClass">
+            <div class="o_mrp_shopfloor_exception_card_head">
+                <strong><t t-esc="props.item.title"/></strong>
+                <ShopfloorStatusBadge label="severityLabel" tone="severityToneClass"/>
+                <ShopfloorStatusBadge label="stateLabel" tone="stateToneClass"/>
+            </div>
+            <div class="o_mrp_shopfloor_detail_meta">
+                <span><t t-esc="props.item.source"/></span>
+                <span><t t-esc="props.item.reference || 'no reference'"/></span>
+                <span><t t-esc="props.item.createdAt || 'no timestamp'"/></span>
+            </div>
+            <div class="o_mrp_shopfloor_detail_meta">
+                <span class="badge rounded-pill" t-att-class="'text-bg-' + (branchToneClass || 'secondary')">
+                    Branch <t t-esc="branchLabel"/>
+                </span>
+                <span class="badge rounded-pill" t-att-class="'text-bg-' + (stateToneClass || 'secondary')">
+                    Current <t t-esc="stateLabel"/>
+                </span>
+                <span class="badge rounded-pill" t-att-class="'text-bg-' + (severityToneClass || 'secondary')">
+                    Severity <t t-esc="severityLabel"/>
+                </span>
+            </div>
+            <p class="o_mrp_shopfloor_api_detail">
+                <t t-esc="branchDetail"/>
+            </p>
+            <t t-if="props.item.details">
+                <p class="o_mrp_shopfloor_exception_detail"><t t-esc="props.item.details"/></p>
+            </t>
+            <t t-if="attentionLabel">
+                <ShopfloorAttentionNote label="attentionLabel" detail="attentionDetail" tone="'danger'"/>
+            </t>
+            <div class="o_mrp_shopfloor_exception_card_actions">
+                <t t-foreach="actions" t-as="action" t-key="action.key">
+                    <button type="button"
+                            class="btn btn-sm"
+                            t-att-class="action.buttonClass"
+                            t-att-data-action="action.key"
+                            t-att-data-label="action.label"
+                            t-att-data-confirm-label="action.confirmLabel"
+                            t-att-data-message="action.message"
+                            t-att-data-severity="action.severity"
+                            t-att-data-state="action.state"
+                            t-att-data-description="action.description"
+                            t-on-click="requestAction">
+                        <t t-esc="action.label"/>
+                    </button>
+                </t>
+            </div>
+            <t t-if="hasPendingAction">
+                <div class="o_mrp_shopfloor_exception_transition_confirm">
+                        <div class="o_mrp_shopfloor_api_head">
+                            <div>
+                                <div class="o_mrp_shopfloor_card_label">Confirm transition</div>
+                                <div class="o_mrp_shopfloor_detail_title"><t t-esc="pendingActionTitle"/></div>
+                            </div>
+                            <span class="badge rounded-pill text-bg-secondary">
+                                <t t-esc="branchLabel"/>
+                            </span>
+                        </div>
+                        <p class="o_mrp_shopfloor_api_detail">
+                            <t t-esc="pendingActionSummary"/>
+                        </p>
+                    <div class="o_mrp_shopfloor_detail_meta">
+                        <span class="badge rounded-pill" t-att-class="'text-bg-' + (pendingActionToneClass || 'secondary')">
+                            Next <t t-esc="state.pendingAction.state"/>
+                        </span>
+                        <span class="badge rounded-pill" t-att-class="'text-bg-' + (pendingActionSeverityToneClass || 'secondary')">
+                            Severity <t t-esc="state.pendingAction.severity"/>
+                        </span>
+                    </div>
+                    <div class="o_mrp_shopfloor_exception_actions">
+                        <button type="button" class="btn btn-sm btn-primary" t-on-click="confirmAction">Confirm</button>
+                        <button type="button" class="btn btn-sm btn-outline-light" t-on-click="cancelAction">Cancel</button>
+                    </div>
+                </div>
+            </t>
+        </article>
+    </t>
+</templates>

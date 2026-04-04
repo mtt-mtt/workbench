@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates xml:space="preserve">
+    <t t-name="mrp_shopfloor_frontend.ShopfloorQueueRow" owl="1">
+        <button type="button"
+                t-att-class="rowClass"
+                t-att-data-queue-id="props.item.id"
+                t-att-data-status="statusKey"
+                t-att-data-attention="attentionLabel ? 'true' : 'false'"
+                t-att-title="attentionLabel || props.item.message || props.item.reference || props.item.name || ''"
+                t-att-aria-pressed="props.selected ? 'true' : 'false'"
+                t-on-click="openQueueItem">
+            <span class="o_mrp_shopfloor_list_item_copy">
+                <strong><t t-esc="props.item.name"/></strong>
+                <small>
+                    <t t-esc="props.item.product"/> - <t t-esc="props.item.workorder"/>
+                    <t t-if="props.item.reference"> - <t t-esc="props.item.reference"/></t>
+                </small>
+                <small>
+                    <t t-esc="props.item.workorder_ref || 'no workorder ref'"/> | <t t-esc="props.item.production_ref || 'no production ref'"/>
+                </small>
+            </span>
+            <span class="o_mrp_shopfloor_list_item_meta">
+                <span class="badge rounded-pill" t-att-class="statusToneClass"><t t-esc="statusLabel"/></span>
+                <span class="badge rounded-pill" t-att-class="priorityToneClass"><t t-esc="priorityLabel"/></span>
+                <t t-if="attentionLabel">
+                    <span class="badge rounded-pill text-bg-danger"><t t-esc="attentionLabel"/></span>
+                </t>
+                <span><t t-esc="progressLabel"/></span>
+            </span>
+        </button>
+    </t>
+</templates>

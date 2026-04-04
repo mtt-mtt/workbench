@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates xml:space="preserve">
+    <t t-name="mrp_shopfloor_frontend.ShopfloorDeviceActionLog" owl="1">
+        <section class="o_mrp_shopfloor_detail_panel o_mrp_shopfloor_detail_panel--compact">
+            <div class="o_mrp_shopfloor_api_head">
+                <div>
+                    <div class="o_mrp_shopfloor_card_label">Recent actions</div>
+                    <div class="o_mrp_shopfloor_detail_title">Local queue feedback</div>
+                </div>
+                <span class="badge rounded-pill text-bg-secondary">
+                    <t t-esc="entries.length"/>
+                </span>
+            </div>
+            <ShopfloorFeedbackBar
+                label="commandFeedback.label"
+                detail="commandFeedback.detail"
+                tone="commandFeedback.tone"
+                onAction="noopFeedbackAction"
+                compact="true"
+            />
+            <ShopfloorStatusSummary items="commandSummaryItems" compact="true"/>
+            <div class="o_mrp_shopfloor_command_lifecycle mt-3">
+                <t t-foreach="commandStateSteps" t-as="step" t-key="step.key">
+                    <span class="badge rounded-pill me-1 mb-1"
+                          t-att-class="'text-bg-' + (step.active ? commandFeedback.tone : 'secondary')">
+                        <t t-esc="step.label"/>
+                    </span>
+                </t>
+            </div>
+            <div class="o_mrp_shopfloor_detail_meta mt-2">
+                <span>Latest state <t t-esc="commandStateLabel"/></span>
+                <span><t t-esc="commandStateDetail"/></span>
+            </div>
+            <t t-if="entries.length">
+                <div class="o_mrp_shopfloor_timeline o_mrp_shopfloor_timeline--compact mt-3">
+                    <t t-foreach="displayEntries" t-as="displayEntry" t-key="displayEntry.id">
+                        <div class="o_mrp_shopfloor_timeline_item">
+                            <div class="o_mrp_shopfloor_timeline_item_head">
+                                <strong><t t-esc="displayEntry.label"/></strong>
+                                <span class="badge rounded-pill" t-att-class="'text-bg-' + (displayEntry.tone || 'secondary')">
+                                    <t t-esc="displayEntry.statusLabel || displayEntry.status"/>
+                                </span>
+                            </div>
+                            <small>
+                                <t t-esc="displayEntry.deviceName"/> | <t t-esc="displayEntry.deviceCode"/> | <t t-esc="displayEntry.command"/>
+                            </small>
+                            <small>
+                                <t t-esc="displayEntry.detail"/>
+                            </small>
+                            <small>
+                                <t t-esc="displayEntry.createdAt"/>
+                            </small>
+                        </div>
+                    </t>
+                </div>
+            </t>
+            <t t-else="">
+                <div class="o_mrp_shopfloor_empty">
+                    Confirm a device action to populate the gateway.command trail and surface queued, sent, acknowledged, done, and failed states here.
+                </div>
+            </t>
+        </section>
+    </t>
+</templates>

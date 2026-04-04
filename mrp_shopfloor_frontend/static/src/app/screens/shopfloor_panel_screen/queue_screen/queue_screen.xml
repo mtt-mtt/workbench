@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates xml:space="preserve">
+    <t t-name="mrp_shopfloor_frontend.ShopfloorQueueScreen" owl="1">
+        <div class="o_mrp_shopfloor_section_head">
+            <div>
+                <div class="o_mrp_shopfloor_card_label">Queue</div>
+                <h2>Workorder queue</h2>
+            </div>
+            <div class="o_mrp_shopfloor_section_actions">
+                <span class="badge rounded-pill text-bg-secondary">Total <t t-esc="queueSummary.total"/></span>
+                <span class="badge rounded-pill text-bg-secondary">Visible <t t-esc="visibleSummary.total"/> / <t t-esc="queueSummary.total"/></span>
+                <span class="badge rounded-pill text-bg-warning">Attention <t t-esc="visibleSummary.attentionCount"/> / <t t-esc="queueSummary.attentionCount"/></span>
+                <span class="badge rounded-pill text-bg-info">Selected <t t-esc="queueSummary.selectedStatus"/></span>
+                <span class="badge rounded-pill" t-att-class="selectedQueueVisible ? 'text-bg-success' : 'text-bg-dark'">Selection <t t-esc="selectedQueueVisible ? 'visible' : 'hidden'"/></span>
+                <button type="button" class="btn btn-outline-light btn-sm" t-on-click="refreshQueue">Reseed sample queue</button>
+            </div>
+        </div>
+        <ShopfloorQueueToolbar
+            searchText="searchText"
+            statusFilter="statusFilter"
+            sortKey="sortKey"
+            queueSummary="queueSummary"
+            visibleSummary="visibleSummary"
+            onSearchTextChange="onSearchTextChange"
+            onStatusFilterChange="onStatusFilterChange"
+            onSortKeyChange="onSortKeyChange"
+            onClearFilters="onClearFilters"
+        />
+        <div class="o_mrp_shopfloor_panel_split o_mrp_shopfloor_queue_panel_split">
+            <ShopfloorQueueList
+                queue="visibleQueue"
+                selectedQueueItem="props.selectedQueueItem"
+                summary="visibleSummary"
+                onOpenQueueItem="openQueueItem"
+            />
+            <ShopfloorQueueDetail
+                selectedQueueItem="props.selectedQueueItem"
+                summary="visibleSummary"
+            />
+        </div>
+    </t>
+</templates>

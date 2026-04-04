@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_gateway_http_endpoint_tree" model="ir.ui.view">
+        <field name="name">gateway.http.endpoint.tree</field>
+        <field name="model">gateway.http.endpoint</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="sequence"/>
+                <field name="name"/>
+                <field name="code"/>
+                <field name="bridge_id"/>
+                <field name="route_kind"/>
+                <field name="path"/>
+                <field name="http_method"/>
+                <field name="state"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_gateway_http_endpoint_form" model="ir.ui.view">
+        <field name="name">gateway.http.endpoint.form</field>
+        <field name="model">gateway.http.endpoint</field>
+        <field name="arch" type="xml">
+            <form string="HTTP Endpoint">
+                <header>
+                    <button name="action_mark_ready" type="object" string="Ready" class="btn-primary"/>
+                    <button name="action_mark_disabled" type="object" string="Disable" class="btn-secondary"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,ready,disabled"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="bridge_id"/>
+                            <field name="name"/>
+                            <field name="code"/>
+                            <field name="sequence"/>
+                            <field name="active"/>
+                        </group>
+                        <group>
+                            <field name="route_kind"/>
+                            <field name="http_method"/>
+                            <field name="auth_mode"/>
+                            <field name="header_name"/>
+                            <field name="path"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Mapping">
+                            <field name="mapping_json" nolabel="1"/>
+                            <field name="config_text" nolabel="1"/>
+                        </page>
+                        <page string="Diagnostics">
+                            <field name="diagnostic_state" nolabel="1"/>
+                            <field name="note" nolabel="1"/>
+                            <group>
+                                <field name="last_seen_at"/>
+                                <field name="request_count"/>
+                                <field name="success_count"/>
+                                <field name="failure_count"/>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_gateway_http_endpoint_search" model="ir.ui.view">
+        <field name="name">gateway.http.endpoint.search</field>
+        <field name="model">gateway.http.endpoint</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="code"/>
+                <field name="bridge_id"/>
+                <field name="path"/>
+                <filter string="Active" name="active" domain="[('active', '=', True)]"/>
+            </search>
+        </field>
+    </record>
+</odoo>

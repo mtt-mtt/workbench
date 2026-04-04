@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_gateway_runtime_issue_tree" model="ir.ui.view">
+        <field name="name">gateway.runtime.issue.tree</field>
+        <field name="model">gateway.runtime.issue</field>
+        <field name="arch" type="xml">
+            <list string="Runtime Issues">
+                <field name="code"/>
+                <field name="issue_key" optional="hide"/>
+                <field name="adapter_id"/>
+                <field name="adapter_type" optional="hide"/>
+                <field name="issue_kind"/>
+                <field name="severity"/>
+                <field name="state"/>
+                <field name="is_fixable"/>
+                <field name="recommended_action_key"/>
+                <field name="repair_summary"/>
+                <field name="payload_summary" optional="hide"/>
+                <field name="last_seen_at"/>
+                <field name="resolved_at"/>
+                <field name="message"/>
+                <field name="recommended_action"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_gateway_runtime_issue_search" model="ir.ui.view">
+        <field name="name">gateway.runtime.issue.search</field>
+        <field name="model">gateway.runtime.issue</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="code"/>
+                <field name="adapter_id"/>
+                <field name="issue_kind"/>
+                <field name="severity"/>
+                <field name="state"/>
+                <field name="is_fixable"/>
+                <field name="recommended_action_key"/>
+                <filter string="Open" name="open" domain="[('state', 'in', ['new', 'open', 'in_progress'])]"/>
+                <filter string="Resolved" name="resolved" domain="[('state', 'in', ['resolved', 'closed'])]"/>
+                <filter string="Ignored" name="ignored" domain="[('state', '=', 'ignored')]"/>
+                <filter string="Fixable" name="fixable" domain="[('is_fixable', '=', True)]"/>
+                <filter string="Needs Attention" name="needs_attention" domain="[('state', 'in', ['new', 'open', 'in_progress']), ('severity', 'in', ['medium', 'high', 'critical'])]"/>
+                <filter string="Event Review" name="review_events" domain="[('recommended_action_key', '=', 'review_runtime_events')]"/>
+                <separator string="Group By"/>
+                <filter string="Adapter" name="group_adapter" context="{'group_by': 'adapter_id'}"/>
+                <filter string="Kind" name="group_kind" context="{'group_by': 'issue_kind'}"/>
+                <filter string="Severity" name="group_severity" context="{'group_by': 'severity'}"/>
+                <filter string="State" name="group_state" context="{'group_by': 'state'}"/>
+                <filter string="Action" name="group_action" context="{'group_by': 'recommended_action_key'}"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="view_gateway_runtime_issue_form" model="ir.ui.view">
+        <field name="name">gateway.runtime.issue.form</field>
+        <field name="model">gateway.runtime.issue</field>
+        <field name="arch" type="xml">
+            <form string="Runtime Issue">
+                <header>
+                    <button name="action_run_recommended_action" type="object" string="Run Recommended Repair" class="btn-primary" invisible="not is_fixable"/>
+                    <button name="action_open_diagnostics" type="object" string="Open Console" class="btn-primary"/>
+                    <button name="action_open_events" type="object" string="Open Events" class="btn-secondary"/>
+                    <button name="action_refresh_adapter_diagnostics" type="object" string="Refresh Diagnostics" class="btn-secondary"/>
+                    <button name="action_repair_adapter" type="object" string="Repair Adapter" class="btn-secondary"/>
+                    <button name="action_reload_adapter" type="object" string="Reload Adapter" class="btn-secondary"/>
+                    <button name="action_open_adapter" type="object" string="Open Adapter" class="btn-secondary"/>
+                    <button name="action_mark_open" type="object" string="Open" class="btn-secondary"/>
+                    <button name="action_mark_in_progress" type="object" string="In Progress" class="btn-secondary"/>
+                    <button name="action_mark_resolved" type="object" string="Resolve" class="btn-primary"/>
+                    <button name="action_mark_closed" type="object" string="Close" class="btn-secondary"/>
+                    <button name="action_mark_ignored" type="object" string="Ignore" class="btn-secondary"/>
+                    <button name="action_reopen" type="object" string="Reopen" class="btn-secondary"/>
+                    <field name="state" widget="statusbar" statusbar_visible="new,open,in_progress,resolved,closed,ignored"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_open_diagnostics" type="object" class="oe_stat_button" icon="fa-desktop">
+                            <div class="o_field_widget o_stat_info">
+                                <span class="o_stat_value">
+                                    <field name="severity" nolabel="1"/>
+                                </span>
+                                <span class="o_stat_text">Severity</span>
+                            </div>
+                        </button>
+                        <button name="action_run_recommended_action" type="object" class="oe_stat_button" icon="fa-wrench" invisible="not is_fixable">
+                            <div class="o_field_widget o_stat_info">
+                                <span class="o_stat_value">
+                                    <field name="recommended_action_key" nolabel="1"/>
+                                </span>
+                                <span class="o_stat_text">Recommended</span>
+                            </div>
+                        </button>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="code"/>
+                            <field name="issue_key" readonly="1"/>
+                            <field name="name"/>
+                            <field name="adapter_id"/>
+                            <field name="adapter_type" readonly="1"/>
+                            <field name="issue_kind"/>
+                            <field name="severity"/>
+                            <field name="state"/>
+                            <field name="is_fixable"/>
+                            <field name="recommended_action_key"/>
+                        </group>
+                        <group>
+                            <field name="last_seen_at"/>
+                            <field name="resolved_at"/>
+                            <field name="active"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="message"/>
+                        <field name="repair_summary" readonly="1"/>
+                        <field name="payload_summary" readonly="1"/>
+                        <field name="recommended_action"/>
+                    </group>
+                    <field name="detail" nolabel="1"/>
+                    <field name="payload_json" nolabel="1"/>
+                    <field name="note" nolabel="1"/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,983 @@
+import json
+
+from odoo import api, fields, models, _
+
+from ..services.runtime_service import GatewayRuntimeService
+
+
+class GatewayRuntimeAdapter(models.Model):
+    _name = "gateway.runtime.adapter"
+    _description = "Gateway Runtime Adapter"
+    _order = "sequence, id"
+
+    name = fields.Char(required=True)
+    code = fields.Char(required=True, index=True)
+    active = fields.Boolean(default=True)
+    sequence = fields.Integer(default=10)
+    state = fields.Selection(
+        [
+            ("draft", "Draft"),
+            ("ready", "Ready"),
+            ("degraded", "Degraded"),
+            ("offline", "Offline"),
+            ("disabled", "Disabled"),
+        ],
+        default="draft",
+        required=True,
+        index=True,
+    )
+    adapter_type = fields.Selection(
+        [
+            ("mock", "Mock"),
+            ("mqtt", "MQTT"),
+            ("modbus", "Modbus"),
+            ("opcua", "OPC UA"),
+            ("ads", "ADS"),
+            ("s7", "S7"),
+            ("http", "HTTP"),
+            ("print", "Print"),
+            ("scale", "Scale"),
+            ("generic", "Generic"),
+        ],
+        default="mock",
+        required=True,
+        index=True,
+    )
+    entry_id = fields.Many2one("gateway.entry", ondelete="set null")
+    app_id = fields.Many2one("shopfloor.app", ondelete="set null")
+    workstation_id = fields.Many2one("shopfloor.workstation", ondelete="set null")
+    device_code = fields.Char(index=True)
+    runtime_unique_id = fields.Char(index=True)
+    connection_target = fields.Char()
+    config_json = fields.Text()
+    config_text = fields.Text()
+    diagnostic_state = fields.Text()
+    diagnostic_summary = fields.Text()
+    capability_json = fields.Text(compute="_compute_runtime_profile", readonly=True)
+    capability_summary = fields.Char(compute="_compute_runtime_profile", readonly=True)
+    lifecycle_state = fields.Selection(
+        [
+            ("draft", "Draft"),
+            ("configuring", "Configuring"),
+            ("ready", "Ready"),
+            ("degraded", "Degraded"),
+            ("offline", "Offline"),
+            ("disabled", "Disabled"),
+        ],
+        compute="_compute_runtime_profile",
+        readonly=True,
+        index=True,
+    )
+    lifecycle_detail = fields.Char(compute="_compute_runtime_profile", readonly=True)
+    health_state = fields.Selection(
+        [
+            ("unknown", "Unknown"),
+            ("healthy", "Healthy"),
+            ("warning", "Warning"),
+            ("degraded", "Degraded"),
+            ("offline", "Offline"),
+        ],
+        default="unknown",
+        required=True,
+        index=True,
+    )
+    health_score = fields.Integer(default=0)
+    health_detail = fields.Char()
+    last_error = fields.Text()
+    coordinator_mode = fields.Selection(
+        [
+            ("poll", "Poll"),
+            ("push", "Push"),
+            ("hybrid", "Hybrid"),
+        ],
+        default="poll",
+        required=True,
+        index=True,
+    )
+    update_interval_seconds = fields.Integer(default=30)
+    retry_after_seconds = fields.Integer(default=0)
+    last_update_success = fields.Boolean(default=False)
+    last_exception_class = fields.Char()
+    last_exception_message = fields.Text()
+    last_update_started_at = fields.Datetime()
+    last_update_finished_at = fields.Datetime()
+    last_update_success_at = fields.Datetime()
+    last_update_failure_at = fields.Datetime()
+    first_refresh_required = fields.Boolean(default=True)
+    always_update = fields.Boolean(default=True)
+    listener_count = fields.Integer(default=0)
+    timeout_seconds = fields.Integer(default=30)
+    heartbeat_timeout_seconds = fields.Integer(default=60)
+    supports_push = fields.Boolean(default=False)
+    supports_poll = fields.Boolean(default=True)
+    supports_read = fields.Boolean(default=True)
+    supports_write = fields.Boolean(default=True)
+    supports_subscribe = fields.Boolean(default=False)
+    supports_discovery = fields.Boolean(default=False)
+    supports_ack = fields.Boolean(default=False)
+    supports_diagnostics = fields.Boolean(default=True)
+    supports_repair = fields.Boolean(default=True)
+    supports_reload = fields.Boolean(default=True)
+    supports_load = fields.Boolean(default=True)
+    supports_unload = fields.Boolean(default=True)
+    supports_dispatch = fields.Boolean(default=True)
+    reconnect_policy = fields.Selection(
+        [
+            ("manual", "Manual"),
+            ("auto", "Auto"),
+            ("off", "Off"),
+        ],
+        default="auto",
+        required=True,
+        index=True,
+    )
+    reconnect_delay_seconds = fields.Integer(default=5)
+    max_reconnect_attempts = fields.Integer(default=3)
+    reconnect_attempts = fields.Integer(default=0)
+    last_reconnect_at = fields.Datetime()
+    last_reload_at = fields.Datetime()
+    last_repair_at = fields.Datetime()
+    last_success_at = fields.Datetime()
+    last_failure_at = fields.Datetime()
+    last_heartbeat_at = fields.Datetime()
+    last_poll_at = fields.Datetime()
+    heartbeat_count = fields.Integer(default=0)
+    event_count = fields.Integer(default=0)
+    command_count = fields.Integer(default=0)
+    note = fields.Text()
+    heartbeat_ids = fields.One2many("gateway.runtime.heartbeat", "adapter_id", string="Heartbeats")
+    event_ids = fields.One2many("gateway.runtime.event", "adapter_id", string="Events")
+    issue_ids = fields.One2many("gateway.runtime.issue", "adapter_id", string="Issues")
+    probe_session_ids = fields.One2many("gateway.runtime.probe.session", "adapter_id", string="Probe Sessions")
+    issue_count = fields.Integer(compute="_compute_issue_stats", readonly=True)
+    open_issue_count = fields.Integer(compute="_compute_issue_stats", readonly=True)
+    repair_issue_count = fields.Integer(compute="_compute_issue_stats", readonly=True)
+    mqtt_adapter_count = fields.Integer(compute="_compute_protocol_probe_stats", readonly=True)
+    modbus_adapter_count = fields.Integer(compute="_compute_protocol_probe_stats", readonly=True)
+    opcua_adapter_count = fields.Integer(compute="_compute_protocol_probe_stats", readonly=True)
+    ads_adapter_count = fields.Integer(compute="_compute_protocol_probe_stats", readonly=True)
+    s7_adapter_count = fields.Integer(compute="_compute_protocol_probe_stats", readonly=True)
+    probe_session_count = fields.Integer(compute="_compute_protocol_probe_stats", readonly=True)
+    open_probe_session_count = fields.Integer(compute="_compute_protocol_probe_stats", readonly=True)
+    last_probe_session_at = fields.Datetime(compute="_compute_protocol_probe_stats", readonly=True)
+    probe_focus_state = fields.Selection(
+        [
+            ("unknown", "Unknown"),
+            ("ready", "Ready"),
+            ("attention", "Attention"),
+            ("offline", "Offline"),
+            ("disabled", "Disabled"),
+        ],
+        compute="_compute_protocol_probe_stats",
+        readonly=True,
+        index=True,
+    )
+    probe_summary = fields.Char(compute="_compute_protocol_probe_stats", readonly=True)
+    probe_focus_summary = fields.Char(compute="_compute_protocol_probe_stats", readonly=True)
+    probe_attention_summary = fields.Char(compute="_compute_protocol_probe_stats", readonly=True)
+    probe_session_summary = fields.Char(compute="_compute_protocol_probe_stats", readonly=True)
+    probe_detail = fields.Text(compute="_compute_protocol_probe_stats", readonly=True)
+    console_summary = fields.Char(compute="_compute_console_summary", readonly=True)
+    console_attention_summary = fields.Char(compute="_compute_console_summary", readonly=True)
+    recent_activity_summary = fields.Char(compute="_compute_recent_activity_summary", readonly=True)
+    recent_activity_timeline = fields.Text(compute="_compute_recent_activity_summary", readonly=True)
+    attention_route_summary = fields.Char(compute="_compute_attention_route_summary", readonly=True)
+
+    _gateway_runtime_adapter_code_uniq = models.Constraint(
+        "UNIQUE(code)",
+        "Adapter code must be unique.",
+    )
+
+    @api.model
+    def _default_capability_values(self, adapter_type):
+        adapter_type = adapter_type or "generic"
+        defaults = {
+            "supports_push": False,
+            "supports_poll": True,
+            "supports_read": True,
+            "supports_write": True,
+            "supports_subscribe": False,
+            "supports_discovery": False,
+            "supports_ack": True,
+            "supports_diagnostics": True,
+            "supports_repair": True,
+            "supports_reload": True,
+            "supports_load": True,
+            "supports_unload": True,
+            "supports_dispatch": True,
+        }
+        type_defaults = {
+            "mock": {"supports_push": True, "supports_subscribe": True, "supports_discovery": True},
+            "mqtt": {"supports_push": True, "supports_subscribe": True, "supports_discovery": True},
+            "modbus": {"supports_push": False, "supports_subscribe": False, "supports_discovery": False},
+            "opcua": {"supports_push": True, "supports_subscribe": True, "supports_discovery": True},
+            "ads": {"supports_push": True, "supports_subscribe": True},
+            "s7": {"supports_push": False, "supports_subscribe": False, "supports_discovery": False},
+            "http": {"supports_push": True, "supports_poll": False, "supports_read": False, "supports_subscribe": False},
+            "print": {"supports_push": True, "supports_poll": False, "supports_read": False, "supports_subscribe": False},
+            "scale": {"supports_push": False, "supports_write": False},
+        }
+        defaults.update(type_defaults.get(adapter_type, {}))
+        return defaults
+
+    @api.model
+    def _default_coordinator_mode(self, adapter_type, values=None):
+        values = values or {}
+        supports_push = values.get("supports_push")
+        supports_poll = values.get("supports_poll")
+        if supports_push is None or supports_poll is None:
+            defaults = self._default_capability_values(adapter_type)
+            supports_push = defaults["supports_push"] if supports_push is None else supports_push
+            supports_poll = defaults["supports_poll"] if supports_poll is None else supports_poll
+        if supports_push and supports_poll:
+            return "hybrid"
+        if supports_push:
+            return "push"
+        return "poll"
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        for vals in vals_list:
+            if vals.get("code", "/") in (None, "/", "New"):
+                vals["code"] = self.env["ir.sequence"].next_by_code("gateway.runtime.adapter") or _("New")
+            adapter_type = vals.get("adapter_type") or "generic"
+            for key, value in self._default_capability_values(adapter_type).items():
+                vals.setdefault(key, value)
+            vals.setdefault("coordinator_mode", self._default_coordinator_mode(adapter_type, vals))
+            vals.setdefault("update_interval_seconds", vals.get("timeout_seconds") or 30)
+        return super().create(vals_list)
+
+    @api.depends(
+        "active",
+        "state",
+        "adapter_type",
+        "health_state",
+        "health_score",
+        "connection_target",
+        "config_json",
+        "timeout_seconds",
+        "heartbeat_timeout_seconds",
+        "coordinator_mode",
+        "update_interval_seconds",
+        "retry_after_seconds",
+        "last_update_success",
+        "last_exception_class",
+        "last_exception_message",
+        "last_update_started_at",
+        "last_update_finished_at",
+        "last_update_success_at",
+        "last_update_failure_at",
+        "first_refresh_required",
+        "always_update",
+        "listener_count",
+        "supports_push",
+        "supports_poll",
+        "supports_read",
+        "supports_write",
+        "supports_subscribe",
+        "supports_discovery",
+        "supports_ack",
+        "supports_diagnostics",
+        "supports_repair",
+        "supports_reload",
+        "supports_load",
+        "supports_unload",
+        "supports_dispatch",
+        "reconnect_policy",
+        "reconnect_attempts",
+        "max_reconnect_attempts",
+        "last_success_at",
+        "last_failure_at",
+        "last_error",
+        "last_reload_at",
+        "last_repair_at",
+    )
+    def _compute_runtime_profile(self):
+        for record in self:
+            capabilities = record._build_capability_payload()
+            lifecycle_state, lifecycle_detail = record._build_lifecycle_payload(capabilities)
+            record.capability_json = json.dumps(capabilities, ensure_ascii=False, default=str)
+            record.capability_summary = record._build_capability_summary(capabilities)
+            record.lifecycle_state = lifecycle_state
+            record.lifecycle_detail = lifecycle_detail
+
+    @api.depends("issue_ids", "issue_ids.state", "issue_ids.is_fixable")
+    def _compute_issue_stats(self):
+        for record in self:
+            issues = record.issue_ids
+            open_issues = issues.filtered(lambda issue: issue.state in {"new", "open", "in_progress"})
+            record.issue_count = len(issues)
+            record.open_issue_count = len(open_issues)
+            record.repair_issue_count = len(open_issues.filtered("is_fixable"))
+
+    @api.depends(
+        "state",
+        "active",
+        "health_state",
+        "health_score",
+        "last_heartbeat_at",
+        "last_success_at",
+        "last_failure_at",
+        "issue_ids",
+        "issue_ids.state",
+        "issue_ids.is_fixable",
+        "probe_session_ids",
+        "probe_session_ids.state",
+        "probe_session_ids.result_state",
+        "probe_session_ids.started_at",
+        "probe_session_ids.finished_at",
+        "mqtt_adapter_count",
+        "modbus_adapter_count",
+        "opcua_adapter_count",
+        "ads_adapter_count",
+        "s7_adapter_count",
+    )
+    def _compute_protocol_probe_stats(self):
+        def _compact(value, limit=180):
+            if value in (None, False, ""):
+                return ""
+            if not isinstance(value, str):
+                try:
+                    value = json.dumps(value, ensure_ascii=False, default=str)
+                except Exception:
+                    value = str(value)
+            value = " ".join(value.split())
+            if len(value) <= limit:
+                return value
+            return value[: max(0, limit - 1)].rstrip() + "..."
+
+        def _protocol_summary(record, model_name, label, recent_fields):
+            if model_name not in record.env.registry.models:
+                return 0, _("%s: module not installed") % label, _("%s: module not installed") % label
+            linked = record.env[model_name].sudo().search([("runtime_adapter_id", "=", record.id)], order="sequence, id")
+            if not linked:
+                return 0, _("%s: no linked adapters") % label, _("%s: no linked adapters") % label
+            primary = linked[0]
+            status = (
+                getattr(primary, "runtime_health_state", False)
+                or getattr(primary, "runtime_lifecycle_state", False)
+                or getattr(primary, "state", False)
+                or "unknown"
+            )
+            issue_count = getattr(primary, "runtime_issue_count", 0) or 0
+            open_issue_count = getattr(primary, "runtime_open_issue_count", 0) or 0
+            repair_issue_count = getattr(primary, "runtime_repair_issue_count", 0) or 0
+            recent_bits = []
+            for field_name in recent_fields:
+                value = getattr(primary, field_name, None)
+                if value:
+                    recent_bits.append(_compact(value))
+            summary = _("%(label)s %(count)s linked, %(status)s, issues %(issues)s/%(open)s/%(repair)s") % {
+                "label": label,
+                "count": len(linked),
+                "status": status,
+                "issues": issue_count,
+                "open": open_issue_count,
+                "repair": repair_issue_count,
+            }
+            detail = summary
+            if recent_bits:
+                detail = f"{summary} | {'; '.join(recent_bits)}"
+            return len(linked), summary, detail
+
+        for record in self:
+            mqtt_count, mqtt_summary, mqtt_detail = _protocol_summary(
+                record,
+                "gateway.mqtt.adapter",
+                _("MQTT"),
+                ("runtime_diagnostic_summary", "diagnostic_state", "last_sync_at"),
+            )
+            modbus_count, modbus_summary, modbus_detail = _protocol_summary(
+                record,
+                "gateway.modbus.adapter",
+                _("Modbus"),
+                ("runtime_diagnostic_summary", "diagnostic_state", "last_snapshot_at", "last_ack_at"),
+            )
+            opcua_count, opcua_summary, opcua_detail = _protocol_summary(
+                record,
+                "gateway.opcua.adapter",
+                _("OPC UA"),
+                ("runtime_diagnostic_summary", "diagnostic_state", "last_sync_at"),
+            )
+            ads_count, ads_summary, ads_detail = _protocol_summary(
+                record,
+                "gateway.ads.adapter",
+                _("ADS"),
+                (
+                    "runtime_diagnostic_summary",
+                    "diagnostic_state",
+                    "subscription_summary",
+                    "notification_summary",
+                    "last_sync_at",
+                    "runtime_last_refresh_at",
+                    "runtime_last_reload_at",
+                ),
+            )
+            s7_count, s7_summary, s7_detail = _protocol_summary(
+                record,
+                "gateway.s7.adapter",
+                _("S7"),
+                ("runtime_diagnostic_summary", "diagnostic_state", "last_snapshot_at", "last_ack_at"),
+            )
+            sessions = record.probe_session_ids
+            open_sessions = sessions.filtered(lambda item: item.state in {"draft", "running"})
+            session_summary = _("%(sessions)s session(s), %(open)s open") % {
+                "sessions": len(sessions),
+                "open": len(open_sessions),
+            }
+            last_probe_session_at = max([item.started_at for item in sessions if item.started_at], default=False)
+            summaries = [summary for summary in (mqtt_summary, modbus_summary, opcua_summary, ads_summary, s7_summary) if summary]
+            details = [detail for detail in (mqtt_detail, modbus_detail, opcua_detail, ads_detail, s7_detail) if detail]
+            record.mqtt_adapter_count = mqtt_count
+            record.modbus_adapter_count = modbus_count
+            record.opcua_adapter_count = opcua_count
+            record.ads_adapter_count = ads_count
+            record.s7_adapter_count = s7_count
+            record.probe_session_count = len(sessions)
+            record.open_probe_session_count = len(open_sessions)
+            record.last_probe_session_at = last_probe_session_at
+            if not record.active or record.state == "disabled":
+                focus_state = "disabled"
+                focus_summary = _("Adapter is disabled")
+            elif record.health_state == "offline" or record.state == "offline":
+                focus_state = "offline"
+                focus_summary = _("Adapter is offline")
+            elif record.open_issue_count or record.health_state in {"warning", "degraded"} or record.state == "degraded":
+                focus_state = "attention"
+                focus_summary = _("%(issues)s open issue(s), %(health)s") % {
+                    "issues": record.open_issue_count,
+                    "health": record.health_state or _("attention"),
+                }
+            elif mqtt_count or modbus_count or opcua_count or ads_count or s7_count or sessions:
+                focus_state = "ready"
+                focus_summary = _("%(protocols)s probe target(s), %(sessions)s probe session(s)") % {
+                    "protocols": mqtt_count + modbus_count + opcua_count + ads_count + s7_count,
+                    "sessions": len(sessions),
+                }
+            else:
+                focus_state = "unknown"
+                focus_summary = _("No linked protocol adapters")
+            record.probe_focus_state = focus_state
+            record.probe_summary = "; ".join(summaries) if summaries else _("No linked protocol adapters")
+            record.probe_focus_summary = focus_summary
+            record.probe_attention_summary = _("%(open)s open issue(s), %(repair)s fixable, %(health)s, %(sessions)s open probe session(s)") % {
+                "open": record.open_issue_count,
+                "repair": record.repair_issue_count,
+                "health": record.health_state or _("unknown"),
+                "sessions": len(open_sessions),
+            }
+            probe_details = details + [session_summary]
+            if last_probe_session_at:
+                probe_details.append(_("Last probe session at %(when)s") % {"when": last_probe_session_at})
+            record.probe_session_summary = session_summary
+            record.probe_detail = "\n".join(probe_details)
+
+    @api.depends(
+        "last_heartbeat_at",
+        "last_success_at",
+        "last_failure_at",
+        "last_reload_at",
+        "last_repair_at",
+        "last_reconnect_at",
+        "last_probe_session_at",
+        "last_update_success_at",
+        "last_update_failure_at",
+        "last_error",
+    )
+    def _compute_recent_activity_summary(self):
+        labels = (
+            ("last_heartbeat_at", _("Heartbeat")),
+            ("last_success_at", _("Success")),
+            ("last_failure_at", _("Failure")),
+            ("last_reload_at", _("Reload")),
+            ("last_repair_at", _("Repair")),
+            ("last_reconnect_at", _("Reconnect")),
+            ("last_probe_session_at", _("Probe")),
+            ("last_update_success_at", _("Update OK")),
+            ("last_update_failure_at", _("Update Fail")),
+        )
+        for record in self:
+            events = []
+            for field_name, label in labels:
+                value = getattr(record, field_name, False)
+                if value:
+                    events.append((value, label))
+            events.sort(key=lambda item: item[0], reverse=True)
+            if not events:
+                record.recent_activity_summary = _("No recent runtime activity")
+                record.recent_activity_timeline = _("No heartbeat, update, reload, repair, reconnect, or probe activity recorded yet.")
+                continue
+            latest_value, latest_label = events[0]
+            record.recent_activity_summary = _("%(label)s at %(when)s") % {"label": latest_label, "when": latest_value}
+            timeline_lines = [_("%(label)s: %(when)s") % {"label": label, "when": value} for value, label in events[:6]]
+            if record.last_error:
+                timeline_lines.append(_("Last error: %(error)s") % {"error": record.last_error})
+            record.recent_activity_timeline = "\n".join(timeline_lines)
+
+    @api.depends(
+        "state",
+        "active",
+        "health_state",
+        "health_score",
+        "lifecycle_state",
+        "open_issue_count",
+        "repair_issue_count",
+        "probe_focus_state",
+        "probe_session_count",
+        "open_probe_session_count",
+        "last_heartbeat_at",
+        "last_success_at",
+        "last_failure_at",
+        "last_error",
+        "probe_focus_summary",
+        "probe_session_summary",
+    )
+    def _compute_console_summary(self):
+        for record in self:
+            issue_text = _("%(open)s open issue(s), %(fixable)s fixable") % {
+                "open": record.open_issue_count or 0,
+                "fixable": record.repair_issue_count or 0,
+            }
+            if not record.active or record.state == "disabled":
+                state_text = _("disabled")
+            elif record.health_state in {"offline", "degraded", "warning"}:
+                state_text = record.health_state
+            else:
+                state_text = record.lifecycle_state or record.health_state or record.state or _("unknown")
+            probe_text = record.probe_session_summary or _("0 session(s), 0 open")
+            record.console_summary = _("%(state)s, %(issues)s, %(probes)s") % {
+                "state": state_text,
+                "issues": issue_text,
+                "probes": probe_text,
+            }
+            attention_bits = []
+            if record.open_issue_count:
+                attention_bits.append(issue_text)
+            if record.probe_focus_state == "attention":
+                attention_bits.append(record.probe_focus_summary or _("probe attention"))
+            if record.open_probe_session_count:
+                attention_bits.append(_("%s open probe session(s)") % (record.open_probe_session_count or 0))
+            if record.last_error:
+                attention_bits.append(record.last_error)
+            if not attention_bits:
+                attention_bits.append(_("No active attention items"))
+            record.console_attention_summary = " | ".join(attention_bits)
+
+    @api.depends(
+        "open_issue_count",
+        "repair_issue_count",
+        "open_probe_session_count",
+        "probe_focus_state",
+        "health_state",
+        "state",
+    )
+    def _compute_attention_route_summary(self):
+        for record in self:
+            if record.open_issue_count:
+                if record.repair_issue_count:
+                    record.attention_route_summary = _("%(issues)s issue(s), %(repairs)s fixable") % {
+                        "issues": record.open_issue_count,
+                        "repairs": record.repair_issue_count,
+                    }
+                else:
+                    record.attention_route_summary = _("%s open issue(s)") % (record.open_issue_count or 0)
+            elif record.open_probe_session_count:
+                record.attention_route_summary = _("%s open probe session(s)") % (record.open_probe_session_count or 0)
+            elif record.health_state in {"warning", "degraded", "offline"} or record.state in {"degraded", "offline"}:
+                record.attention_route_summary = _("Review diagnostics")
+            else:
+                record.attention_route_summary = _("Open runtime overview")
+
+    def _parse_config_json(self):
+        self.ensure_one()
+        if not self.config_json:
+            return {}
+        try:
+            parsed = json.loads(self.config_json)
+        except Exception:
+            return {}
+        return parsed if isinstance(parsed, dict) else {}
+
+    def _build_capability_payload(self):
+        self.ensure_one()
+        config = self._parse_config_json()
+        adapter_type = self.adapter_type or "generic"
+        payload = {
+            "adapter_type": adapter_type,
+            "supports_push": self.supports_push,
+            "supports_poll": self.supports_poll,
+            "supports_read": self.supports_read,
+            "supports_write": self.supports_write,
+            "supports_subscribe": self.supports_subscribe,
+            "supports_discovery": self.supports_discovery,
+            "supports_ack": self.supports_ack,
+            "supports_diagnostics": self.supports_diagnostics,
+            "supports_repair": self.supports_repair,
+            "supports_reload": self.supports_reload,
+            "supports_load": self.supports_load,
+            "supports_unload": self.supports_unload,
+            "supports_dispatch": self.supports_dispatch,
+        }
+        payload.update(
+            {
+                "runtime_unique_id": self.runtime_unique_id,
+                "coordinator_mode": self.coordinator_mode,
+                "update_interval_seconds": self.update_interval_seconds,
+                "retry_after_seconds": self.retry_after_seconds,
+                "last_update_success": self.last_update_success,
+                "last_exception_class": self.last_exception_class,
+                "last_exception_message": self.last_exception_message,
+                "last_update_started_at": self.last_update_started_at.isoformat() if self.last_update_started_at else None,
+                "last_update_finished_at": self.last_update_finished_at.isoformat() if self.last_update_finished_at else None,
+                "last_update_success_at": self.last_update_success_at.isoformat() if self.last_update_success_at else None,
+                "last_update_failure_at": self.last_update_failure_at.isoformat() if self.last_update_failure_at else None,
+                "first_refresh_required": self.first_refresh_required,
+                "always_update": self.always_update,
+                "listener_count": self.listener_count,
+                "timeout_seconds": self.timeout_seconds,
+                "heartbeat_timeout_seconds": self.heartbeat_timeout_seconds,
+                "reconnect_policy": self.reconnect_policy,
+                "reconnect_attempts": self.reconnect_attempts,
+                "max_reconnect_attempts": self.max_reconnect_attempts,
+                "health_state": self.health_state,
+                "health_score": self.health_score,
+                "last_error": self.last_error,
+                "last_success_at": self.last_success_at.isoformat() if self.last_success_at else None,
+                "last_failure_at": self.last_failure_at.isoformat() if self.last_failure_at else None,
+            }
+        )
+        if config:
+            payload["config_flags"] = config
+        return payload
+
+    def _build_capability_summary(self, capabilities):
+        flags = []
+        for key, label in (
+            ("supports_poll", "poll"),
+            ("supports_push", "push"),
+            ("supports_read", "read"),
+            ("supports_write", "write"),
+            ("supports_subscribe", "subscribe"),
+            ("supports_discovery", "discovery"),
+            ("supports_ack", "ack"),
+            ("supports_diagnostics", "diagnostics"),
+            ("supports_repair", "repair"),
+            ("supports_reload", "reload"),
+            ("supports_load", "load"),
+            ("supports_unload", "unload"),
+        ):
+            if capabilities.get(key):
+                flags.append(label)
+        if not flags:
+            return "No capabilities declared"
+        return ", ".join(flags)
+
+    def _build_lifecycle_payload(self, capabilities):
+        self.ensure_one()
+        if not self.active or self.state == "disabled":
+            return "disabled", "Adapter is disabled"
+        if self.health_state == "offline" or self.state == "offline":
+            return "offline", self.last_error or "Adapter is offline"
+        if self.health_state in {"warning", "degraded"} or self.state == "degraded":
+            return "degraded", self.last_error or "Adapter needs attention"
+        if not self.connection_target and not self.config_json:
+            return "draft", "Adapter is not configured yet"
+        if capabilities.get("supports_poll") or capabilities.get("supports_push"):
+            return "ready", "Adapter is ready for runtime coordination"
+        return "configuring", "Adapter is being configured"
+
+    def _runtime_mark_action(self, action_name, values):
+        self.ensure_one()
+        values = dict(values or {})
+        values.setdefault("health_state", self.health_state)
+        values.setdefault("diagnostic_summary", self.diagnostic_summary)
+        self.write(values)
+        return {
+            "type": "ir.actions.client",
+            "tag": "display_notification",
+            "params": {
+                "title": _("Gateway Runtime"),
+                "message": action_name,
+                "type": "success",
+                "sticky": False,
+            },
+        }
+
+    def action_mark_ready(self):
+        return self._runtime_mark_action(_("Adapter marked ready"), {"state": "ready", "health_state": "healthy"})
+
+    def action_mark_disabled(self):
+        return self._runtime_mark_action(_("Adapter disabled"), {"state": "disabled", "health_state": "offline"})
+
+    def action_refresh_diagnostics(self):
+        service = GatewayRuntimeService(self.env)
+        self.write({"last_reload_at": fields.Datetime.now()})
+        return service.refresh_adapter_diagnostics(adapter_code=self.code if len(self) == 1 else None)
+
+    def _issue_defaults(self):
+        self.ensure_one()
+        if self.health_state in {"offline", "degraded"}:
+            severity = "high"
+            issue_kind = "repair"
+            recommended_action = _("Reload the adapter, then inspect connectivity and recent runtime events.")
+            recommended_action_key = "reload_runtime"
+            is_fixable = True
+            state = "open"
+        elif self.health_state in {"warning"}:
+            severity = "medium"
+            issue_kind = "diagnostic"
+            recommended_action = _("Refresh diagnostics and review the latest heartbeat or event trail.")
+            recommended_action_key = "refresh_runtime"
+            is_fixable = True
+            state = "new"
+        else:
+            severity = "low"
+            issue_kind = "diagnostic"
+            recommended_action = _("Review the runtime summary and clear the issue when verified.")
+            recommended_action_key = "review_runtime"
+            is_fixable = False
+            state = "new"
+        return {
+            "name": f"{self.code} issue",
+            "adapter_id": self.id,
+            "severity": severity,
+            "state": state,
+            "issue_kind": issue_kind,
+            "issue_key": f"runtime:{self.code}:{issue_kind}",
+            "is_fixable": is_fixable,
+            "recommended_action_key": recommended_action_key,
+            "message": self.health_detail or self.last_error or _("Runtime issue detected"),
+            "detail": self.diagnostic_summary or self.diagnostic_state or self.capability_summary or "",
+            "recommended_action": recommended_action,
+            "payload_json": json.dumps(
+                {
+                    "adapter": {
+                        "code": self.code,
+                        "name": self.name,
+                        "state": self.state,
+                        "adapter_type": self.adapter_type,
+                        "health_state": self.health_state,
+                        "health_score": self.health_score,
+                    },
+                    "capability": self._build_capability_payload(),
+                },
+                ensure_ascii=False,
+                default=str,
+            ),
+            "last_seen_at": fields.Datetime.now(),
+        }
+
+    def action_open_issues(self):
+        self.ensure_one()
+        return {
+            "type": "ir.actions.act_window",
+            "name": _("Runtime Issues"),
+            "res_model": "gateway.runtime.issue",
+            "view_mode": "list,form",
+            "domain": [("adapter_id", "=", self.id)],
+            "context": {"default_adapter_id": self.id, "search_default_adapter_id": self.id},
+        }
+
+    def action_open_repairs(self):
+        self.ensure_one()
+        return {
+            "type": "ir.actions.act_window",
+            "name": _("Runtime Repairs"),
+            "res_model": "gateway.runtime.issue",
+            "view_mode": "list,form",
+            "domain": [
+                ("adapter_id", "=", self.id),
+                ("is_fixable", "=", True),
+                ("state", "in", ["new", "open", "in_progress"]),
+            ],
+            "context": {
+                "default_adapter_id": self.id,
+                "search_default_adapter_id": self.id,
+                "search_default_fixable": 1,
+                "search_default_open": 1,
+            },
+        }
+
+    def action_open_console(self):
+        self.ensure_one()
+        action = self.env.ref("mrp_gateway_runtime.action_gateway_runtime_console").read()[0]
+        action["domain"] = [("id", "=", self.id)]
+        action["name"] = _("Runtime Console")
+        return action
+
+    def action_open_protocol_probe(self):
+        self.ensure_one()
+        action = self.env.ref("mrp_gateway_runtime.action_gateway_protocol_probe").read()[0]
+        action["domain"] = [("id", "=", self.id)]
+        action["name"] = _("Protocol Probe")
+        return action
+
+    def action_open_attention_route(self):
+        self.ensure_one()
+        if self.open_issue_count:
+            if self.repair_issue_count:
+                return self.action_open_repairs()
+            return self.action_open_issues()
+        if self.open_probe_session_count or self.probe_focus_state == "attention":
+            return self.action_open_probe_sessions()
+        if self.health_state in {"warning", "degraded", "offline"} or self.state in {"degraded", "offline"}:
+            return self.action_open_console()
+        return self.action_open_console()
+
+    def _protocol_probe_open_action(self, model_name, title):
+        self.ensure_one()
+        if model_name not in self.env.registry.models:
+            return {
+                "type": "ir.actions.client",
+                "tag": "display_notification",
+                "params": {
+                    "title": title,
+                    "message": _("Linked protocol module is not installed"),
+                    "type": "warning",
+                    "sticky": False,
+                },
+            }
+        return {
+            "type": "ir.actions.act_window",
+            "name": title,
+            "res_model": model_name,
+            "view_mode": "list,form",
+            "domain": [("runtime_adapter_id", "=", self.id)],
+            "context": {"default_runtime_adapter_id": self.id, "search_default_runtime_adapter_id": self.id},
+        }
+
+    def action_open_mqtt_probe(self):
+        return self._protocol_probe_open_action("gateway.mqtt.adapter", _("MQTT Probe"))
+
+    def action_open_modbus_probe(self):
+        return self._protocol_probe_open_action("gateway.modbus.adapter", _("Modbus Probe"))
+
+    def action_open_ads_probe(self):
+        return self._protocol_probe_open_action("gateway.ads.adapter", _("ADS Probe"))
+
+    def action_open_opcua_probe(self):
+        return self._protocol_probe_open_action("gateway.opcua.adapter", _("OPC UA Probe"))
+
+    def action_open_s7_probe(self):
+        return self._protocol_probe_open_action("gateway.s7.adapter", _("S7 Probe"))
+
+    def action_open_probe_sessions(self):
+        self.ensure_one()
+        return {
+            "type": "ir.actions.act_window",
+            "name": _("Probe Sessions"),
+            "res_model": "gateway.runtime.probe.session",
+            "view_mode": "list,form",
+            "domain": [("adapter_id", "=", self.id)],
+            "context": {"default_adapter_id": self.id, "search_default_adapter_id": self.id},
+        }
+
+    def action_start_probe_session(self):
+        self.ensure_one()
+        result = GatewayRuntimeService(self.env).create_probe_session({"adapter_code": self.code, "probe_kind": "summary"})
+        if not result.get("ok"):
+            return {
+                "type": "ir.actions.client",
+                "tag": "display_notification",
+                "params": {
+                    "title": _("Probe Session"),
+                    "message": ", ".join(result.get("errors", ["Probe session could not be created"])),
+                    "type": "warning",
+                    "sticky": False,
+                },
+            }
+        session_data = result.get("data") or {}
+        session_id = session_data.get("id")
+        if session_id:
+            return {
+                "type": "ir.actions.act_window",
+                "name": _("Probe Session"),
+                "res_model": "gateway.runtime.probe.session",
+                "view_mode": "form",
+                "res_id": session_id,
+                "target": "current",
+            }
+        return self.action_open_probe_sessions()
+
+    def action_create_issue(self):
+        self.ensure_one()
+        values = self._issue_defaults()
+        issue = self.env["gateway.runtime.issue"].sudo().search([("issue_key", "=", values["issue_key"])], limit=1)
+        if issue:
+            issue.write(values)
+        else:
+            issue = self.env["gateway.runtime.issue"].sudo().create(values)
+        return {
+            "type": "ir.actions.act_window",
+            "name": _("Runtime Issue"),
+            "res_model": "gateway.runtime.issue",
+            "view_mode": "form",
+            "res_id": issue.id,
+            "target": "current",
+        }
+
+    def action_load_adapter(self):
+        self.ensure_one()
+        service = GatewayRuntimeService(self.env)
+        return service.load_runtime({"adapter_code": self.code})
+
+    def action_unload_adapter(self):
+        self.ensure_one()
+        service = GatewayRuntimeService(self.env)
+        return service.unload_runtime({"adapter_code": self.code})
+
+    def action_trigger_reconnect(self):
+        service = GatewayRuntimeService(self.env)
+        self.write(
+            {
+                "last_repair_at": fields.Datetime.now(),
+                "reconnect_attempts": 0 if self.reconnect_policy == "manual" else self.reconnect_attempts + 1,
+            }
+        )
+        return service.request_adapter_reconnect(adapter_code=self.code if len(self) == 1 else None)
+
+    def action_mark_offline(self):
+        return self._runtime_mark_action(
+            _("Adapter marked offline"),
+            {"state": "offline", "health_state": "offline", "last_failure_at": fields.Datetime.now()},
+        )
+
+    def action_reload_adapter(self):
+        self.write({"last_reload_at": fields.Datetime.now()})
+        return self.action_refresh_diagnostics()
+
+    def action_repair_adapter(self):
+        self.write({"last_repair_at": fields.Datetime.now()})
+        return self.action_trigger_reconnect()
+
+    def action_simulate_poll(self):
+        service = GatewayRuntimeService(self.env)
+        return service.simulate_coordinator_poll(adapter_code=self.code if len(self) == 1 else None)
+
+    def cron_process_queued_commands(self):
+        service = GatewayRuntimeService(self.env)
+        return service.process_queued_commands()
+
+    def cron_refresh_diagnostics(self):
+        service = GatewayRuntimeService(self.env)
+        return service.refresh_adapter_diagnostics()
+
+    def cron_repair_stale_adapters(self):
+        service = GatewayRuntimeService(self.env)
+        return service.repair_stale_adapters()
+
+    def action_register_adapter(self):
+        service = GatewayRuntimeService(self.env)
+        return service.register_adapter_definition(
+            {
+                "code": self.code,
+                "name": self.name,
+                "adapter_type": self.adapter_type,
+                "entry_code": self.entry_id.code if self.entry_id else None,
+                "workstation_code": self.workstation_id.code if self.workstation_id else None,
+                "device_code": self.device_code,
+                "connection_target": self.connection_target,
+                "config_json": self.config_json,
+                "config_text": self.config_text,
+            }
+        )

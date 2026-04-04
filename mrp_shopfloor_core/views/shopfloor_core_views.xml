@@ -1,0 +1,470 @@
+<odoo>
+    <record id="view_shopfloor_app_tree" model="ir.ui.view">
+        <field name="name">shopfloor.app.tree</field>
+        <field name="model">shopfloor.app</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="sequence"/>
+                <field name="name"/>
+                <field name="code"/>
+                <field name="active"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_shopfloor_app_form" model="ir.ui.view">
+        <field name="name">shopfloor.app.form</field>
+        <field name="model">shopfloor.app</field>
+        <field name="arch" type="xml">
+            <form string="Shopfloor App">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="code"/>
+                            <field name="sequence"/>
+                            <field name="active"/>
+                        </group>
+                        <group>
+                            <field name="description"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Profiles">
+                            <field name="profile_ids">
+                                <list editable="bottom">
+                                    <field name="sequence"/>
+                                    <field name="name"/>
+                                    <field name="code"/>
+                                    <field name="active"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Workstations">
+                            <field name="workstation_ids">
+                                <list>
+                                    <field name="sequence"/>
+                                    <field name="name"/>
+                                    <field name="code"/>
+                                    <field name="profile_id"/>
+                                    <field name="current_session_id"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Sessions">
+                            <field name="session_ids">
+                                <list>
+                                    <field name="name"/>
+                                    <field name="code"/>
+                                    <field name="state"/>
+                                    <field name="workstation_id"/>
+                                    <field name="user_id"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_shopfloor_app_search" model="ir.ui.view">
+        <field name="name">shopfloor.app.search</field>
+        <field name="model">shopfloor.app</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="code"/>
+                <filter string="Active" name="active" domain="[('active', '=', True)]"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_shopfloor_app" model="ir.actions.act_window">
+        <field name="name">Shopfloor Apps</field>
+        <field name="res_model">shopfloor.app</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_shopfloor_app_search"/>
+    </record>
+
+    <record id="view_shopfloor_profile_tree" model="ir.ui.view">
+        <field name="name">shopfloor.profile.tree</field>
+        <field name="model">shopfloor.profile</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="sequence"/>
+                <field name="name"/>
+                <field name="code"/>
+                <field name="app_id"/>
+                <field name="active"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_shopfloor_profile_form" model="ir.ui.view">
+        <field name="name">shopfloor.profile.form</field>
+        <field name="model">shopfloor.profile</field>
+        <field name="arch" type="xml">
+            <form string="Shopfloor Profile">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="app_id"/>
+                            <field name="name"/>
+                            <field name="code"/>
+                            <field name="sequence"/>
+                            <field name="active"/>
+                        </group>
+                        <group>
+                            <field name="description"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Menus">
+                            <field name="menu_ids">
+                                <list editable="bottom">
+                                    <field name="sequence"/>
+                                    <field name="name"/>
+                                    <field name="code"/>
+                                    <field name="action_type"/>
+                                    <field name="active"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Scenarios">
+                            <field name="scenario_ids">
+                                <list editable="bottom">
+                                    <field name="sequence"/>
+                                    <field name="name"/>
+                                    <field name="code"/>
+                                    <field name="active"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Workstations">
+                            <field name="workstation_ids">
+                                <list>
+                                    <field name="name"/>
+                                    <field name="code"/>
+                                    <field name="active"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_shopfloor_profile_search" model="ir.ui.view">
+        <field name="name">shopfloor.profile.search</field>
+        <field name="model">shopfloor.profile</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="code"/>
+                <field name="app_id"/>
+                <filter string="Active" name="active" domain="[('active', '=', True)]"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_shopfloor_profile" model="ir.actions.act_window">
+        <field name="name">Shopfloor Profiles</field>
+        <field name="res_model">shopfloor.profile</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_shopfloor_profile_search"/>
+    </record>
+
+    <record id="view_shopfloor_menu_tree" model="ir.ui.view">
+        <field name="name">shopfloor.menu.tree</field>
+        <field name="model">shopfloor.menu</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="sequence"/>
+                <field name="name"/>
+                <field name="code"/>
+                <field name="app_id"/>
+                <field name="profile_id"/>
+                <field name="action_type"/>
+                <field name="active"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_shopfloor_menu_form" model="ir.ui.view">
+        <field name="name">shopfloor.menu.form</field>
+        <field name="model">shopfloor.menu</field>
+        <field name="arch" type="xml">
+            <form string="Shopfloor Menu">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="app_id"/>
+                            <field name="profile_id"/>
+                            <field name="scenario_id"/>
+                            <field name="name"/>
+                            <field name="code"/>
+                        </group>
+                        <group>
+                            <field name="sequence"/>
+                            <field name="action_type"/>
+                            <field name="technical_action"/>
+                            <field name="active"/>
+                        </group>
+                    </group>
+                    <field name="description"/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_shopfloor_menu_search" model="ir.ui.view">
+        <field name="name">shopfloor.menu.search</field>
+        <field name="model">shopfloor.menu</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="code"/>
+                <field name="app_id"/>
+                <field name="profile_id"/>
+                <filter string="Active" name="active" domain="[('active', '=', True)]"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_shopfloor_menu" model="ir.actions.act_window">
+        <field name="name">Shopfloor Menus</field>
+        <field name="res_model">shopfloor.menu</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_shopfloor_menu_search"/>
+    </record>
+
+    <record id="view_shopfloor_scenario_tree" model="ir.ui.view">
+        <field name="name">shopfloor.scenario.tree</field>
+        <field name="model">shopfloor.scenario</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="sequence"/>
+                <field name="name"/>
+                <field name="code"/>
+                <field name="app_id"/>
+                <field name="profile_id"/>
+                <field name="active"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_shopfloor_scenario_form" model="ir.ui.view">
+        <field name="name">shopfloor.scenario.form</field>
+        <field name="model">shopfloor.scenario</field>
+        <field name="arch" type="xml">
+            <form string="Shopfloor Scenario">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="app_id"/>
+                            <field name="profile_id"/>
+                            <field name="menu_id"/>
+                            <field name="name"/>
+                            <field name="code"/>
+                        </group>
+                        <group>
+                            <field name="sequence"/>
+                            <field name="technical_name"/>
+                            <field name="active"/>
+                        </group>
+                    </group>
+                    <field name="description"/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_shopfloor_scenario_search" model="ir.ui.view">
+        <field name="name">shopfloor.scenario.search</field>
+        <field name="model">shopfloor.scenario</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="code"/>
+                <field name="app_id"/>
+                <filter string="Active" name="active" domain="[('active', '=', True)]"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_shopfloor_scenario" model="ir.actions.act_window">
+        <field name="name">Shopfloor Scenarios</field>
+        <field name="res_model">shopfloor.scenario</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_shopfloor_scenario_search"/>
+    </record>
+
+    <record id="view_shopfloor_workstation_tree" model="ir.ui.view">
+        <field name="name">shopfloor.workstation.tree</field>
+        <field name="model">shopfloor.workstation</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="sequence"/>
+                <field name="name"/>
+                <field name="code"/>
+                <field name="app_id"/>
+                <field name="profile_id"/>
+                <field name="current_session_id"/>
+                <field name="active"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_shopfloor_workstation_form" model="ir.ui.view">
+        <field name="name">shopfloor.workstation.form</field>
+        <field name="model">shopfloor.workstation</field>
+        <field name="arch" type="xml">
+            <form string="Shopfloor Workstation">
+                <header>
+                    <button name="action_generate_demo_workorder" type="object" string="Generate Demo Workorder" class="btn-primary"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="app_id"/>
+                            <field name="profile_id"/>
+                            <field name="name"/>
+                            <field name="code"/>
+                            <field name="sequence"/>
+                            <field name="active"/>
+                        </group>
+                        <group>
+                            <field name="terminal_uid"/>
+                            <field name="default_printer_ref"/>
+                            <field name="gateway_ref"/>
+                            <field name="location_ref"/>
+                            <field name="current_session_id" readonly="1"/>
+                        </group>
+                    </group>
+                    <field name="note"/>
+                    <field name="session_ids">
+                        <list>
+                            <field name="name"/>
+                            <field name="code"/>
+                            <field name="state"/>
+                            <field name="user_id"/>
+                            <field name="start_date"/>
+                            <field name="end_date"/>
+                        </list>
+                    </field>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_shopfloor_workstation_search" model="ir.ui.view">
+        <field name="name">shopfloor.workstation.search</field>
+        <field name="model">shopfloor.workstation</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="code"/>
+                <field name="app_id"/>
+                <field name="profile_id"/>
+                <filter string="Active" name="active" domain="[('active', '=', True)]"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_shopfloor_workstation" model="ir.actions.act_window">
+        <field name="name">Shopfloor Workstations</field>
+        <field name="res_model">shopfloor.workstation</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_shopfloor_workstation_search"/>
+    </record>
+
+    <record id="view_shopfloor_session_tree" model="ir.ui.view">
+        <field name="name">shopfloor.session.tree</field>
+        <field name="model">shopfloor.session</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="sequence"/>
+                <field name="name"/>
+                <field name="code"/>
+                <field name="app_id"/>
+                <field name="workstation_id"/>
+                <field name="user_id"/>
+                <field name="state"/>
+                <field name="active"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_shopfloor_session_form" model="ir.ui.view">
+        <field name="name">shopfloor.session.form</field>
+        <field name="model">shopfloor.session</field>
+        <field name="arch" type="xml">
+            <form string="Shopfloor Session">
+                <header>
+                    <button name="action_start" type="object" string="Start" class="btn-primary"/>
+                    <button name="action_close" type="object" string="Close" class="btn-secondary"/>
+                    <button name="action_cancel" type="object" string="Cancel" class="btn-secondary"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,active,closed,cancelled"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="app_id"/>
+                            <field name="profile_id"/>
+                            <field name="workstation_id"/>
+                            <field name="user_id"/>
+                        </group>
+                        <group>
+                            <field name="name"/>
+                            <field name="code"/>
+                            <field name="sequence"/>
+                            <field name="active"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="start_date"/>
+                        <field name="end_date"/>
+                        <field name="last_action_at"/>
+                    </group>
+                    <field name="note"/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_shopfloor_session_search" model="ir.ui.view">
+        <field name="name">shopfloor.session.search</field>
+        <field name="model">shopfloor.session</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="code"/>
+                <field name="app_id"/>
+                <field name="workstation_id"/>
+                <field name="user_id"/>
+                <filter string="Active" name="active" domain="[('state', '=', 'active')]"/>
+                <filter string="Closed" name="closed" domain="[('state', '=', 'closed')]"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_shopfloor_session" model="ir.actions.act_window">
+        <field name="name">Shopfloor Sessions</field>
+        <field name="res_model">shopfloor.session</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_shopfloor_session_search"/>
+    </record>
+
+    <menuitem id="menu_shopfloor_root" name="Shopfloor" parent="mrp.menu_mrp_root" sequence="95" groups="mrp.group_mrp_user"/>
+    <menuitem id="menu_shopfloor_configuration" name="Configuration" parent="menu_shopfloor_root" sequence="10" groups="mrp.group_mrp_manager"/>
+    <menuitem id="menu_shopfloor_operations" name="Operations" parent="menu_shopfloor_root" sequence="20" groups="mrp.group_mrp_user"/>
+
+    <menuitem id="menu_shopfloor_app" name="Apps" parent="menu_shopfloor_configuration" action="action_shopfloor_app" sequence="10" groups="mrp.group_mrp_manager"/>
+    <menuitem id="menu_shopfloor_profile" name="Profiles" parent="menu_shopfloor_configuration" action="action_shopfloor_profile" sequence="20" groups="mrp.group_mrp_manager"/>
+    <menuitem id="menu_shopfloor_menu" name="Menus" parent="menu_shopfloor_configuration" action="action_shopfloor_menu" sequence="30" groups="mrp.group_mrp_manager"/>
+    <menuitem id="menu_shopfloor_scenario" name="Scenarios" parent="menu_shopfloor_configuration" action="action_shopfloor_scenario" sequence="40" groups="mrp.group_mrp_manager"/>
+    <menuitem id="menu_shopfloor_workstation" name="Workstations" parent="menu_shopfloor_configuration" action="action_shopfloor_workstation" sequence="50" groups="mrp.group_mrp_manager"/>
+    <menuitem id="menu_shopfloor_session" name="Sessions" parent="menu_shopfloor_operations" action="action_shopfloor_session" sequence="10" groups="mrp.group_mrp_user"/>
+</odoo>

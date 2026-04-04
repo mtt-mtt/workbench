@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates xml:space="preserve">
+    <t t-name="mrp_shopfloor_frontend.ShopfloorActionBar" owl="1">
+        <section class="o_mrp_shopfloor_action_bar o_mrp_shopfloor_detail_panel">
+            <div class="o_mrp_shopfloor_action_bar_head">
+                <div class="o_mrp_shopfloor_status_summary_copy">
+                    <t t-if="props.title">
+                        <div class="o_mrp_shopfloor_card_label"><t t-esc="props.title"/></div>
+                    </t>
+                    <t t-if="props.subtitle">
+                        <div class="o_mrp_shopfloor_status_summary_subtitle"><t t-esc="props.subtitle"/></div>
+                    </t>
+                </div>
+                <t t-if="summaryItems &amp;&amp; summaryItems.length">
+                    <ShopfloorStatusSummary items="summaryItems" compact="true" toolbar="false"/>
+                </t>
+            </div>
+            <div class="o_mrp_shopfloor_action_bar_actions">
+                <t t-foreach="primaryActionItems" t-as="action" t-key="action.key">
+                    <button type="button"
+                            class="btn btn-sm"
+                            t-att-class="'btn-' + action.tone + (action.emphasis ? ' is-emphasis' : '')"
+                            t-att-disabled="action.disabled ? true : undefined"
+                            t-att-data-action-key="action.key"
+                            t-att-data-action-tone="action.tone"
+                            t-att-data-action-label="action.label"
+                            t-on-click="triggerAction">
+                        <t t-esc="action.label"/>
+                        <small t-if="action.detail"><t t-esc="action.detail"/></small>
+                    </button>
+                </t>
+            </div>
+            <t t-if="hasSecondaryActions">
+                <div class="o_mrp_shopfloor_action_bar_secondary">
+                    <span class="o_mrp_shopfloor_action_bar_secondary_label">Secondary actions</span>
+                    <div class="o_mrp_shopfloor_action_bar_secondary_items">
+                        <t t-foreach="secondaryActionItems" t-as="action" t-key="action.key">
+                            <button type="button"
+                                    class="btn btn-sm btn-outline-secondary"
+                                    t-att-class="action.active ? 'btn-secondary is-active' : 'btn-outline-secondary'"
+                                    t-att-disabled="action.disabled ? true : undefined"
+                                    t-att-data-action-key="action.key"
+                                    t-att-data-action-tone="action.tone"
+                                    t-att-data-action-label="action.label"
+                                    t-on-click="triggerAction">
+                                <t t-esc="action.label"/>
+                            </button>
+                        </t>
+                    </div>
+                </div>
+            </t>
+        </section>
+    </t>
+</templates>

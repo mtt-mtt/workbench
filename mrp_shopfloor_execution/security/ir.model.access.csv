@@ -1,0 +1,3 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_shopfloor_execution_system,access.shopfloor.execution.system,model_shopfloor_execution,base.group_system,1,1,1,1
+access_shopfloor_exception_system,access.shopfloor.exception.system,model_shopfloor_exception,base.group_system,1,1,1,1

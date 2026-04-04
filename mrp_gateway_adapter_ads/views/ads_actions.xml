@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_gateway_ads_adapter" model="ir.actions.act_window">
+        <field name="name">ADS Adapters</field>
+        <field name="res_model">gateway.ads.adapter</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <record id="action_gateway_ads_symbol" model="ir.actions.act_window">
+        <field name="name">ADS Symbols</field>
+        <field name="res_model">gateway.ads.symbol</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <record id="action_gateway_ads_subscription" model="ir.actions.act_window">
+        <field name="name">ADS Subscriptions</field>
+        <field name="res_model">gateway.ads.subscription</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <record id="action_gateway_ads_notification" model="ir.actions.act_window">
+        <field name="name">ADS Notifications</field>
+        <field name="res_model">gateway.ads.notification</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <record id="action_gateway_ads_diagnostic" model="ir.actions.act_window">
+        <field name="name">ADS Diagnostics</field>
+        <field name="res_model">gateway.ads.diagnostic</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <record id="action_gateway_ads_console" model="ir.actions.act_window">
+        <field name="name">ADS Console</field>
+        <field name="res_model">gateway.ads.adapter</field>
+        <field name="view_mode">list,form</field>
+    </record>
+</odoo>

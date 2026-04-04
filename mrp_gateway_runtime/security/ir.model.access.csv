@@ -1,0 +1,6 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_gateway_runtime_adapter_system,gateway.runtime.adapter system,model_gateway_runtime_adapter,base.group_system,1,1,1,1
+access_gateway_runtime_heartbeat_system,gateway.runtime.heartbeat system,model_gateway_runtime_heartbeat,base.group_system,1,1,1,1
+access_gateway_runtime_event_system,gateway.runtime.event system,model_gateway_runtime_event,base.group_system,1,1,1,1
+access_gateway_runtime_issue_system,gateway.runtime.issue system,model_gateway_runtime_issue,base.group_system,1,1,1,1
+access_gateway_runtime_probe_session_system,gateway.runtime.probe.session system,model_gateway_runtime_probe_session,base.group_system,1,1,1,1

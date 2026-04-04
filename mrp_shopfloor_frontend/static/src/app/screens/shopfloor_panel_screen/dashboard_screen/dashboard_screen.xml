@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates xml:space="preserve">
+    <t t-name="mrp_shopfloor_frontend.ShopfloorDashboardScreen" owl="1">
+        <ShopfloorDashboardActionBar t-props="actionBarProps"/>
+        <ShopfloorDashboardOverviewTiles t-props="overviewTilesProps"/>
+        <ShopfloorDashboardLatestExecution t-props="latestExecutionProps"/>
+        <ShopfloorDashboardStatusPanel t-props="statusPanelProps"/>
+    </t>
+</templates>

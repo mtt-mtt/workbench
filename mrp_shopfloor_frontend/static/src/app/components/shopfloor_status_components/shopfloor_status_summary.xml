@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates xml:space="preserve">
+    <t t-name="mrp_shopfloor_frontend.ShopfloorStatusSummary" owl="1">
+        <div t-att-class="summaryClass">
+            <t t-if="props.title or props.subtitle">
+                <div class="o_mrp_shopfloor_status_summary_head">
+                    <div class="o_mrp_shopfloor_status_summary_copy">
+                        <t t-if="props.title">
+                            <div class="o_mrp_shopfloor_card_label"><t t-esc="props.title"/></div>
+                        </t>
+                        <t t-if="props.subtitle">
+                            <div class="o_mrp_shopfloor_status_summary_subtitle"><t t-esc="props.subtitle"/></div>
+                        </t>
+                    </div>
+                </div>
+            </t>
+            <div class="o_mrp_shopfloor_status_summary_items">
+                <t t-foreach="summaryItems" t-as="item" t-key="item.key || item.label">
+                    <div t-att-class="'o_mrp_shopfloor_status_summary_item' + (item.emphasis ? ' is-emphasis' : '')">
+                        <ShopfloorStatusBadge
+                            label="String(item.label)"
+                            detail="item.value == null ? undefined : String(item.value)"
+                            tone="item.tone"
+                        />
+                    </div>
+                </t>
+            </div>
+        </div>
+    </t>
+</templates>

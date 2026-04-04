@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <record id="seq_gateway_s7_adapter" model="ir.sequence">
+        <field name="name">Gateway S7 Adapter</field>
+        <field name="code">gateway.s7.adapter</field>
+        <field name="prefix">S7-ADP-</field>
+        <field name="padding">4</field>
+    </record>
+    <record id="seq_gateway_s7_tag" model="ir.sequence">
+        <field name="name">Gateway S7 Tag</field>
+        <field name="code">gateway.s7.tag</field>
+        <field name="prefix">S7-TAG-</field>
+        <field name="padding">4</field>
+    </record>
+    <record id="seq_gateway_s7_point" model="ir.sequence">
+        <field name="name">Gateway S7 Point</field>
+        <field name="code">gateway.s7.point</field>
+        <field name="prefix">S7-PT-</field>
+        <field name="padding">4</field>
+    </record>
+    <record id="seq_gateway_s7_snapshot" model="ir.sequence">
+        <field name="name">Gateway S7 Snapshot</field>
+        <field name="code">gateway.s7.snapshot</field>
+        <field name="prefix">S7-SNAP-</field>
+        <field name="padding">4</field>
+    </record>
+    <record id="seq_gateway_s7_write_ack" model="ir.sequence">
+        <field name="name">Gateway S7 Write Ack</field>
+        <field name="code">gateway.s7.write.ack</field>
+        <field name="prefix">S7-ACK-</field>
+        <field name="padding">4</field>
+    </record>
+    <record id="seq_gateway_s7_diagnostic" model="ir.sequence">
+        <field name="name">Gateway S7 Diagnostic</field>
+        <field name="code">gateway.s7.diagnostic</field>
+        <field name="prefix">S7-DIAG-</field>
+        <field name="padding">4</field>
+    </record>
+</odoo>

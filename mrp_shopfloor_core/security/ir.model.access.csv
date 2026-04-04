@@ -1,0 +1,7 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_shopfloor_app_system,access.shopfloor.app.system,model_shopfloor_app,base.group_system,1,1,1,1
+access_shopfloor_profile_system,access.shopfloor.profile.system,model_shopfloor_profile,base.group_system,1,1,1,1
+access_shopfloor_menu_system,access.shopfloor.menu.system,model_shopfloor_menu,base.group_system,1,1,1,1
+access_shopfloor_scenario_system,access.shopfloor.scenario.system,model_shopfloor_scenario,base.group_system,1,1,1,1
+access_shopfloor_workstation_system,access.shopfloor.workstation.system,model_shopfloor_workstation,base.group_system,1,1,1,1
+access_shopfloor_session_system,access.shopfloor.session.system,model_shopfloor_session,base.group_system,1,1,1,1

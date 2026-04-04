@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_gateway_http_root"
+              name="HTTP"
+              parent="mrp_gateway_core.menu_gateway_configuration"
+              sequence="40"
+              groups="mrp.group_mrp_manager"/>
+
+    <menuitem id="menu_gateway_http_bridges"
+              name="Bridges"
+              parent="menu_gateway_http_root"
+              action="action_gateway_http_bridge"
+              sequence="10"
+              groups="mrp.group_mrp_manager"/>
+
+    <menuitem id="menu_gateway_http_endpoints"
+              name="Endpoints"
+              parent="menu_gateway_http_root"
+              action="action_gateway_http_endpoint"
+              sequence="20"
+              groups="mrp.group_mrp_manager"/>
+</odoo>

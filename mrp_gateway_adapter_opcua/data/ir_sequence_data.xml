@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="seq_gateway_opcua_adapter" model="ir.sequence">
+        <field name="name">OPC UA Adapter</field>
+        <field name="code">gateway.opcua.adapter</field>
+        <field name="prefix">OPCUA-</field>
+        <field name="padding">4</field>
+    </record>
+    <record id="seq_gateway_opcua_node" model="ir.sequence">
+        <field name="name">OPC UA Node</field>
+        <field name="code">gateway.opcua.node</field>
+        <field name="prefix">OPCUA-NODE-</field>
+        <field name="padding">4</field>
+    </record>
+    <record id="seq_gateway_opcua_diagnostic" model="ir.sequence">
+        <field name="name">OPC UA Diagnostic</field>
+        <field name="code">gateway.opcua.diagnostic</field>
+        <field name="prefix">OPCUA-DIAG-</field>
+        <field name="padding">4</field>
+    </record>
+</odoo>

@@ -1,0 +1,6 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_gateway_ads_adapter_system,gateway.ads.adapter system,model_gateway_ads_adapter,base.group_system,1,1,1,1
+access_gateway_ads_symbol_system,gateway.ads.symbol system,model_gateway_ads_symbol,base.group_system,1,1,1,1
+access_gateway_ads_subscription_system,gateway.ads.subscription system,model_gateway_ads_subscription,base.group_system,1,1,1,1
+access_gateway_ads_notification_system,gateway.ads.notification system,model_gateway_ads_notification,base.group_system,1,1,1,1
+access_gateway_ads_diagnostic_system,gateway.ads.diagnostic system,model_gateway_ads_diagnostic,base.group_system,1,1,1,1

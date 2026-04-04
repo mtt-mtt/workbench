@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="seq_gateway_runtime_adapter" model="ir.sequence">
+            <field name="name">Gateway Runtime Adapter</field>
+            <field name="code">gateway.runtime.adapter</field>
+            <field name="prefix">GRA/</field>
+            <field name="padding">5</field>
+        </record>
+
+        <record id="seq_gateway_runtime_heartbeat" model="ir.sequence">
+            <field name="name">Gateway Runtime Heartbeat</field>
+            <field name="code">gateway.runtime.heartbeat</field>
+            <field name="prefix">GRH/</field>
+            <field name="padding">5</field>
+        </record>
+
+        <record id="seq_gateway_runtime_event" model="ir.sequence">
+            <field name="name">Gateway Runtime Event</field>
+            <field name="code">gateway.runtime.event</field>
+            <field name="prefix">GRE/</field>
+            <field name="padding">5</field>
+        </record>
+
+        <record id="seq_gateway_runtime_issue" model="ir.sequence">
+            <field name="name">Gateway Runtime Issue</field>
+            <field name="code">gateway.runtime.issue</field>
+            <field name="prefix">GRI/</field>
+            <field name="padding">5</field>
+        </record>
+
+        <record id="seq_gateway_runtime_probe_session" model="ir.sequence">
+            <field name="name">Gateway Runtime Probe Session</field>
+            <field name="code">gateway.runtime.probe.session</field>
+            <field name="prefix">GRP/</field>
+            <field name="padding">5</field>
+        </record>
+    </data>
+</odoo>

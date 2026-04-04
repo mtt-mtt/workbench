@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_gateway_opcua_diagnostic_list" model="ir.ui.view">
+        <field name="name">gateway.opcua.diagnostic.list</field>
+        <field name="model">gateway.opcua.diagnostic</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="observed_at"/>
+                <field name="adapter_id"/>
+                <field name="node_id"/>
+                <field name="kind"/>
+                <field name="state"/>
+                <field name="message"/>
+            </list>
+        </field>
+    </record>
+    <record id="view_gateway_opcua_diagnostic_form" model="ir.ui.view">
+        <field name="name">gateway.opcua.diagnostic.form</field>
+        <field name="model">gateway.opcua.diagnostic</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="adapter_id"/>
+                        <field name="node_id"/>
+                        <field name="kind"/>
+                        <field name="state"/>
+                        <field name="observed_at"/>
+                    </group>
+                    <group>
+                        <field name="message"/>
+                        <field name="detail"/>
+                    </group>
+                    <group string="Payload">
+                        <field name="payload_json"/>
+                        <field name="result_json"/>
+                        <field name="note"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+</odoo>

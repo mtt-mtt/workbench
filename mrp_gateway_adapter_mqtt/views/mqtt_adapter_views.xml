@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_gateway_mqtt_adapter_tree" model="ir.ui.view">
+        <field name="name">gateway.mqtt.adapter.tree</field>
+        <field name="model">gateway.mqtt.adapter</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="sequence"/>
+                <field name="name"/>
+                <field name="code"/>
+                <field name="state"/>
+                <field name="runtime_lifecycle_state"/>
+                <field name="runtime_health_state"/>
+                <field name="runtime_issue_count"/>
+                <field name="runtime_open_issue_count"/>
+                <field name="runtime_repair_issue_count"/>
+                <field name="broker_url"/>
+                <field name="base_topic"/>
+                <field name="runtime_capability_summary"/>
+                <field name="runtime_adapter_id"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_gateway_mqtt_adapter_form" model="ir.ui.view">
+        <field name="name">gateway.mqtt.adapter.form</field>
+        <field name="model">gateway.mqtt.adapter</field>
+        <field name="arch" type="xml">
+            <form string="MQTT Adapter">
+                <header>
+                    <button name="action_sync_runtime_adapter" type="object" string="Sync Runtime" class="btn-primary"/>
+                    <button name="action_open_runtime_console" type="object" string="Console" class="btn-secondary"/>
+                    <button name="action_open_protocol_probe" type="object" string="Probe" class="btn-secondary"/>
+                    <button name="action_open_runtime_adapter" type="object" string="Open Runtime" class="btn-secondary"/>
+                    <button name="action_open_runtime_issues" type="object" string="Runtime Issues" class="btn-secondary"/>
+                    <button name="action_open_repairs" type="object" string="Repairs" class="btn-secondary"/>
+                    <button name="action_open_runtime_diagnostics" type="object" string="Runtime Diagnostics" class="btn-secondary"/>
+                    <button name="action_preview_runtime_registration" type="object" string="Preview Runtime" class="btn-secondary"/>
+                    <button name="action_preview_subscription_plan" type="object" string="Preview Subs" class="btn-secondary"/>
+                    <button name="action_push_test_event" type="object" string="Push Test Event" class="btn-secondary"/>
+                    <button name="action_refresh_runtime" type="object" string="Refresh Runtime" class="btn-secondary"/>
+                    <button name="action_repair_runtime" type="object" string="Repair Runtime" class="btn-secondary"/>
+                    <button name="action_load_runtime" type="object" string="Load Runtime" class="btn-secondary"/>
+                    <button name="action_reload_runtime" type="object" string="Reload Runtime" class="btn-secondary"/>
+                    <button name="action_refresh_topics" type="object" string="Refresh Topics" class="btn-secondary"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,ready,degraded,offline,disabled"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="code"/>
+                            <field name="sequence"/>
+                            <field name="active"/>
+                            <field name="state"/>
+                        </group>
+                        <group>
+                            <field name="entry_id"/>
+                            <field name="app_id"/>
+                            <field name="workstation_id"/>
+                            <field name="runtime_adapter_id" readonly="1"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group>
+                            <field name="broker_url"/>
+                            <field name="client_id"/>
+                            <field name="base_topic"/>
+                            <field name="device_code"/>
+                        </group>
+                        <group>
+                            <field name="qos"/>
+                            <field name="retain_default"/>
+                            <field name="connection_target"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Runtime">
+                            <group>
+                                <group>
+                                    <field name="runtime_adapter_id" readonly="1"/>
+                                    <field name="runtime_lifecycle_state" readonly="1"/>
+                                    <field name="runtime_health_state" readonly="1"/>
+                                    <field name="runtime_issue_count" readonly="1"/>
+                                    <field name="runtime_open_issue_count" readonly="1"/>
+                                    <field name="runtime_repair_issue_count" readonly="1"/>
+                                </group>
+                                <group>
+                                    <field name="runtime_capability_summary" readonly="1"/>
+                                    <field name="runtime_diagnostic_summary" nolabel="1" readonly="1"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Topics">
+                            <field name="topic_ids">
+                                <list editable="bottom">
+                                    <field name="sequence"/>
+                                    <field name="name"/>
+                                    <field name="code"/>
+                                    <field name="topic_name"/>
+                                    <field name="topic_kind"/>
+                                    <field name="event_kind"/>
+                                    <field name="state"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Configuration">
+                            <field name="config_json" nolabel="1"/>
+                            <field name="config_text" nolabel="1"/>
+                        </page>
+                        <page string="Diagnostics">
+                            <field name="diagnostic_state" nolabel="1"/>
+                            <field name="diagnostic_ids" readonly="1">
+                                <list>
+                                    <field name="occurred_at"/>
+                                    <field name="direction"/>
+                                    <field name="event_kind"/>
+                                    <field name="status"/>
+                                    <field name="topic_path"/>
+                                    <field name="message"/>
+                                </list>
+                            </field>
+                            <field name="note" nolabel="1"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_gateway_mqtt_adapter_search" model="ir.ui.view">
+        <field name="name">gateway.mqtt.adapter.search</field>
+        <field name="model">gateway.mqtt.adapter</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="code"/>
+                <field name="broker_url"/>
+                <field name="base_topic"/>
+                <filter string="Active" name="active" domain="[('active', '=', True)]"/>
+                <filter string="Ready" name="ready" domain="[('state', '=', 'ready')]"/>
+            </search>
+        </field>
+    </record>
+</odoo>

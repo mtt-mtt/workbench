@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_gateway_modbus_write_ack_tree" model="ir.ui.view">
+        <field name="name">gateway.modbus.write.ack.tree</field>
+        <field name="model">gateway.modbus.write.ack</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="code"/>
+                <field name="adapter_id"/>
+                <field name="ack_kind"/>
+                <field name="result_state"/>
+                <field name="point_id"/>
+                <field name="command_id"/>
+                <field name="ack_at"/>
+                <field name="response_text"/>
+                <field name="error_message"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_gateway_modbus_write_ack_form" model="ir.ui.view">
+        <field name="name">gateway.modbus.write.ack.form</field>
+        <field name="model">gateway.modbus.write.ack</field>
+        <field name="arch" type="xml">
+            <form string="Gateway Modbus Write Ack">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="code"/>
+                            <field name="adapter_id"/>
+                            <field name="runtime_adapter_id"/>
+                            <field name="ack_kind"/>
+                            <field name="result_state"/>
+                        </group>
+                        <group>
+                            <field name="point_id"/>
+                            <field name="command_id"/>
+                            <field name="register_address"/>
+                            <field name="register_count"/>
+                            <field name="latency_ms"/>
+                            <field name="ack_at"/>
+                            <field name="processed_at"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="write_value_text"/>
+                        <field name="response_text"/>
+                        <field name="error_message"/>
+                    </group>
+                    <notebook>
+                        <page string="Payload">
+                            <field name="payload_json" nolabel="1"/>
+                        </page>
+                        <page string="Normalized">
+                            <field name="normalized_json" nolabel="1"/>
+                        </page>
+                        <page string="Notes">
+                            <field name="note" nolabel="1"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+</odoo>

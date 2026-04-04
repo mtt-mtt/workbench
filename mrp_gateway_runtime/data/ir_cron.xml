@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="ir_cron_gateway_runtime_process_queue" model="ir.cron">
+            <field name="name">Gateway Runtime: Process Queue</field>
+            <field name="model_id" ref="model_gateway_runtime_adapter"/>
+            <field name="state">code</field>
+            <field name="code">model.sudo().cron_process_queued_commands()</field>
+            <field name="interval_number">1</field>
+            <field name="interval_type">minutes</field>
+            <field name="active">True</field>
+            <field name="user_id" ref="base.user_root"/>
+        </record>
+
+        <record id="ir_cron_gateway_runtime_refresh_diagnostics" model="ir.cron">
+            <field name="name">Gateway Runtime: Refresh Diagnostics</field>
+            <field name="model_id" ref="model_gateway_runtime_adapter"/>
+            <field name="state">code</field>
+            <field name="code">model.sudo().cron_refresh_diagnostics()</field>
+            <field name="interval_number">5</field>
+            <field name="interval_type">minutes</field>
+            <field name="active">True</field>
+            <field name="user_id" ref="base.user_root"/>
+        </record>
+
+        <record id="ir_cron_gateway_runtime_repair_stale" model="ir.cron">
+            <field name="name">Gateway Runtime: Repair Stale Adapters</field>
+            <field name="model_id" ref="model_gateway_runtime_adapter"/>
+            <field name="state">code</field>
+            <field name="code">model.sudo().cron_repair_stale_adapters()</field>
+            <field name="interval_number">10</field>
+            <field name="interval_type">minutes</field>
+            <field name="active">True</field>
+            <field name="user_id" ref="base.user_root"/>
+        </record>
+    </data>
+</odoo>

@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_gateway_modbus_snapshot_tree" model="ir.ui.view">
+        <field name="name">gateway.modbus.snapshot.tree</field>
+        <field name="model">gateway.modbus.snapshot</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="code"/>
+                <field name="adapter_id"/>
+                <field name="snapshot_kind"/>
+                <field name="status"/>
+                <field name="state"/>
+                <field name="point_id"/>
+                <field name="command_id"/>
+                <field name="received_at"/>
+                <field name="message"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_gateway_modbus_snapshot_form" model="ir.ui.view">
+        <field name="name">gateway.modbus.snapshot.form</field>
+        <field name="model">gateway.modbus.snapshot</field>
+        <field name="arch" type="xml">
+            <form string="Gateway Modbus Snapshot">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="code"/>
+                            <field name="adapter_id"/>
+                            <field name="runtime_adapter_id"/>
+                            <field name="snapshot_kind"/>
+                            <field name="status"/>
+                            <field name="state"/>
+                        </group>
+                        <group>
+                            <field name="point_id"/>
+                            <field name="command_id"/>
+                            <field name="entry_id"/>
+                            <field name="device_id"/>
+                            <field name="latency_ms"/>
+                            <field name="received_at"/>
+                            <field name="processed_at"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="message"/>
+                    </group>
+                    <notebook>
+                        <page string="Payload">
+                            <field name="payload_json" nolabel="1"/>
+                        </page>
+                        <page string="Normalized">
+                            <field name="normalized_json" nolabel="1"/>
+                        </page>
+                        <page string="Point Values">
+                            <field name="point_values_json" nolabel="1"/>
+                        </page>
+                        <page string="Notes">
+                            <field name="note" nolabel="1"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+</odoo>

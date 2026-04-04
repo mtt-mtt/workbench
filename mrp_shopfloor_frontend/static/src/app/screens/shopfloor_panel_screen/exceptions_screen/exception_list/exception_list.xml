@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates xml:space="preserve">
+    <t t-name="mrp_shopfloor_frontend.ShopfloorExceptionList" owl="1">
+        <div class="o_mrp_shopfloor_detail_meta">
+            <span>Visible <t t-esc="exceptionSummary.total"/></span>
+            <span>Open <t t-esc="exceptionSummary.openCount"/></span>
+            <span>Critical <t t-esc="exceptionSummary.criticalCount"/></span>
+        </div>
+        <t t-if="branchSummaryItems.length">
+            <div class="o_mrp_shopfloor_detail_meta">
+                <t t-foreach="branchSummaryItems" t-as="item" t-key="item.key">
+                    <span class="badge rounded-pill" t-att-class="'text-bg-' + (item.tone || 'secondary')">
+                        <t t-esc="item.label"/> <t t-esc="item.value"/>
+                    </span>
+                </t>
+            </div>
+        </t>
+        <t t-if="props.summary.filterSummaryLabel">
+            <div class="o_mrp_shopfloor_api_detail">
+                <t t-esc="props.summary.filterSummaryLabel"/>
+            </div>
+        </t>
+        <t t-if="hasItems">
+            <div class="o_mrp_shopfloor_list">
+                <t t-foreach="props.exceptions" t-as="item" t-key="item.id">
+                    <ShopfloorExceptionCard item="item" onReportException="props.onReportException"/>
+                </t>
+            </div>
+        </t>
+        <t t-else="">
+            <div class="o_mrp_shopfloor_empty">
+                <div class="fw-semibold"><t t-esc="props.emptyStateLabel || 'No exceptions available.'"/></div>
+                <button t-if="props.hasActiveFilters"
+                        type="button"
+                        class="btn btn-sm btn-outline-light mt-2"
+                        t-on-click="clearFilters">
+                    Reset filters
+                </button>
+            </div>
+        </t>
+    </t>
+</templates>

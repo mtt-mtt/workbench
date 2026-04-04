@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates xml:space="preserve">
+    <t t-name="mrp_shopfloor_frontend.ShopfloorDashboardActionBar" owl="1">
+        <div class="o_mrp_shopfloor_section_head">
+            <div>
+                <div class="o_mrp_shopfloor_card_label">Dashboard</div>
+                <h2>Floor overview</h2>
+            </div>
+            <div class="o_mrp_shopfloor_section_actions">
+                <button type="button" class="btn btn-primary btn-sm" t-on-click="startExecution">Start</button>
+                <button type="button" class="btn btn-outline-warning btn-sm" t-on-click="pauseExecution">Pause</button>
+                <button type="button" class="btn btn-outline-success btn-sm" t-on-click="finishExecution">Finish</button>
+            </div>
+        </div>
+    </t>
+</templates>

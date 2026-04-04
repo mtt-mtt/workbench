@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates xml:space="preserve">
+    <t t-name="mrp_shopfloor_frontend.ShopfloorDeviceActionConfirm" owl="1">
+        <section class="o_mrp_shopfloor_detail_panel o_mrp_shopfloor_detail_panel--compact">
+            <div class="o_mrp_shopfloor_api_head">
+                <div>
+                    <div class="o_mrp_shopfloor_card_label">Command confirmation</div>
+                    <div class="o_mrp_shopfloor_detail_title">Review before backend queueing</div>
+                </div>
+                <t t-if="hasDraft">
+                    <ShopfloorStatusBadge label="props.actionDraft.label" tone="props.actionDraft.tone"/>
+                </t>
+            </div>
+            <t t-if="hasCommandSummary">
+                <ShopfloorFeedbackBar
+                    label="commandFeedback.label"
+                    detail="commandFeedback.detail"
+                    tone="commandFeedback.tone"
+                    onAction="noopFeedbackAction"
+                    compact="true"
+                />
+                <ShopfloorStatusSummary items="commandSummaryItems" compact="true"/>
+                <div class="o_mrp_shopfloor_command_lifecycle mt-3">
+                    <t t-foreach="commandLifecycle" t-as="step" t-key="step.key">
+                        <span class="badge rounded-pill me-1 mb-1"
+                              t-att-class="'text-bg-' + (step.active ? commandStateTone : 'secondary')">
+                            <t t-esc="step.label"/>
+                        </span>
+                    </t>
+                </div>
+                <div class="o_mrp_shopfloor_detail_meta mt-2">
+                    <span>Latest state <t t-esc="commandStateLabel"/></span>
+                    <span><t t-esc="commandStateDetail"/></span>
+                </div>
+            </t>
+            <t t-if="hasDraft">
+                <div class="o_mrp_shopfloor_detail_meta">
+                    <span><t t-esc="props.actionDraft.deviceName"/></span>
+                    <span><t t-esc="props.actionDraft.deviceCode"/></span>
+                    <span><t t-esc="props.actionDraft.command"/></span>
+                    <span><t t-esc="props.actionDraft.deviceState"/></span>
+                </div>
+                <p class="o_mrp_shopfloor_api_detail">
+                    <t t-esc="props.actionDraft.detail"/>
+                </p>
+                <t t-if="visibilityLabel">
+                    <div class="o_mrp_shopfloor_empty"><t t-esc="visibilityLabel"/></div>
+                </t>
+                <div class="o_mrp_shopfloor_section_actions">
+                    <button type="button" class="btn btn-sm btn-primary" t-on-click="confirmAction">
+                        Confirm backend queue
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-light" t-on-click="cancelAction">
+                        Cancel
+                    </button>
+                </div>
+            </t>
+            <t t-else="">
+                <div class="o_mrp_shopfloor_empty">
+                    Pick an action to queue a gateway.command draft and surface its queued, sent, acknowledged, done, or failed feedback here.
+                </div>
+            </t>
+        </section>
+    </t>
+</templates>

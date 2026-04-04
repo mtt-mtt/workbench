@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_gateway_runtime_adapter" model="ir.actions.act_window">
+        <field name="name">Runtime Adapters</field>
+        <field name="res_model">gateway.runtime.adapter</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <record id="action_gateway_runtime_heartbeat" model="ir.actions.act_window">
+        <field name="name">Runtime Heartbeats</field>
+        <field name="res_model">gateway.runtime.heartbeat</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <record id="action_gateway_runtime_event" model="ir.actions.act_window">
+        <field name="name">Runtime Events</field>
+        <field name="res_model">gateway.runtime.event</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <record id="action_gateway_runtime_diagnostic" model="ir.actions.act_window">
+        <field name="name">Runtime Diagnostics</field>
+        <field name="res_model">gateway.runtime.adapter</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="view_gateway_runtime_diagnostic_tree"/>
+        <field name="search_view_id" ref="view_gateway_runtime_console_search"/>
+        <field name="context">{'search_default_needs_attention': 1, 'search_default_group_health_state': 1}</field>
+    </record>
+
+    <record id="action_gateway_runtime_console" model="ir.actions.act_window">
+        <field name="name">Runtime Console</field>
+        <field name="res_model">gateway.runtime.adapter</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="view_gateway_runtime_console_tree"/>
+        <field name="search_view_id" ref="view_gateway_runtime_console_search"/>
+        <field name="context">{'search_default_needs_attention': 1, 'search_default_group_health_state': 1}</field>
+    </record>
+
+    <record id="action_gateway_protocol_probe" model="ir.actions.act_window">
+        <field name="name">Protocol Probe</field>
+        <field name="res_model">gateway.runtime.adapter</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="view_gateway_runtime_adapter_tree"/>
+        <field name="search_view_id" ref="view_gateway_runtime_console_search"/>
+        <field name="domain">[('adapter_type', 'in', ['mqtt', 'modbus', 'opcua', 'ads', 's7'])]</field>
+        <field name="context">{'search_default_probe_targets': 1, 'search_default_group_adapter_type': 1, 'search_default_group_health_state': 1}</field>
+    </record>
+
+    <record id="action_gateway_runtime_probe_session" model="ir.actions.act_window">
+        <field name="name">Probe Sessions</field>
+        <field name="res_model">gateway.runtime.probe.session</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="view_gateway_runtime_probe_session_tree"/>
+        <field name="search_view_id" ref="view_gateway_runtime_probe_session_search"/>
+        <field name="context">{'search_default_attention': 1, 'search_default_group_result_state': 1}</field>
+    </record>
+</odoo>

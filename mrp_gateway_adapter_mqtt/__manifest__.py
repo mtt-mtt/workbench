@@ -1,0 +1,20 @@
+{
+    "name": "MRP Gateway Adapter MQTT",
+    "version": "19.0.0.1.0",
+    "category": "Manufacturing/Configuration",
+    "author": "OpenAI",
+    "summary": "MQTT bridge models and ingestion routes for gateway runtime",
+    "license": "LGPL-3",
+    "depends": ["mrp_gateway_runtime"],
+    "data": [
+        "security/ir.model.access.csv",
+        "data/ir_sequence_data.xml",
+        "views/mqtt_actions.xml",
+        "views/mqtt_menus.xml",
+        "views/mqtt_adapter_views.xml",
+        "views/mqtt_topic_views.xml",
+        "views/mqtt_diagnostic_views.xml",
+    ],
+    "application": False,
+    "installable": True,
+}

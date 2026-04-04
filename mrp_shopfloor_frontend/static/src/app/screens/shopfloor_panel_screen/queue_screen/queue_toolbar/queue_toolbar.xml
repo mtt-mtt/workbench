@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates xml:space="preserve">
+    <t t-name="mrp_shopfloor_frontend.ShopfloorQueueToolbar" owl="1">
+        <section class="o_mrp_shopfloor_detail_panel o_mrp_shopfloor_queue_toolbar">
+            <div class="o_mrp_shopfloor_card_label">Queue controls</div>
+            <div class="o_mrp_shopfloor_queue_toolbar_stack">
+                <div class="o_mrp_shopfloor_queue_toolbar_row">
+                    <div class="o_mrp_shopfloor_queue_toolbar_search">
+                        <input type="search"
+                               class="form-control form-control-sm"
+                               placeholder="Search queue items"
+                               t-att-value="props.searchText || ''"
+                               t-on-input="onSearchInput"/>
+                    </div>
+                    <t t-if="filterSummary.searchText">
+                        <span class="badge rounded-pill text-bg-light">Search <t t-esc="filterSummary.searchText"/></span>
+                    </t>
+                    <span class="badge rounded-pill text-bg-secondary">Visible <t t-esc="filterSummary.visibleTotal"/> / <t t-esc="filterSummary.total"/></span>
+                    <span class="badge rounded-pill text-bg-warning">Attention <t t-esc="filterSummary.attentionCount"/></span>
+                    <span class="badge rounded-pill text-bg-info">Status <t t-esc="filterSummary.statusFilterLabel"/></span>
+                    <span class="badge rounded-pill text-bg-primary">Sort <t t-esc="filterSummary.sortLabel"/></span>
+                </div>
+
+                <div class="o_mrp_shopfloor_queue_toolbar_row o_mrp_shopfloor_queue_toolbar_row--wrap">
+                    <span class="text-uppercase small text-secondary-emphasis">Status</span>
+                    <t t-foreach="statusFilters" t-as="filter" t-key="filter.key">
+                        <button type="button"
+                                class="btn btn-sm"
+                                t-att-class="props.statusFilter === filter.key ? 'btn-primary' : 'btn-outline-secondary'"
+                                t-att-data-status-filter="filter.key"
+                                t-on-click="changeStatusFilter">
+                            <t t-esc="filter.label"/>
+                        </button>
+                    </t>
+                </div>
+
+                <div class="o_mrp_shopfloor_queue_toolbar_row o_mrp_shopfloor_queue_toolbar_row--wrap">
+                    <span class="text-uppercase small text-secondary-emphasis">Sort</span>
+                    <t t-foreach="sortOptions" t-as="sortOption" t-key="sortOption.key">
+                        <button type="button"
+                                class="btn btn-sm"
+                                t-att-class="props.sortKey === sortOption.key ? 'btn-info' : 'btn-outline-info'"
+                                t-att-data-sort-key="sortOption.key"
+                                t-on-click="changeSortKey">
+                            <t t-esc="sortOption.label"/>
+                        </button>
+                    </t>
+                    <button type="button"
+                            class="btn btn-sm btn-outline-light ms-auto"
+                            t-att-disabled="canClearFilters ? null : true"
+                            t-on-click="clearFilters">
+                        Reset filters
+                    </button>
+                </div>
+            </div>
+        </section>
+    </t>
+</templates>

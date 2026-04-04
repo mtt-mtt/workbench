@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates xml:space="preserve">
+    <t t-name="mrp_shopfloor_frontend.ShopfloorDashboardKpiTile" owl="1">
+        <article class="o_mrp_shopfloor_tile">
+            <span><t t-esc="props.label"/></span>
+            <strong><t t-esc="props.value"/></strong>
+            <small><t t-esc="props.hint"/></small>
+        </article>
+    </t>
+</templates>

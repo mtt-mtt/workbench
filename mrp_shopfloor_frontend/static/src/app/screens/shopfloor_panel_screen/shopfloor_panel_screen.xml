@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates xml:space="preserve">
+    <t t-name="mrp_shopfloor_frontend.ShopfloorPanelScreen" owl="1">
+        <ShopfloorWorkspaceShell t-props="workspaceShellProps"/>
+        <section class="o_mrp_shopfloor_card o_mrp_shopfloor_card--workspace o_mrp_shopfloor_panel_stage">
+            <div class="o_mrp_shopfloor_panel_stage_header">
+                <div class="o_mrp_shopfloor_panel_stage_intro">
+                    <div class="o_mrp_shopfloor_card_label">Active screen</div>
+                    <div class="o_mrp_shopfloor_panel_stage_title">
+                        <t t-esc="currentPanelMeta.label"/>
+                    </div>
+                    <p class="o_mrp_shopfloor_panel_stage_description">
+                        <t t-esc="currentPanelMeta.description"/>
+                    </p>
+                </div>
+                <div class="o_mrp_shopfloor_panel_stage_badges">
+                    <span class="badge rounded-pill text-bg-secondary">
+                        Panel <t t-esc="currentPanelMeta.key"/>
+                    </span>
+                    <span class="badge rounded-pill text-bg-info">
+                        <t t-esc="currentPanelMeta.group"/>
+                    </span>
+                </div>
+            </div>
+            <div class="o_mrp_shopfloor_panel_stage_body o_mrp_shopfloor_panel_stage_body--panel">
+                <t t-component="activeScreen" t-props="activeScreenProps"/>
+            </div>
+        </section>
+    </t>
+</templates>

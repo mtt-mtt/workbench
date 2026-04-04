@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_gateway_root"
+              name="Gateway"
+              parent="mrp_shopfloor_core.menu_shopfloor_configuration"
+              sequence="85"
+              groups="mrp.group_mrp_manager"/>
+
+    <menuitem id="menu_gateway_configuration"
+              name="Configuration"
+              parent="menu_gateway_root"
+              sequence="10"
+              groups="mrp.group_mrp_manager"/>
+
+    <menuitem id="menu_gateway_runtime"
+              name="Runtime"
+              parent="menu_gateway_root"
+              sequence="20"
+              groups="mrp.group_mrp_manager"/>
+
+    <menuitem id="menu_gateway_entries"
+              name="Entries"
+              parent="menu_gateway_configuration"
+              action="action_gateway_entry"
+              sequence="10"
+              groups="mrp.group_mrp_manager"/>
+
+    <menuitem id="menu_gateway_devices"
+              name="Devices"
+              parent="menu_gateway_configuration"
+              action="action_gateway_device"
+              sequence="20"
+              groups="mrp.group_mrp_manager"/>
+
+    <menuitem id="menu_gateway_signals"
+              name="Signals"
+              parent="menu_gateway_configuration"
+              action="action_gateway_signal"
+              sequence="30"
+              groups="mrp.group_mrp_manager"/>
+
+    <menuitem id="menu_gateway_commands"
+              name="Commands"
+              parent="menu_gateway_runtime"
+              action="action_gateway_command"
+              sequence="10"
+              groups="mrp.group_mrp_manager"/>
+</odoo>

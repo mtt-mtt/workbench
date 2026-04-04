@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates xml:space="preserve">
+    <t t-name="mrp_shopfloor_frontend.ShopfloorApp" owl="1">
+        <div class="o_mrp_shopfloor_app">
+            <div class="o_mrp_shopfloor_backdrop"/>
+            <div class="o_mrp_shopfloor_shell">
+                <header class="o_mrp_shopfloor_header">
+                    <div class="o_mrp_shopfloor_header_copy">
+                        <div class="o_mrp_shopfloor_kicker">Shopfloor Workbench</div>
+                        <h1>Execution shell for the manufacturing floor</h1>
+                        <p class="o_mrp_shopfloor_subtitle">
+                            A focused workstation UI with queue navigation, execution control, device visibility, and exception reporting.
+                        </p>
+                    </div>
+                    <div class="o_mrp_shopfloor_header_actions">
+                        <button type="button" class="btn btn-outline-light" t-on-click="goBack">Back</button>
+                        <button type="button" class="btn btn-light" t-on-click="refreshDemoMetrics">Refresh state</button>
+                    </div>
+                </header>
+
+                <t t-if="loadError">
+                    <section class="o_mrp_shopfloor_banner o_mrp_shopfloor_banner--error">
+                        <strong>Boot error</strong>
+                        <span><t t-esc="loadError"/></span>
+                    </section>
+                </t>
+                <t t-elif="loading">
+                    <section class="o_mrp_shopfloor_banner">
+                        <strong>Loading</strong>
+                        <span>Fetching boot payload and preparing the workbench.</span>
+                    </section>
+                </t>
+
+                <div class="o_mrp_shopfloor_workspace_frame">
+                    <ShopfloorNavRail
+                        panels="panels"
+                        currentRoute="currentRoute"
+                        currentUserName="currentUserName"
+                        workstation="workstation"
+                        sessionRef="sessionRef"
+                        metrics="metrics"
+                        booted="booted"
+                        onNavigatePanel="navigatePanel"
+                    />
+
+                    <main class="o_mrp_shopfloor_workspace_main">
+                        <ShopfloorPanelScreen
+                            currentPanel="currentPanel"
+                            queue="queue"
+                            devices="devices"
+                            exceptions="exceptions"
+                            commands="commands"
+                            timelineEntries="timelineEntries"
+                            logEntries="logEntries"
+                            execution="execution"
+                            selectedQueueItem="selectedQueueItem"
+                            selectedQueueContext="selectedQueueContext"
+                            selectedDevice="selectedDevice"
+                            responseSummary="responseSummary"
+                            commandQueueStatus="commandQueueStatus"
+                            sessionRef="sessionRef"
+                            workstation="workstation"
+                            metrics="metrics"
+                            lastResponse="lastResponse"
+                            onStartExecution="startExecution"
+                            onPauseExecution="pauseExecution"
+                            onFinishExecution="finishExecution"
+                            onReportException="reportException"
+                            onOpenQueueItem="openQueueItem"
+                            onOpenDevice="openDevice"
+                            onQueueDeviceAction="queueDeviceAction"
+                            onRefreshQueue="refreshDemoMetrics"
+                        />
+                    </main>
+
+                    <ShopfloorInspector
+                        responseSummary="responseSummary"
+                        commandQueueStatus="commandQueueStatus"
+                        commands="commands"
+                        timelineEntries="timelineEntries"
+                        logEntries="logEntries"
+                        activity="activity"
+                        lastResponseText="lastResponseText"
+                    />
+                </div>
+            </div>
+        </div>
+    </t>
+</templates>

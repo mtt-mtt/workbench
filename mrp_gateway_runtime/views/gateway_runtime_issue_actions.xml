@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_gateway_runtime_issue" model="ir.actions.act_window">
+        <field name="name">Runtime Issues</field>
+        <field name="res_model">gateway.runtime.issue</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'search_default_needs_attention': 1, 'search_default_group_severity': 1}</field>
+        <field name="search_view_id" ref="view_gateway_runtime_issue_search"/>
+    </record>
+
+    <record id="action_gateway_runtime_repair" model="ir.actions.act_window">
+        <field name="name">Runtime Repairs</field>
+        <field name="res_model">gateway.runtime.issue</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('is_fixable', '=', True), ('state', 'in', ['new', 'open', 'in_progress'])]</field>
+        <field name="context">{'search_default_fixable': 1, 'search_default_open': 1}</field>
+        <field name="search_view_id" ref="view_gateway_runtime_issue_search"/>
+    </record>
+</odoo>

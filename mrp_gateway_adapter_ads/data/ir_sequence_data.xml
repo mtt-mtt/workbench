@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="seq_gateway_ads_adapter" model="ir.sequence">
+        <field name="name">ADS Adapter</field>
+        <field name="code">gateway.ads.adapter</field>
+        <field name="prefix">ADS-</field>
+        <field name="padding">4</field>
+    </record>
+
+    <record id="seq_gateway_ads_symbol" model="ir.sequence">
+        <field name="name">ADS Symbol</field>
+        <field name="code">gateway.ads.symbol</field>
+        <field name="prefix">ADSS-</field>
+        <field name="padding">4</field>
+    </record>
+
+    <record id="seq_gateway_ads_diagnostic" model="ir.sequence">
+        <field name="name">ADS Diagnostic</field>
+        <field name="code">gateway.ads.diagnostic</field>
+        <field name="prefix">ADSD-</field>
+        <field name="padding">4</field>
+    </record>
+
+    <record id="seq_gateway_ads_subscription" model="ir.sequence">
+        <field name="name">ADS Subscription</field>
+        <field name="code">gateway.ads.subscription</field>
+        <field name="prefix">ADSUB-</field>
+        <field name="padding">4</field>
+    </record>
+
+    <record id="seq_gateway_ads_notification" model="ir.sequence">
+        <field name="name">ADS Notification</field>
+        <field name="code">gateway.ads.notification</field>
+        <field name="prefix">ADSN-</field>
+        <field name="padding">4</field>
+    </record>
+</odoo>

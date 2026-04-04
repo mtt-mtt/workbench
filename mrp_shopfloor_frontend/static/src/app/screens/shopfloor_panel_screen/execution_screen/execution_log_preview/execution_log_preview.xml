@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates xml:space="preserve">
+    <t t-name="mrp_shopfloor_frontend.ShopfloorExecutionLogPreview" owl="1">
+        <div class="o_mrp_shopfloor_detail_panel o_mrp_shopfloor_detail_panel--compact">
+            <div class="o_mrp_shopfloor_card_label">Execution log preview</div>
+            <div class="o_mrp_shopfloor_timeline o_mrp_shopfloor_timeline--compact">
+                <t t-foreach="props.logEntries" t-as="entry" t-key="entry.id">
+                    <div class="o_mrp_shopfloor_timeline_item">
+                        <div class="o_mrp_shopfloor_timeline_item_head">
+                            <strong><t t-esc="entry.title"/></strong>
+                            <span class="badge rounded-pill text-bg-secondary"><t t-esc="entry.kind"/></span>
+                        </div>
+                        <small><t t-esc="entry.detail || entry.status"/></small>
+                    </div>
+                </t>
+            </div>
+        </div>
+    </t>
+</templates>

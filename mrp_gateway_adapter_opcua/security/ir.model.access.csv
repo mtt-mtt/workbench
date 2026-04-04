@@ -1,0 +1,4 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_gateway_opcua_adapter_user,gateway.opcua.adapter user,model_gateway_opcua_adapter,base.group_user,1,1,1,1
+access_gateway_opcua_node_user,gateway.opcua.node user,model_gateway_opcua_node,base.group_user,1,1,1,1
+access_gateway_opcua_diagnostic_user,gateway.opcua.diagnostic user,model_gateway_opcua_diagnostic,base.group_user,1,1,1,1

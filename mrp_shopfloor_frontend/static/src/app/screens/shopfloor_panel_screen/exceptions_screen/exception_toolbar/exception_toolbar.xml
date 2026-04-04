@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates xml:space="preserve">
+    <t t-name="mrp_shopfloor_frontend.ShopfloorExceptionToolbar" owl="1">
+        <section class="o_mrp_shopfloor_detail_panel">
+            <div class="o_mrp_shopfloor_card_label">Exception filters</div>
+            <div class="o_mrp_shopfloor_queue_toolbar_stack">
+                <div class="o_mrp_shopfloor_queue_toolbar_row">
+                    <span class="badge rounded-pill text-bg-secondary">Visible <t t-esc="summary.total"/></span>
+                    <span class="badge rounded-pill text-bg-warning">Open <t t-esc="summary.openCount"/></span>
+                    <span class="badge rounded-pill text-bg-danger">Critical <t t-esc="summary.criticalCount"/></span>
+                </div>
+                <div class="o_mrp_shopfloor_queue_toolbar_row o_mrp_shopfloor_queue_toolbar_row--wrap">
+                    <t t-foreach="branchHeadlines" t-as="branch" t-key="branch.label">
+                        <span class="badge rounded-pill" t-att-class="'text-bg-' + (branch.tone || 'secondary')">
+                            <t t-esc="branch.label"/> <t t-esc="branch.value"/>
+                        </span>
+                    </t>
+                </div>
+                <div class="o_mrp_shopfloor_queue_toolbar_row o_mrp_shopfloor_queue_toolbar_row--wrap">
+                    <span class="text-uppercase small text-secondary-emphasis">Severity</span>
+                    <t t-foreach="severityFilters" t-as="filter" t-key="filter.key">
+                        <button type="button"
+                                class="btn btn-sm"
+                                t-att-class="props.severityFilter === filter.key ? 'btn-danger' : 'btn-outline-danger'"
+                                t-att-data-severity-filter="filter.key"
+                                t-on-click="changeSeverityFilter">
+                            <t t-esc="filter.label"/>
+                        </button>
+                    </t>
+                </div>
+                <div class="o_mrp_shopfloor_queue_toolbar_row o_mrp_shopfloor_queue_toolbar_row--wrap">
+                    <span class="text-uppercase small text-secondary-emphasis">State</span>
+                    <t t-foreach="stateFilters" t-as="filter" t-key="filter.key">
+                        <button type="button"
+                                class="btn btn-sm"
+                                t-att-class="props.stateFilter === filter.key ? 'btn-warning' : 'btn-outline-warning'"
+                                t-att-data-state-filter="filter.key"
+                                t-on-click="changeStateFilter">
+                            <t t-esc="filter.label"/>
+                        </button>
+                    </t>
+                    <button type="button"
+                            class="btn btn-sm btn-outline-light ms-auto"
+                            t-att-disabled="canClearFilters ? undefined : true"
+                            t-on-click="clearFilters">
+                        Reset filters
+                    </button>
+                </div>
+            </div>
+        </section>
+    </t>
+</templates>

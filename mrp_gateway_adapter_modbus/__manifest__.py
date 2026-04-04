@@ -1,0 +1,21 @@
+{
+    "name": "MRP Gateway Adapter Modbus",
+    "version": "19.0.0.1.0",
+    "category": "Manufacturing/Configuration",
+    "author": "OpenAI",
+    "summary": "Modbus mapping and bridge layer for gateway runtime ingestion",
+    "license": "LGPL-3",
+    "depends": ["base", "mrp", "mrp_gateway_runtime", "mrp_gateway_core"],
+    "data": [
+        "security/ir.model.access.csv",
+        "data/ir_sequence_data.xml",
+        "views/modbus_actions.xml",
+        "views/modbus_menus.xml",
+        "views/modbus_adapter_views.xml",
+        "views/modbus_point_views.xml",
+        "views/modbus_snapshot_views.xml",
+        "views/modbus_write_ack_views.xml",
+    ],
+    "application": False,
+    "installable": True,
+}

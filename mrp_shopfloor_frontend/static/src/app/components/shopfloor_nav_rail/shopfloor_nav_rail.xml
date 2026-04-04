@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates xml:space="preserve">
+    <t t-name="mrp_shopfloor_frontend.ShopfloorNavRail" owl="1">
+        <aside class="o_mrp_shopfloor_nav_rail">
+            <section class="o_mrp_shopfloor_card o_mrp_shopfloor_card--rail">
+                <div class="o_mrp_shopfloor_card_label">App shell</div>
+                <div class="o_mrp_shopfloor_rail_title">
+                    <t t-esc="props.currentRoute"/>
+                </div>
+                <div class="o_mrp_shopfloor_rail_meta">
+                    <span><t t-esc="activeRouteMeta.label"/></span>
+                    <span><t t-esc="activeRouteMeta.group"/></span>
+                    <span><t t-esc="props.currentUserName"/></span>
+                </div>
+                <p class="o_mrp_shopfloor_rail_description">
+                    <t t-esc="activeRouteMeta.description"/>
+                </p>
+                <div class="o_mrp_shopfloor_rail_status">
+                    <span t-att-class="props.metrics.deviceOnline ? 'badge rounded-pill text-bg-success' : 'badge rounded-pill text-bg-danger'">
+                        <t t-esc="props.metrics.deviceOnline ? 'Online' : 'Offline'"/>
+                    </span>
+                    <span class="badge rounded-pill text-bg-secondary"><t t-esc="props.booted ? 'Booted' : 'Waiting'"/></span>
+                </div>
+            </section>
+            <nav class="o_mrp_shopfloor_nav" aria-label="Shopfloor panels">
+                <t t-foreach="navigationPanels" t-as="panel" t-key="panel.key">
+                    <button type="button"
+                            class="o_mrp_shopfloor_nav_button"
+                            t-att-class="props.currentRoute === panel.key ? 'o_mrp_shopfloor_nav_button is-active' : 'o_mrp_shopfloor_nav_button'"
+                            t-att-data-route="panel.key"
+                            t-on-click="navigatePanel">
+                        <span class="o_mrp_shopfloor_nav_button_main">
+                            <strong><t t-esc="panel.meta.label"/></strong>
+                            <small><t t-esc="panel.meta.description"/></small>
+                        </span>
+                        <span class="o_mrp_shopfloor_nav_button_meta">
+                            <span><t t-esc="panel.meta.group"/></span>
+                            <small><t t-esc="panel.key"/></small>
+                        </span>
+                    </button>
+                </t>
+            </nav>
+            <section class="o_mrp_shopfloor_card o_mrp_shopfloor_card--rail">
+                <div class="o_mrp_shopfloor_card_label">Workstation</div>
+                <div class="o_mrp_shopfloor_rail_title"><t t-esc="props.workstation.code"/></div>
+                <div class="o_mrp_shopfloor_rail_meta">
+                    <span><t t-esc="props.workstation.profile"/></span>
+                    <span><t t-esc="props.workstation.gateway"/></span>
+                    <span><t t-esc="props.sessionRef || 'no session'"/></span>
+                </div>
+            </section>
+        </aside>
+    </t>
+</templates>

@@ -1,0 +1,23 @@
+{
+    "name": "MRP Gateway Adapter S7",
+    "version": "19.0.0.1.0",
+    "category": "Manufacturing/Configuration",
+    "author": "OpenAI",
+    "summary": "Siemens S7 adapter baseline for gateway runtime diagnostics and tag mapping",
+    "license": "LGPL-3",
+    "depends": ["base", "mrp", "mrp_gateway_runtime", "mrp_gateway_core"],
+    "data": [
+        "security/ir.model.access.csv",
+        "data/ir_sequence_data.xml",
+        "views/s7_actions.xml",
+        "views/s7_menus.xml",
+        "views/s7_adapter_views.xml",
+        "views/s7_tag_views.xml",
+        "views/s7_point_views.xml",
+        "views/s7_snapshot_views.xml",
+        "views/s7_write_ack_views.xml",
+        "views/s7_diagnostic_views.xml",
+    ],
+    "application": False,
+    "installable": True,
+}

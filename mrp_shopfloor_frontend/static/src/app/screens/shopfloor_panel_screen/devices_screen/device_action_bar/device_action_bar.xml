@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates xml:space="preserve">
+    <t t-name="mrp_shopfloor_frontend.ShopfloorDeviceActionBar" owl="1">
+        <section class="o_mrp_shopfloor_detail_panel">
+            <div class="o_mrp_shopfloor_api_head">
+                <div>
+                    <div class="o_mrp_shopfloor_card_label">Device actions</div>
+                    <div class="o_mrp_shopfloor_detail_title">Local command shell</div>
+                </div>
+                <span class="badge rounded-pill text-bg-info">
+                    <t t-esc="stateLabel"/>
+                </span>
+            </div>
+            <p class="o_mrp_shopfloor_api_detail">
+                <t t-esc="visibilityLabel"/>
+            </p>
+            <div class="o_mrp_shopfloor_section_actions mt-3">
+                <t t-if="hasDevice">
+                    <t t-foreach="actions" t-as="action" t-key="action.key">
+                        <button type="button"
+                                class="btn btn-sm"
+                                t-att-class="buttonClass(action)"
+                                t-att-data-action-key="action.key"
+                                t-on-click="selectAction">
+                            <t t-esc="action.label"/>
+                        </button>
+                    </t>
+                </t>
+                <t t-else="">
+                    <span class="badge rounded-pill text-bg-secondary">No device selected</span>
+                </t>
+            </div>
+            <div class="o_mrp_shopfloor_detail_meta mt-3">
+                <span>Candidate actions <t t-esc="actions.length"/></span>
+                <span>Queued through backend action route</span>
+            </div>
+        </section>
+    </t>
+</templates>

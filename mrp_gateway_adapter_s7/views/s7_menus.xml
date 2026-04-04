@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_gateway_s7_root" name="S7" sequence="40"/>
+    <menuitem id="menu_gateway_s7_adapters" name="Adapters" parent="menu_gateway_s7_root" action="action_gateway_s7_adapters" sequence="10"/>
+    <menuitem id="menu_gateway_s7_tags" name="Tags" parent="menu_gateway_s7_root" action="action_gateway_s7_tags" sequence="20"/>
+    <menuitem id="menu_gateway_s7_points" name="Points" parent="menu_gateway_s7_root" action="action_gateway_s7_points" sequence="30"/>
+    <menuitem id="menu_gateway_s7_snapshots" name="Snapshots" parent="menu_gateway_s7_root" action="action_gateway_s7_snapshots" sequence="40"/>
+    <menuitem id="menu_gateway_s7_write_acks" name="Write Acks" parent="menu_gateway_s7_root" action="action_gateway_s7_write_acks" sequence="50"/>
+    <menuitem id="menu_gateway_s7_diagnostics" name="Diagnostics" parent="menu_gateway_s7_root" action="action_gateway_s7_diagnostics" sequence="60"/>
+</odoo>

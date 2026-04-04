@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates xml:space="preserve">
+    <t t-name="mrp_shopfloor_frontend.ShopfloorDevicesScreen" owl="1">
+        <div class="o_mrp_shopfloor_section_head">
+            <div>
+                <div class="o_mrp_shopfloor_card_label">Devices</div>
+                <h2>Gateway-linked devices</h2>
+            </div>
+            <div class="o_mrp_shopfloor_section_actions">
+                <ShopfloorStatusSummary items="deviceSummaryItems"/>
+            </div>
+        </div>
+        <ShopfloorDeviceActionBar
+            selectedDevice="props.selectedDevice"
+            selectedDeviceVisible="selectedDeviceVisible"
+            actionCandidates="selectedDeviceActionCandidates"
+            onSelectAction="selectDeviceAction"
+        />
+        <div class="o_mrp_shopfloor_panel_split o_mrp_shopfloor_panel_split--devices o_mrp_shopfloor_panel_split--devices-actions">
+            <ShopfloorDeviceActionConfirm
+                actionDraft="actionDraft"
+                commandSummary="commandSummary"
+                onConfirmAction="confirmDeviceAction"
+                onCancelAction="clearDeviceActionDraft"
+            />
+            <ShopfloorDeviceActionLog
+                commands="props.commands"
+                recentActions="recentActions"
+                commandSummary="commandSummary"
+            />
+        </div>
+        <ShopfloorDeviceToolbar
+            searchText="state.searchText"
+            groupBy="state.groupBy"
+            stateFilter="state.stateFilter"
+            summary="visibleDeviceSummary"
+            onSearchTextChange="onSearchTextChange"
+            onGroupByChange="onGroupByChange"
+            onStateFilterChange="onStateFilterChange"
+            onClearFilters="clearFilters"
+        />
+        <div class="o_mrp_shopfloor_panel_split o_mrp_shopfloor_panel_split--devices">
+            <ShopfloorDeviceList
+                groupedDevices="groupedDevices"
+                selectedDevice="props.selectedDevice"
+                summary="visibleDeviceSummary"
+                hasActiveFilters="hasActiveFilters"
+                selectedDeviceVisible="selectedDeviceVisible"
+                onOpenDevice="openDevice"
+                onClearFilters="clearFilters"
+            />
+            <ShopfloorDeviceDetail
+                selectedDevice="props.selectedDevice"
+                summary="visibleDeviceSummary"
+                selectedDeviceVisible="selectedDeviceVisible"
+                onClearFilters="clearFilters"
+            />
+        </div>
+    </t>
+</templates>

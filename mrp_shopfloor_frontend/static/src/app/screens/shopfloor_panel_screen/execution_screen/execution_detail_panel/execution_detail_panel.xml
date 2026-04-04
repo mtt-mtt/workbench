@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates xml:space="preserve">
+    <t t-name="mrp_shopfloor_frontend.ShopfloorExecutionDetailPanel" owl="1">
+        <div class="o_mrp_shopfloor_detail_panel">
+            <div class="o_mrp_shopfloor_detail_title"><t t-esc="props.execution.name"/></div>
+            <div class="o_mrp_shopfloor_detail_meta">
+                <span>State: <t t-esc="props.execution.state"/></span>
+                <span>Action: <t t-esc="props.execution.action_type"/></span>
+                <span>App: <t t-esc="props.execution.app_code"/></span>
+            </div>
+            <div class="o_mrp_shopfloor_detail_meta">
+                <span>Workstation: <t t-esc="props.execution.workstation_code || props.workstation.code"/></span>
+                <span>Session: <t t-esc="props.execution.session_ref || props.sessionRef || 'n/a'"/></span>
+            </div>
+            <div class="o_mrp_shopfloor_detail_meta">
+                <span>WO <t t-esc="props.selectedQueueContext.workorder_id || 'n/a'"/></span>
+                <span>MO <t t-esc="props.selectedQueueContext.production_id || 'n/a'"/></span>
+                <span>Ref <t t-esc="props.selectedQueueContext.reference || 'n/a'"/></span>
+            </div>
+        </div>
+    </t>
+</templates>

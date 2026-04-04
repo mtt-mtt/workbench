@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates xml:space="preserve">
+    <t t-name="mrp_shopfloor_frontend.ShopfloorDeviceRow" owl="1">
+        <button type="button"
+                t-att-class="rowClass"
+                t-att-data-device-code="props.device.code"
+                t-att-data-state="stateKey"
+                t-att-aria-pressed="props.selected ? 'true' : 'false'"
+                t-on-click="openDevice">
+            <span class="o_mrp_shopfloor_list_item_copy">
+                <strong><t t-esc="props.device.name"/></strong>
+                <small>
+                    <t t-esc="props.device.kind"/> - <t t-esc="props.device.signal"/>
+                    <t t-if="props.device.location"> - <t t-esc="props.device.location"/></t>
+                </small>
+                <small>
+                    <t t-esc="props.device.channel || 'no channel'"/> | <t t-esc="props.device.value || 'no value'"/>
+                </small>
+            </span>
+            <span class="o_mrp_shopfloor_list_item_meta">
+                <ShopfloorStatusBadge label="stateLabel" tone="stateTone"/>
+                <t t-if="attentionLabel">
+                    <ShopfloorAttentionNote label="attentionLabel" detail="stateLabel" tone="'warning'"/>
+                </t>
+                <span><t t-esc="props.device.lastSeen"/></span>
+            </span>
+        </button>
+    </t>
+</templates>

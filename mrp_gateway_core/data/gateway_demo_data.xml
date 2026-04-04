@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="gateway_demo_main" model="gateway.entry">
+            <field name="name">Demo Gateway</field>
+            <field name="code">gateway_demo_main</field>
+            <field name="sequence">10</field>
+            <field name="state">ready</field>
+            <field name="entry_type">demo</field>
+            <field name="workstation_ref">shopfloor_demo_ws_line_a</field>
+            <field name="app_ref">shopfloor_demo</field>
+            <field name="connection_target">demo://shopfloor-gateway</field>
+            <field name="config_text">Seed gateway entry for the initial Shopfloor stack.</field>
+            <field name="diagnostic_state">ready</field>
+        </record>
+
+        <record id="gateway_demo_plc" model="gateway.device">
+            <field name="name">Line A PLC</field>
+            <field name="code">gateway_demo_plc</field>
+            <field name="sequence">10</field>
+            <field name="state">ready</field>
+            <field name="entry_id" ref="gateway_demo_main"/>
+            <field name="device_type">PLC</field>
+            <field name="workstation_ref">shopfloor_demo_ws_line_a</field>
+            <field name="app_ref">shopfloor_demo</field>
+            <field name="external_ref">PLC-LINE-A</field>
+            <field name="protocol">mqtt</field>
+            <field name="address">factory/line-a/plc</field>
+            <field name="config_text">Seed PLC endpoint used for demo visibility.</field>
+            <field name="diagnostic_state">ready</field>
+        </record>
+
+        <record id="gateway_demo_plc_ready_signal" model="gateway.signal">
+            <field name="name">Machine Ready</field>
+            <field name="code">gateway_demo_plc_ready</field>
+            <field name="sequence">10</field>
+            <field name="state">ready</field>
+            <field name="entry_id" ref="gateway_demo_main"/>
+            <field name="device_id" ref="gateway_demo_plc"/>
+            <field name="signal_kind">status</field>
+            <field name="technical_key">machine_ready</field>
+            <field name="unit">bool</field>
+            <field name="value_text">1</field>
+            <field name="config_text">Seed signal used to demonstrate gateway device and signal links.</field>
+            <field name="last_seen_at" eval="DateTime.now()"/>
+        </record>
+    </data>
+</odoo>

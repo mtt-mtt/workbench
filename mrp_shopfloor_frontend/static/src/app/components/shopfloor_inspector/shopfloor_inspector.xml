@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates xml:space="preserve">
+    <t t-name="mrp_shopfloor_frontend.ShopfloorInspector" owl="1">
+        <aside class="o_mrp_shopfloor_side">
+            <ShopfloorResponseCard
+                responseSummary="props.responseSummary"
+                lastResponseText="props.lastResponseText"
+            />
+            <ShopfloorCommandQueueCard
+                commandQueueStatus="props.commandQueueStatus"
+                commands="props.commands"
+            />
+            <ShopfloorTimelineCard
+                title="'Execution timeline'"
+                entries="props.timelineEntries"
+                emptyMessage="'No timeline events yet.'"
+                compact="true"
+            />
+            <ShopfloorTimelineCard
+                title="'Execution log'"
+                entries="props.logEntries"
+                emptyMessage="'No execution log entries yet.'"
+                compact="true"
+            />
+            <ShopfloorActivityCard activity="props.activity"/>
+        </aside>
+    </t>
+</templates>

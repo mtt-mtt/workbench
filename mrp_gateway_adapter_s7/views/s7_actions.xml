@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_gateway_s7_adapters" model="ir.actions.act_window">
+        <field name="name">S7 Adapters</field>
+        <field name="res_model">gateway.s7.adapter</field>
+        <field name="view_mode">list,form</field>
+    </record>
+    <record id="action_gateway_s7_tags" model="ir.actions.act_window">
+        <field name="name">S7 Tags</field>
+        <field name="res_model">gateway.s7.tag</field>
+        <field name="view_mode">list,form</field>
+    </record>
+    <record id="action_gateway_s7_points" model="ir.actions.act_window">
+        <field name="name">S7 Points</field>
+        <field name="res_model">gateway.s7.point</field>
+        <field name="view_mode">list,form</field>
+    </record>
+    <record id="action_gateway_s7_snapshots" model="ir.actions.act_window">
+        <field name="name">S7 Snapshots</field>
+        <field name="res_model">gateway.s7.snapshot</field>
+        <field name="view_mode">list,form</field>
+    </record>
+    <record id="action_gateway_s7_write_acks" model="ir.actions.act_window">
+        <field name="name">S7 Write Acks</field>
+        <field name="res_model">gateway.s7.write.ack</field>
+        <field name="view_mode">list,form</field>
+    </record>
+    <record id="action_gateway_s7_diagnostics" model="ir.actions.act_window">
+        <field name="name">S7 Diagnostics</field>
+        <field name="res_model">gateway.s7.diagnostic</field>
+        <field name="view_mode">list,form</field>
+    </record>
+</odoo>

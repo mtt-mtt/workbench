@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_gateway_device_tree" model="ir.ui.view">
+        <field name="name">gateway.device.tree</field>
+        <field name="model">gateway.device</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="sequence"/>
+                <field name="name"/>
+                <field name="code"/>
+                <field name="entry_id"/>
+                <field name="via_device_id"/>
+                <field name="state"/>
+                <field name="lifecycle_state"/>
+                <field name="discovery_state"/>
+                <field name="binding_state"/>
+                <field name="identifier_count"/>
+                <field name="connection_count"/>
+                <field name="registry_match_count"/>
+                <field name="registry_match_basis"/>
+                <field name="device_type"/>
+                <field name="protocol"/>
+                <field name="address"/>
+                <field name="probe_ready"/>
+                <field name="signal_count"/>
+                <field name="command_count"/>
+                <field name="last_seen_at"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_gateway_device_form" model="ir.ui.view">
+        <field name="name">gateway.device.form</field>
+        <field name="model">gateway.device</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_mark_ready" type="object" string="Mark Ready" class="btn-primary"/>
+                    <button name="action_mark_disabled" type="object" string="Disable" class="btn-secondary"/>
+                    <button name="action_clear_parent_binding" type="object" string="Clear Parent" class="btn-secondary"/>
+                    <button name="action_open_registry_matches" type="object" string="Potential Duplicates" class="btn-secondary"/>
+                    <button name="action_open_signals" type="object" string="Signals" class="btn-secondary"/>
+                    <button name="action_open_commands" type="object" string="Commands" class="btn-secondary"/>
+                    <button name="action_open_children" type="object" string="Children" class="btn-secondary"/>
+                    <button name="action_open_parent" type="object" string="Parent" class="btn-secondary"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_open_registry_matches" type="object" class="oe_stat_button" icon="fa-clone">
+                            <div class="o_field_widget o_stat_info">
+                                <span class="o_stat_value">
+                                    <field name="registry_match_count" nolabel="1"/>
+                                </span>
+                                <span class="o_stat_text">Potential Duplicates</span>
+                            </div>
+                        </button>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="code"/>
+                            <field name="entry_id"/>
+                            <field name="state"/>
+                            <field name="lifecycle_state"/>
+                            <field name="discovery_state"/>
+                            <field name="binding_state" readonly="1"/>
+                            <field name="sequence"/>
+                            <field name="active"/>
+                            <field name="parent_device_id"/>
+                            <field name="via_device_id" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="device_type"/>
+                            <field name="protocol"/>
+                            <field name="address"/>
+                            <field name="device_summary" readonly="1"/>
+                            <field name="topology_summary" readonly="1"/>
+                            <field name="registry_summary" readonly="1"/>
+                            <field name="registry_match_basis" readonly="1"/>
+                            <field name="registry_match_summary" readonly="1"/>
+                            <field name="registry_fingerprint" readonly="1"/>
+                            <field name="signal_count" readonly="1"/>
+                            <field name="command_count" readonly="1"/>
+                            <field name="identifier_count" readonly="1"/>
+                            <field name="connection_count" readonly="1"/>
+                            <field name="external_ref"/>
+                            <field name="device_uid"/>
+                            <field name="probe_ready"/>
+                            <field name="state_version" readonly="1"/>
+                            <field name="last_seen_at" readonly="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Registry">
+                            <group>
+                                <group>
+                                    <field name="change_kind"/>
+                                    <field name="capability_state"/>
+                                    <field name="point_sync_state"/>
+                                    <field name="subscription_state"/>
+                                    <field name="config_binding"/>
+                                    <field name="disabled_by"/>
+                                    <field name="via_device_id" readonly="1"/>
+                                    <field name="source_signal" readonly="1"/>
+                                    <field name="source_payload_id" readonly="1"/>
+                                    <field name="probe_session_id" readonly="1"/>
+                                    <field name="last_transition_at" readonly="1"/>
+                                    <field name="registry_fingerprint" readonly="1"/>
+                                    <field name="identifiers_json" widget="text"/>
+                                    <field name="connections_json" widget="text"/>
+                                    <field name="changed_fields_json" widget="text"/>
+                                </group>
+                                <group>
+                                    <field name="parent_device_id"/>
+                                    <field name="registry_summary" readonly="1"/>
+                                    <field name="registry_match_basis" readonly="1"/>
+                                    <field name="registry_match_summary" readonly="1"/>
+                                    <field name="registry_match_count" readonly="1"/>
+                                    <field name="child_device_ids" readonly="1">
+                                        <list>
+                                            <field name="name"/>
+                                            <field name="code"/>
+                                            <field name="state"/>
+                                            <field name="protocol"/>
+                                            <field name="address"/>
+                                        </list>
+                                    </field>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Config">
+                            <field name="config_json" widget="text"/>
+                            <field name="config_text" widget="text"/>
+                            <field name="diagnostic_state" widget="text"/>
+                        </page>
+                        <page string="Signals">
+                            <field name="signal_ids">
+                                <list editable="bottom">
+                                    <field name="name"/>
+                                    <field name="code"/>
+                                    <field name="state"/>
+                                    <field name="signal_kind"/>
+                                    <field name="value_text"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Commands">
+                            <field name="command_ids">
+                                <list editable="bottom">
+                                    <field name="name"/>
+                                    <field name="code"/>
+                                    <field name="state"/>
+                                    <field name="command_type"/>
+                                    <field name="attempt_count"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+</odoo>

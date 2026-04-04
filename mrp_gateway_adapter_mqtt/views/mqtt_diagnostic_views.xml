@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_gateway_mqtt_diagnostic_tree" model="ir.ui.view">
+        <field name="name">gateway.mqtt.diagnostic.tree</field>
+        <field name="model">gateway.mqtt.diagnostic</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="sequence"/>
+                <field name="occurred_at"/>
+                <field name="adapter_id"/>
+                <field name="topic_id"/>
+                <field name="direction"/>
+                <field name="event_kind"/>
+                <field name="status"/>
+                <field name="topic_path"/>
+                <field name="message"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_gateway_mqtt_diagnostic_form" model="ir.ui.view">
+        <field name="name">gateway.mqtt.diagnostic.form</field>
+        <field name="model">gateway.mqtt.diagnostic</field>
+        <field name="arch" type="xml">
+            <form string="MQTT Diagnostic">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="adapter_id"/>
+                            <field name="topic_id"/>
+                            <field name="runtime_adapter_id" readonly="1"/>
+                            <field name="code"/>
+                            <field name="name"/>
+                        </group>
+                        <group>
+                            <field name="direction"/>
+                            <field name="event_kind"/>
+                            <field name="status"/>
+                            <field name="sequence"/>
+                            <field name="active"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group>
+                            <field name="topic_path"/>
+                            <field name="broker_url"/>
+                            <field name="client_id"/>
+                        </group>
+                        <group>
+                            <field name="occurred_at"/>
+                            <field name="processed_at"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="message" nolabel="1"/>
+                    </group>
+                    <notebook>
+                        <page string="Payload">
+                            <field name="payload_json" nolabel="1"/>
+                        </page>
+                        <page string="Result">
+                            <field name="result_json" nolabel="1"/>
+                        </page>
+                        <page string="Note">
+                            <field name="note" nolabel="1"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_gateway_mqtt_diagnostic_search" model="ir.ui.view">
+        <field name="name">gateway.mqtt.diagnostic.search</field>
+        <field name="model">gateway.mqtt.diagnostic</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="code"/>
+                <field name="adapter_id"/>
+                <field name="topic_id"/>
+                <field name="topic_path"/>
+                <field name="direction"/>
+                <field name="event_kind"/>
+                <field name="status"/>
+                <filter string="Preview" name="preview" domain="[('direction', '=', 'preview')]"/>
+                <filter string="Inbound" name="inbound" domain="[('direction', '=', 'inbound')]"/>
+                <filter string="Outbound" name="outbound" domain="[('direction', '=', 'outbound')]"/>
+                <filter string="Test" name="test" domain="[('direction', '=', 'test')]"/>
+            </search>
+        </field>
+    </record>
+</odoo>

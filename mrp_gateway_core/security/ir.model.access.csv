@@ -1,0 +1,6 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_gateway_entry_system,gateway.entry system,model_gateway_entry,base.group_system,1,1,1,1
+access_gateway_device_system,gateway.device system,model_gateway_device,base.group_system,1,1,1,1
+access_gateway_signal_system,gateway.signal system,model_gateway_signal,base.group_system,1,1,1,1
+access_gateway_command_system,gateway.command system,model_gateway_command,base.group_system,1,1,1,1
+

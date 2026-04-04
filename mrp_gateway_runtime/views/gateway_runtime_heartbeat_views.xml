@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_gateway_runtime_heartbeat_tree" model="ir.ui.view">
+        <field name="name">gateway.runtime.heartbeat.tree</field>
+        <field name="model">gateway.runtime.heartbeat</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="code"/>
+                <field name="adapter_id"/>
+                <field name="status"/>
+                <field name="state"/>
+                <field name="received_at"/>
+                <field name="message"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_gateway_runtime_heartbeat_form" model="ir.ui.view">
+        <field name="name">gateway.runtime.heartbeat.form</field>
+        <field name="model">gateway.runtime.heartbeat</field>
+        <field name="arch" type="xml">
+            <form string="Gateway Runtime Heartbeat">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="code"/>
+                            <field name="adapter_id"/>
+                            <field name="entry_id"/>
+                            <field name="device_id"/>
+                        </group>
+                        <group>
+                            <field name="app_id"/>
+                            <field name="workstation_id"/>
+                            <field name="status"/>
+                            <field name="state"/>
+                            <field name="received_at"/>
+                            <field name="processed_at"/>
+                        </group>
+                    </group>
+                    <field name="message"/>
+                    <field name="payload_json" nolabel="1"/>
+                    <field name="normalized_json" nolabel="1"/>
+                    <field name="note" nolabel="1"/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+</odoo>

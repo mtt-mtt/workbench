@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates xml:space="preserve">
+    <t t-name="mrp_shopfloor_frontend.ShopfloorDashboardStatusCard" owl="1">
+        <article class="o_mrp_shopfloor_detail_panel">
+            <div class="o_mrp_shopfloor_card_label"><t t-esc="props.label"/></div>
+            <div class="o_mrp_shopfloor_api_head">
+                <div class="o_mrp_shopfloor_detail_title"><t t-esc="props.title"/></div>
+                <span t-att-class="props.stateClass">
+                    <t t-esc="props.stateLabel"/>
+                </span>
+            </div>
+            <p class="o_mrp_shopfloor_api_detail"><t t-esc="props.detail"/></p>
+            <div class="o_mrp_shopfloor_detail_meta">
+                <t t-if="props.metaItems.length">
+                    <t t-foreach="props.metaItems" t-as="item" t-foreach-index="itemIndex" t-key="itemIndex">
+                        <span><t t-esc="item"/></span>
+                    </t>
+                </t>
+            </div>
+        </article>
+    </t>
+</templates>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates xml:space="preserve">
+    <t t-name="mrp_shopfloor_frontend.ShopfloorDashboardLatestExecution" owl="1">
+        <div class="o_mrp_shopfloor_split">
+            <ShopfloorDashboardSummaryCard t-props="executionSummaryCardProps"/>
+            <ShopfloorDashboardSummaryCard t-props="queueSummaryCardProps"/>
+        </div>
+    </t>
+</templates>

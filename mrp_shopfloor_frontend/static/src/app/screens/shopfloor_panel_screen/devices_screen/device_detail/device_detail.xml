@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates xml:space="preserve">
+    <t t-name="mrp_shopfloor_frontend.ShopfloorDeviceDetail" owl="1">
+        <div class="o_mrp_shopfloor_detail_panel o_mrp_shopfloor_detail_panel--compact">
+            <div class="o_mrp_shopfloor_card_label">Selected device details</div>
+            <t t-if="props.selectedDevice">
+                <div class="o_mrp_shopfloor_detail_title"><t t-esc="props.selectedDevice.name"/></div>
+                <div class="o_mrp_shopfloor_detail_meta">
+                    <ShopfloorStatusBadge label="stateLabel" tone="stateTone"/>
+                    <span><t t-esc="props.selectedDevice.code"/></span>
+                    <span><t t-esc="props.selectedDevice.kind"/></span>
+                    <span><t t-esc="props.selectedDevice.value"/></span>
+                    <span><t t-esc="props.selectedDevice.lastSeen"/></span>
+                </div>
+                <div class="o_mrp_shopfloor_detail_meta">
+                    <span><t t-esc="props.selectedDevice.signal || 'no signal'"/></span>
+                    <span><t t-esc="props.selectedDevice.channel || 'no channel'"/></span>
+                    <span><t t-esc="props.selectedDevice.location || 'no location'"/></span>
+                </div>
+                <t t-if="filterSummaryLabel">
+                    <div class="o_mrp_shopfloor_empty"><t t-esc="filterSummaryLabel"/></div>
+                </t>
+                <t t-if="selectionVisibilityLabel">
+                    <div class="o_mrp_shopfloor_empty"><t t-esc="selectionVisibilityLabel"/></div>
+                </t>
+                <t t-if="showClearFilters">
+                    <button type="button" class="btn btn-sm btn-outline-light mt-2" t-on-click="clearFilters">Show all devices</button>
+                </t>
+                <t t-if="attentionLabel">
+                    <ShopfloorAttentionNote label="attentionLabel" detail="stateLabel" tone="'warning'"/>
+                </t>
+            </t>
+            <t t-else="">
+                <div class="o_mrp_shopfloor_empty">Select a device to inspect its status and signal context.</div>
+            </t>
+        </div>
+    </t>
+</templates>

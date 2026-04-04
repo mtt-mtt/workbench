@@ -1,0 +1,21 @@
+{
+    "name": "MRP Gateway Core",
+    "summary": "Gateway configuration and runtime metadata for shopfloor integrations",
+    "version": "19.0.0.1.0",
+    "category": "Manufacturing/Configuration",
+    "author": "OpenAI",
+    "license": "LGPL-3",
+    "depends": ["base", "mrp", "mrp_shopfloor_core"],
+    "data": [
+        "security/ir.model.access.csv",
+        "data/gateway_demo_data.xml",
+        "views/gateway_actions.xml",
+        "views/gateway_menus.xml",
+        "views/gateway_entry_views.xml",
+        "views/gateway_device_views.xml",
+        "views/gateway_signal_views.xml",
+        "views/gateway_command_views.xml",
+    ],
+    "application": False,
+    "installable": True,
+}

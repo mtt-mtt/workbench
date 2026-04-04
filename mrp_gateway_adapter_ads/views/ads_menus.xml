@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_gateway_ads_adapters"
+              name="Adapters"
+              parent="mrp_gateway_core.menu_gateway_runtime"
+              action="action_gateway_ads_adapter"
+              sequence="5"
+              groups="mrp.group_mrp_manager"/>
+
+    <menuitem id="menu_gateway_ads_console"
+              name="Console"
+              parent="mrp_gateway_core.menu_gateway_runtime"
+              action="action_gateway_ads_console"
+              sequence="7"
+              groups="mrp.group_mrp_manager"/>
+
+    <menuitem id="menu_gateway_ads_symbols"
+              name="Symbols"
+              parent="mrp_gateway_core.menu_gateway_runtime"
+              action="action_gateway_ads_symbol"
+              sequence="10"
+              groups="mrp.group_mrp_manager"/>
+
+    <menuitem id="menu_gateway_ads_subscriptions"
+              name="Subscriptions"
+              parent="mrp_gateway_core.menu_gateway_runtime"
+              action="action_gateway_ads_subscription"
+              sequence="12"
+              groups="mrp.group_mrp_manager"/>
+
+    <menuitem id="menu_gateway_ads_notifications"
+              name="Notifications"
+              parent="mrp_gateway_core.menu_gateway_runtime"
+              action="action_gateway_ads_notification"
+              sequence="13"
+              groups="mrp.group_mrp_manager"/>
+
+    <menuitem id="menu_gateway_ads_diagnostics"
+              name="Diagnostics"
+              parent="mrp_gateway_core.menu_gateway_runtime"
+              action="action_gateway_ads_diagnostic"
+              sequence="15"
+              groups="mrp.group_mrp_manager"/>
+</odoo>

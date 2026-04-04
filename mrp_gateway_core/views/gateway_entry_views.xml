@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_gateway_entry_tree" model="ir.ui.view">
+        <field name="name">gateway.entry.tree</field>
+        <field name="model">gateway.entry</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="sequence"/>
+                <field name="name"/>
+                <field name="code"/>
+                <field name="state"/>
+                <field name="entry_type"/>
+                <field name="workstation_ref"/>
+                <field name="last_seen_at"/>
+                <field name="active"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_gateway_entry_form" model="ir.ui.view">
+        <field name="name">gateway.entry.form</field>
+        <field name="model">gateway.entry</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="code"/>
+                            <field name="sequence"/>
+                            <field name="state"/>
+                            <field name="entry_type"/>
+                            <field name="active"/>
+                        </group>
+                        <group>
+                            <field name="workstation_ref"/>
+                            <field name="app_ref"/>
+                            <field name="connection_target"/>
+                            <field name="last_seen_at" readonly="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Config">
+                            <group>
+                                <field name="config_json" widget="text"/>
+                                <field name="config_text" widget="text"/>
+                                <field name="diagnostic_state" widget="text"/>
+                            </group>
+                        </page>
+                        <page string="Devices">
+                            <field name="device_ids">
+                                <list editable="bottom">
+                                    <field name="sequence"/>
+                                    <field name="name"/>
+                                    <field name="code"/>
+                                    <field name="state"/>
+                                    <field name="device_type"/>
+                                    <field name="last_seen_at"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Signals">
+                            <field name="signal_ids">
+                                <list editable="bottom">
+                                    <field name="sequence"/>
+                                    <field name="name"/>
+                                    <field name="code"/>
+                                    <field name="state"/>
+                                    <field name="signal_kind"/>
+                                    <field name="value_text"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Commands">
+                            <field name="command_ids">
+                                <list editable="bottom">
+                                    <field name="name"/>
+                                    <field name="code"/>
+                                    <field name="state"/>
+                                    <field name="command_type"/>
+                                    <field name="attempt_count"/>
+                                    <field name="last_attempt_at"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+</odoo>

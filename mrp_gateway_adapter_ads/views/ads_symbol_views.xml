@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_gateway_ads_symbol_tree" model="ir.ui.view">
+        <field name="name">gateway.ads.symbol.tree</field>
+        <field name="model">gateway.ads.symbol</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="sequence"/>
+                <field name="code"/>
+                <field name="name"/>
+                <field name="adapter_id"/>
+                <field name="state"/>
+                <field name="symbol_path"/>
+                <field name="index_group"/>
+                <field name="index_offset"/>
+                <field name="data_type"/>
+                <field name="access_mode"/>
+                <field name="writable"/>
+                <field name="subscription_enabled"/>
+                <field name="subscription_mode"/>
+                <field name="subscription_state"/>
+                <field name="subscription_count"/>
+                <field name="notification_count"/>
+                <field name="update_count"/>
+                <field name="last_read_at"/>
+                <field name="last_event_at"/>
+                <field name="last_write_at"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_gateway_ads_symbol_search" model="ir.ui.view">
+        <field name="name">gateway.ads.symbol.search</field>
+        <field name="model">gateway.ads.symbol</field>
+        <field name="arch" type="xml">
+                <search>
+                    <field name="code"/>
+                    <field name="name"/>
+                    <field name="adapter_id"/>
+                    <field name="symbol_path"/>
+                    <field name="data_type"/>
+                    <field name="access_mode"/>
+                    <field name="state"/>
+                    <field name="subscription_mode"/>
+                    <field name="subscription_state"/>
+                    <filter string="Ready" name="ready" domain="[('state', '=', 'ready')]"/>
+                    <filter string="Subscribed" name="subscribed" domain="[('subscription_state', '=', 'subscribed')]"/>
+                    <filter string="Subscription Errors" name="subscription_errors" domain="[('subscription_state', '=', 'error')]"/>
+                    <filter string="Notifications" name="notifications" domain="[('has_notifications', '=', True)]"/>
+                    <filter string="Open Notifications" name="open_notifications" domain="[('has_open_notifications', '=', True)]"/>
+                    <filter string="Writable" name="writable" domain="[('writable', '=', True)]"/>
+                    <separator string="Group By"/>
+                    <filter string="Adapter" name="group_adapter" context="{'group_by': 'adapter_id'}"/>
+                    <filter string="State" name="group_state" context="{'group_by': 'state'}"/>
+                    <filter string="Subscription" name="group_subscription" context="{'group_by': 'subscription_state'}"/>
+                    <filter string="Mode" name="group_mode" context="{'group_by': 'subscription_mode'}"/>
+                    <filter string="Access" name="group_access" context="{'group_by': 'access_mode'}"/>
+                </search>
+            </field>
+        </record>
+
+    <record id="view_gateway_ads_symbol_form" model="ir.ui.view">
+        <field name="name">gateway.ads.symbol.form</field>
+        <field name="model">gateway.ads.symbol</field>
+        <field name="arch" type="xml">
+            <form string="ADS Symbol">
+                <header>
+                    <button name="action_subscribe" type="object" string="Subscribe" class="btn-primary"/>
+                    <button name="action_unsubscribe" type="object" string="Unsubscribe" class="btn-secondary"/>
+                    <button name="action_preview_subscription_plan" type="object" string="Preview Plan" class="btn-secondary"/>
+                    <button name="action_open_subscriptions" type="object" string="Subscriptions" class="btn-secondary"/>
+                    <button name="action_open_notifications" type="object" string="Notifications" class="btn-secondary"/>
+                    <button name="action_refresh_subscription" type="object" string="Refresh Subscription" class="btn-secondary"/>
+                    <button name="action_push_test_update" type="object" string="Test Update" class="btn-secondary"/>
+                    <button name="action_consume_test_callback" type="object" string="Consume Callback" class="btn-primary"/>
+                    <button name="action_mark_ready" type="object" string="Mark Ready" class="btn-secondary"/>
+                    <button name="action_mark_disabled" type="object" string="Disable" class="btn-secondary"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,ready,degraded,offline,disabled"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="code"/>
+                            <field name="name"/>
+                            <field name="adapter_id"/>
+                            <field name="state"/>
+                            <field name="active"/>
+                        </group>
+                        <group>
+                            <field name="symbol_path"/>
+                            <field name="index_group"/>
+                            <field name="index_offset"/>
+                            <field name="data_type"/>
+                            <field name="array_length"/>
+                            <field name="access_mode"/>
+                            <field name="writable"/>
+                            <field name="subscription_enabled"/>
+                            <field name="subscription_mode"/>
+                            <field name="subscription_state"/>
+                            <field name="subscription_signal" readonly="1"/>
+                            <field name="subscription_handle" readonly="1"/>
+                            <field name="subscription_key" readonly="1"/>
+                            <field name="dispatcher_signal" readonly="1"/>
+                            <field name="notify_on_change"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Stream">
+                            <group>
+                                <group>
+                                    <field name="stream_state" readonly="1"/>
+                                    <field name="subscription_count" readonly="1"/>
+                                    <field name="active_subscription_count" readonly="1"/>
+                                    <field name="notification_count" readonly="1"/>
+                                    <field name="open_notification_count" readonly="1"/>
+                                </group>
+                                <group>
+                                    <field name="subscription_summary" readonly="1"/>
+                                    <field name="notification_summary" readonly="1"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Subscriptions">
+                            <field name="subscription_ids" readonly="1">
+                                <list>
+                                    <field name="code"/>
+                                    <field name="subscription_key"/>
+                                    <field name="subscription_mode"/>
+                                    <field name="state"/>
+                                    <field name="active"/>
+                                    <field name="last_subscribed_at"/>
+                                    <field name="last_notified_at"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Notifications">
+                            <field name="notification_ids" readonly="1">
+                                <list>
+                                    <field name="code"/>
+                                    <field name="event_kind"/>
+                                    <field name="state"/>
+                                    <field name="severity"/>
+                                    <field name="received_at"/>
+                                    <field name="dispatched_at"/>
+                                    <field name="acknowledged_at"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Diagnostics">
+                            <group>
+                                <field name="last_value_text"/>
+                                <field name="last_value_json"/>
+                                <field name="last_read_at"/>
+                                <field name="last_event_at"/>
+                                <field name="last_dispatch_at"/>
+                                <field name="last_write_at"/>
+                                <field name="last_subscription_at"/>
+                                <field name="last_unsubscription_at"/>
+                                <field name="update_count"/>
+                                <field name="last_error"/>
+                            </group>
+                        </page>
+                    </notebook>
+                    <field name="note" nolabel="1"/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+</odoo>

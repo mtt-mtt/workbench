@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_gateway_mqtt_topic_tree" model="ir.ui.view">
+        <field name="name">gateway.mqtt.topic.tree</field>
+        <field name="model">gateway.mqtt.topic</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="sequence"/>
+                <field name="name"/>
+                <field name="code"/>
+                <field name="topic_name"/>
+                <field name="topic_kind"/>
+                <field name="event_kind"/>
+                <field name="state"/>
+                <field name="last_seen_at"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_gateway_mqtt_topic_form" model="ir.ui.view">
+        <field name="name">gateway.mqtt.topic.form</field>
+        <field name="model">gateway.mqtt.topic</field>
+        <field name="arch" type="xml">
+            <form string="MQTT Topic">
+                <header>
+                    <button name="action_push_test_event" type="object" string="Push Test Event" class="btn-primary"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="adapter_id"/>
+                            <field name="runtime_adapter_id" readonly="1"/>
+                            <field name="name"/>
+                            <field name="code"/>
+                            <field name="sequence"/>
+                            <field name="active"/>
+                            <field name="state"/>
+                        </group>
+                        <group>
+                            <field name="topic_name"/>
+                            <field name="topic_kind"/>
+                            <field name="event_kind"/>
+                            <field name="default_status"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group>
+                            <field name="payload_format"/>
+                            <field name="qos"/>
+                            <field name="retain"/>
+                        </group>
+                        <group>
+                            <field name="message_hint"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="last_payload_text"/>
+                        <field name="last_normalized_json"/>
+                        <field name="note"/>
+                    </group>
+                    <group>
+                        <field name="diagnostic_ids" readonly="1">
+                            <list>
+                                <field name="occurred_at"/>
+                                <field name="direction"/>
+                                <field name="event_kind"/>
+                                <field name="status"/>
+                                <field name="topic_path"/>
+                                <field name="message"/>
+                            </list>
+                        </field>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_gateway_mqtt_topic_search" model="ir.ui.view">
+        <field name="name">gateway.mqtt.topic.search</field>
+        <field name="model">gateway.mqtt.topic</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="code"/>
+                <field name="topic_name"/>
+                <field name="adapter_id"/>
+                <filter string="Active" name="active" domain="[('active', '=', True)]"/>
+            </search>
+        </field>
+    </record>
+</odoo>

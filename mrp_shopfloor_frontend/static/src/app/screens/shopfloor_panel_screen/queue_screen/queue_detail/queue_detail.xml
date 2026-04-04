@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates xml:space="preserve">
+    <t t-name="mrp_shopfloor_frontend.ShopfloorQueueDetail" owl="1">
+        <div class="o_mrp_shopfloor_detail_panel o_mrp_shopfloor_detail_panel--compact">
+            <div class="o_mrp_shopfloor_card_label">Selected queue item details</div>
+            <t t-if="hasSelectedQueueItem">
+                <div class="o_mrp_shopfloor_detail_title"><t t-esc="props.selectedQueueItem.name"/></div>
+                <div class="o_mrp_shopfloor_detail_meta">
+                    <span class="badge rounded-pill" t-att-class="statusToneClass"><t t-esc="statusLabel"/></span>
+                    <span class="badge rounded-pill" t-att-class="priorityToneClass"><t t-esc="priorityLabel"/></span>
+                    <span><t t-esc="progressLabel"/></span>
+                    <span><t t-esc="props.selectedQueueItem.reference || 'no reference'"/></span>
+                    <span><t t-esc="props.selectedQueueItem.stage || 'no stage'"/></span>
+                    <span><t t-esc="props.selectedQueueItem.message || 'no message'"/></span>
+                </div>
+                <div class="o_mrp_shopfloor_detail_meta">
+                    <span><t t-esc="props.selectedQueueItem.workorder_ref || 'no workorder ref'"/></span>
+                    <span><t t-esc="props.selectedQueueItem.production_ref || 'no production ref'"/></span>
+                    <span><t t-esc="props.selectedQueueItem.source || 'backend'"/></span>
+                </div>
+                <div class="o_mrp_shopfloor_detail_meta">
+                    <span>Context <t t-esc="selectedContextReference"/></span>
+                    <span>Workorder <t t-esc="selectedContextWorkorderRef"/></span>
+                    <span>Production <t t-esc="selectedContextProductionRef"/></span>
+                    <span t-if="selectionVisibilityLabel"><t t-esc="selectionVisibilityLabel"/></span>
+                </div>
+                <t t-if="filterSummaryLabel">
+                    <div class="o_mrp_shopfloor_empty"><t t-esc="filterSummaryLabel"/></div>
+                </t>
+                <t t-if="attentionLabel">
+                    <div class="o_mrp_shopfloor_empty"><t t-esc="attentionLabel"/></div>
+                </t>
+                <t t-if="props.selectedQueueVisible === false">
+                    <button type="button" class="btn btn-sm btn-outline-light mt-2" t-on-click="clearFilters">Show all queue items</button>
+                </t>
+            </t>
+            <t t-else="">
+                <div class="o_mrp_shopfloor_empty">Select a queue item to inspect the execution details.</div>
+            </t>
+        </div>
+    </t>
+</templates>

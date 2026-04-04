@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates xml:space="preserve">
+    <t t-name="mrp_shopfloor_frontend.ShopfloorDeviceList" owl="1">
+        <div class="o_mrp_shopfloor_panel_stack">
+            <div class="o_mrp_shopfloor_detail_panel o_mrp_shopfloor_detail_panel--compact">
+                <div class="o_mrp_shopfloor_api_head">
+                    <div>
+                        <div class="o_mrp_shopfloor_card_label">Device groups</div>
+                        <div class="o_mrp_shopfloor_detail_title">Visible devices</div>
+                    </div>
+                    <div class="o_mrp_shopfloor_detail_meta">
+                        <span>Visible <t t-esc="props.summary?.total || 0"/></span>
+                        <span>Attention <t t-esc="props.summary?.attentionCount || 0"/></span>
+                        <span>Selected <t t-esc="props.summary?.selectedState || 'unknown'"/></span>
+                    </div>
+                </div>
+                <t t-if="hasGroups">
+                    <div class="o_mrp_shopfloor_panel_stack mt-3">
+                        <t t-foreach="groups" t-as="group" t-key="group.key">
+                            <section class="o_mrp_shopfloor_detail_panel o_mrp_shopfloor_detail_panel--compact">
+                                <div class="o_mrp_shopfloor_api_head">
+                                    <div>
+                                        <div class="o_mrp_shopfloor_card_label">
+                                            <t t-esc="props.summary?.groupByLabel || 'Group'"/>
+                                        </div>
+                                        <div class="o_mrp_shopfloor_detail_title">
+                                            <t t-esc="group.label"/>
+                                        </div>
+                                    </div>
+                                    <span class="badge rounded-pill text-bg-secondary">
+                                        Count <t t-esc="group.count"/>
+                                    </span>
+                                </div>
+                                <div class="o_mrp_shopfloor_list mt-3">
+                                    <t t-foreach="group.items" t-as="device" t-key="device.code || device.id">
+                                        <ShopfloorDeviceRow
+                                            device="device"
+                                            selected="String(props.selectedDevice?.code) === String(device.code)"
+                                            onOpenDevice="openDevice"
+                                        />
+                                    </t>
+                                </div>
+                            </section>
+                        </t>
+                    </div>
+                </t>
+                <t t-else="">
+                    <div class="o_mrp_shopfloor_empty">
+                        <div class="fw-semibold"><t t-esc="emptyStateLabel"/></div>
+                        <small t-if="filterSummaryLabel">
+                            <t t-esc="filterSummaryLabel"/>
+                        </small>
+                        <button t-if="props.hasActiveFilters"
+                                type="button"
+                                class="btn btn-sm btn-outline-light mt-2"
+                                t-on-click="clearFilters">
+                            Reset filters
+                        </button>
+                    </div>
+                </t>
+            </div>
+        </div>
+    </t>
+</templates>

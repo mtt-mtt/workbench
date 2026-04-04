@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates xml:space="preserve">
+    <t t-name="mrp_shopfloor_frontend.ShopfloorActivityCard" owl="1">
+        <section class="o_mrp_shopfloor_card">
+            <div class="o_mrp_shopfloor_card_label">Activity log</div>
+            <ul class="o_mrp_shopfloor_activity">
+                <t t-foreach="props.activity" t-as="item" t-key="item">
+                    <li>
+                        <t t-esc="item.label || item.title || item"/>
+                        <t t-if="item.statusLabel || item.status">
+                            <span class="badge rounded-pill ms-2" t-att-class="'text-bg-' + (item.statusTone || item.status || 'secondary')">
+                                <t t-esc="item.statusLabel || item.status"/>
+                            </span>
+                        </t>
+                    </li>
+                </t>
+            </ul>
+        </section>
+    </t>
+</templates>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates xml:space="preserve">
+    <t t-name="mrp_shopfloor_frontend.ShopfloorExecutionExceptionActions" owl="1">
+        <div class="o_mrp_shopfloor_exception_actions">
+            <button type="button" class="btn btn-outline-danger btn-sm" data-message="Barcode missing" data-severity="medium" t-on-click="reportException">Report barcode issue</button>
+            <button type="button" class="btn btn-outline-danger btn-sm" data-message="Device timeout" data-severity="high" t-on-click="reportException">Report device timeout</button>
+            <button type="button" class="btn btn-outline-danger btn-sm" data-message="Quality stop" data-severity="critical" t-on-click="reportException">Report quality stop</button>
+        </div>
+    </t>
+</templates>

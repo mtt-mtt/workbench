@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates xml:space="preserve">
+    <t t-name="mrp_shopfloor_frontend.ShopfloorExceptionActions" owl="1">
+        <section class="o_mrp_shopfloor_detail_panel o_mrp_shopfloor_exception_actions_panel">
+            <div class="o_mrp_shopfloor_card_label">Exception transitions</div>
+            <div class="o_mrp_shopfloor_panel_stack">
+                <ShopfloorStatusSummary items="summaryItems" title="'Exception summary'" subtitle="'Use the actions below to move the exception through the workflow.'"/>
+                <div class="o_mrp_shopfloor_api_detail">
+                    <t t-esc="branchSummaryText"/>
+                </div>
+                <div class="o_mrp_shopfloor_exception_action_grid">
+                    <t t-foreach="actions" t-as="action" t-key="action.key">
+                        <button type="button"
+                                class="btn btn-sm"
+                                t-att-class="action.buttonClass"
+                                t-att-data-action="action.key"
+                                t-att-data-label="action.label"
+                                t-att-data-confirm-label="action.confirmLabel"
+                                t-att-data-message="action.message"
+                                t-att-data-severity="action.severity"
+                                t-att-data-state="action.state"
+                                t-att-data-description="action.description"
+                                t-on-click="requestAction">
+                            <t t-esc="action.label"/>
+                        </button>
+                    </t>
+                </div>
+                <t t-if="hasPendingAction">
+                    <div class="o_mrp_shopfloor_exception_transition_confirm">
+                        <div class="o_mrp_shopfloor_api_head">
+                            <div>
+                                <div class="o_mrp_shopfloor_card_label">Confirm transition</div>
+                                <div class="o_mrp_shopfloor_detail_title"><t t-esc="pendingActionTitle"/></div>
+                            </div>
+                            <span class="badge rounded-pill text-bg-secondary">
+                                <t t-esc="pendingAction.key"/>
+                            </span>
+                        </div>
+                        <p class="o_mrp_shopfloor_api_detail">
+                            <t t-esc="pendingActionSummary"/>
+                        </p>
+                        <div class="o_mrp_shopfloor_exception_actions">
+                            <button type="button"
+                                    class="btn btn-sm btn-primary"
+                                    t-att-data-action="pendingAction.key"
+                                    t-att-data-label="pendingAction.label"
+                                    t-att-data-confirm-label="pendingAction.confirmLabel"
+                                    t-att-data-message="pendingAction.message"
+                                    t-att-data-severity="pendingAction.severity"
+                                    t-att-data-state="pendingAction.state"
+                                    t-att-data-description="pendingAction.description"
+                                    t-on-click="confirmAction">
+                                Confirm
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-light" t-on-click="cancelAction">Cancel</button>
+                        </div>
+                    </div>
+                </t>
+            </div>
+        </section>
+    </t>
+</templates>

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_gateway_opcua_root" name="OPC UA" sequence="30"/>
+    <menuitem id="menu_gateway_opcua_adapters" name="Adapters" parent="menu_gateway_opcua_root" action="action_gateway_opcua_adapters" sequence="10"/>
+    <menuitem id="menu_gateway_opcua_nodes" name="Nodes" parent="menu_gateway_opcua_root" action="action_gateway_opcua_nodes" sequence="20"/>
+    <menuitem id="menu_gateway_opcua_diagnostics" name="Diagnostics" parent="menu_gateway_opcua_root" action="action_gateway_opcua_diagnostics" sequence="30"/>
+</odoo>

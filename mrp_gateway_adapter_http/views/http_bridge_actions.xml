@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_gateway_http_bridge" model="ir.actions.act_window">
+        <field name="name">HTTP Bridges</field>
+        <field name="res_model">gateway.http.bridge</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <record id="action_gateway_http_endpoint" model="ir.actions.act_window">
+        <field name="name">HTTP Endpoints</field>
+        <field name="res_model">gateway.http.endpoint</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+</odoo>

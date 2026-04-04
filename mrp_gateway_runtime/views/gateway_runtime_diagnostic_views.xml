@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_gateway_runtime_console_tree" model="ir.ui.view">
+        <field name="name">gateway.runtime.adapter.console.tree</field>
+        <field name="model">gateway.runtime.adapter</field>
+        <field name="arch" type="xml">
+            <list string="Runtime Console">
+                <field name="code"/>
+                <field name="name"/>
+                <field name="adapter_type"/>
+                <field name="state"/>
+                <field name="health_state"/>
+                <field name="health_score"/>
+                <field name="lifecycle_state"/>
+                <field name="coordinator_mode"/>
+                <field name="issue_count"/>
+                <field name="open_issue_count"/>
+                <field name="repair_issue_count"/>
+                <field name="attention_route_summary"/>
+                <field name="console_summary"/>
+                <field name="console_attention_summary"/>
+                <field name="recent_activity_summary"/>
+                <field name="probe_summary"/>
+                <field name="probe_session_summary"/>
+                <field name="last_heartbeat_at"/>
+                <field name="last_success_at"/>
+                <field name="last_failure_at"/>
+                <field name="last_error"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_gateway_runtime_console_search" model="ir.ui.view">
+        <field name="name">gateway.runtime.adapter.console.search</field>
+        <field name="model">gateway.runtime.adapter</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="code"/>
+                <field name="name"/>
+                <field name="adapter_type"/>
+                <field name="state"/>
+                <field name="health_state"/>
+                <field name="coordinator_mode"/>
+                <field name="issue_count"/>
+                <field name="open_issue_count"/>
+                <field name="repair_issue_count"/>
+                <field name="attention_route_summary"/>
+                <field name="console_summary"/>
+                <field name="console_attention_summary"/>
+                <filter string="Needs Attention" name="needs_attention" domain="['|', ('issue_ids.state', 'in', ['new', 'open', 'in_progress']), ('health_state', 'in', ['warning', 'degraded', 'offline'])]"/>
+                <filter string="Open Issues" name="open_issues" domain="[('issue_ids.state', 'in', ['new', 'open', 'in_progress'])]"/>
+                <filter string="Fixable Issues" name="fixable_issues" domain="[('issue_ids.is_fixable', '=', True)]"/>
+                <filter string="Repair Queue" name="repair_queue" domain="[('issue_ids.state', 'in', ['new', 'open', 'in_progress']), ('issue_ids.is_fixable', '=', True)]"/>
+                <filter string="Pending Probes" name="pending_probes" domain="[('probe_session_ids.state', 'in', ['draft', 'running'])]"/>
+                <filter string="Probe Attention" name="probe_attention" domain="[('probe_session_ids.result_state', 'in', ['warning', 'error'])]"/>
+                <filter string="Protocol Probe" name="probe_targets" domain="[('adapter_type', 'in', ['mqtt', 'modbus', 'opcua', 'ads', 's7'])]"/>
+                <filter string="Ready" name="ready" domain="[('state', '=', 'ready')]"/>
+                <filter string="Degraded" name="degraded" domain="[('state', '=', 'degraded')]"/>
+                <filter string="Offline" name="offline" domain="[('state', '=', 'offline')]"/>
+                <filter string="Disabled" name="disabled" domain="[('state', '=', 'disabled')]"/>
+                <separator string="Group By"/>
+                <filter string="Adapter Type" name="group_adapter_type" context="{'group_by': 'adapter_type'}"/>
+                <filter string="Health" name="group_health_state" context="{'group_by': 'health_state'}"/>
+                <filter string="State" name="group_state" context="{'group_by': 'state'}"/>
+                <filter string="Coordinator" name="group_coordinator_mode" context="{'group_by': 'coordinator_mode'}"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="view_gateway_runtime_diagnostic_tree" model="ir.ui.view">
+        <field name="name">gateway.runtime.adapter.diagnostic.tree</field>
+        <field name="model">gateway.runtime.adapter</field>
+        <field name="arch" type="xml">
+            <list string="Runtime Diagnostics">
+                <field name="sequence"/>
+                <field name="code"/>
+                <field name="adapter_type"/>
+                <field name="state"/>
+                <field name="lifecycle_state"/>
+                <field name="coordinator_mode"/>
+                <field name="health_state"/>
+                <field name="health_score"/>
+                <field name="capability_summary"/>
+                <field name="console_summary"/>
+                <field name="console_attention_summary"/>
+                <field name="probe_summary"/>
+                <field name="probe_session_summary"/>
+                <field name="recent_activity_summary"/>
+                <field name="issue_count"/>
+                <field name="open_issue_count"/>
+                <field name="repair_issue_count"/>
+                <field name="last_update_success"/>
+                <field name="retry_after_seconds"/>
+                <field name="reconnect_policy"/>
+                <field name="reconnect_attempts"/>
+                <field name="heartbeat_timeout_seconds"/>
+                <field name="last_heartbeat_at"/>
+                <field name="last_update_success_at"/>
+                <field name="last_update_failure_at"/>
+                <field name="last_success_at"/>
+                <field name="last_reload_at"/>
+                <field name="last_repair_at"/>
+                <field name="last_failure_at"/>
+                <field name="last_error"/>
+            </list>
+        </field>
+    </record>
+
+</odoo>

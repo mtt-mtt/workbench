@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates xml:space="preserve">
+    <t t-name="mrp_shopfloor_frontend.ShopfloorDeviceToolbar" owl="1">
+        <section class="o_mrp_shopfloor_detail_panel o_mrp_shopfloor_queue_toolbar">
+            <div class="o_mrp_shopfloor_card_label">Device controls</div>
+            <div class="o_mrp_shopfloor_queue_toolbar_stack">
+                <div class="o_mrp_shopfloor_queue_toolbar_row">
+                    <div class="o_mrp_shopfloor_queue_toolbar_search">
+                        <input type="search"
+                               class="form-control form-control-sm"
+                               placeholder="Search devices"
+                               t-att-value="props.searchText || ''"
+                               t-on-input="onSearchInput"/>
+                    </div>
+                    <ShopfloorStatusSummary items="visibleSummaryItems"/>
+                    <span class="badge rounded-pill text-bg-info">Group <t t-esc="groupLabel"/></span>
+                    <span class="badge rounded-pill text-bg-light">State <t t-esc="stateLabel"/></span>
+                </div>
+
+                <div class="o_mrp_shopfloor_queue_toolbar_row o_mrp_shopfloor_queue_toolbar_row--wrap">
+                    <span class="text-uppercase small text-secondary-emphasis">Group</span>
+                    <t t-foreach="groupOptions" t-as="option" t-key="option.key">
+                        <button type="button"
+                                class="btn btn-sm"
+                                t-att-class="(props.groupBy || 'state') === option.key ? 'btn-info' : 'btn-outline-info'"
+                                t-att-data-group-by="option.key"
+                                t-on-click="changeGroupBy">
+                            <t t-esc="option.label"/>
+                        </button>
+                    </t>
+                </div>
+
+                <div class="o_mrp_shopfloor_queue_toolbar_row o_mrp_shopfloor_queue_toolbar_row--wrap">
+                    <span class="text-uppercase small text-secondary-emphasis">State</span>
+                    <t t-foreach="stateFilters" t-as="filter" t-key="filter.key">
+                        <button type="button"
+                                class="btn btn-sm"
+                                t-att-class="(props.stateFilter || 'all') === filter.key ? 'btn-primary' : 'btn-outline-secondary'"
+                                t-att-data-state-filter="filter.key"
+                                t-on-click="changeStateFilter">
+                            <t t-esc="filter.label"/>
+                        </button>
+                    </t>
+                    <button type="button"
+                            class="btn btn-sm btn-outline-light ms-auto"
+                            t-att-disabled="canClearFilters ? undefined : true"
+                            t-on-click="clearFilters">
+                        Reset filters
+                    </button>
+                </div>
+            </div>
+        </section>
+    </t>
+</templates>

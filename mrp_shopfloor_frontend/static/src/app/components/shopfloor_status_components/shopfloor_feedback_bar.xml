@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates xml:space="preserve">
+    <t t-name="mrp_shopfloor_frontend.ShopfloorFeedbackBar" owl="1">
+        <div t-att-class="noteClass">
+            <span class="badge rounded-pill" t-att-class="toneClass"><t t-esc="props.label"/></span>
+            <t t-if="props.detail">
+                <span class="o_mrp_shopfloor_feedback_bar_detail"><t t-esc="props.detail"/></span>
+            </t>
+            <t t-if="props.actionLabel">
+                <button type="button"
+                        class="btn btn-sm btn-outline-light o_mrp_shopfloor_feedback_bar_action"
+                        t-on-click="triggerAction">
+                    <t t-esc="props.actionLabel"/>
+                </button>
+            </t>
+        </div>
+    </t>
+</templates>

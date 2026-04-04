@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates xml:space="preserve">
+    <t t-name="mrp_shopfloor_frontend.ShopfloorQueueList" owl="1">
+        <div class="o_mrp_shopfloor_detail_meta">
+            <span>Visible <t t-esc="queueSummary.total"/> / <t t-esc="queueSummary.baseTotal || queueSummary.total"/></span>
+            <span>Attention <t t-esc="queueSummary.attentionCount"/> / <t t-esc="queueSummary.baseAttentionCount || queueSummary.attentionCount"/></span>
+            <span>Selected <t t-esc="queueSummary.selectedStatus"/></span>
+            <t t-if="queueSummary.isFiltered">
+                <span>Status <t t-esc="queueSummary.statusFilterLabel"/></span>
+                <span>Sort <t t-esc="queueSummary.sortLabel"/></span>
+            </t>
+        </div>
+        <t t-if="hasItems">
+            <div class="o_mrp_shopfloor_list">
+                <t t-foreach="props.queue" t-as="item" t-key="item.id">
+                    <ShopfloorQueueRow
+                        item="item"
+                        selected="String(props.selectedQueueItem?.id) === String(item.id)"
+                        onOpenQueueItem="openQueueItem"
+                    />
+                </t>
+            </div>
+        </t>
+        <t t-else="">
+            <div class="o_mrp_shopfloor_empty">
+                <div class="fw-semibold"><t t-esc="emptyStateLabel"/></div>
+                <small t-if="filterSummaryLabel">
+                    <t t-esc="filterSummaryLabel"/>
+                </small>
+                <button t-if="props.hasActiveFilters"
+                        type="button"
+                        class="btn btn-sm btn-outline-light mt-2"
+                        t-on-click="clearFilters">
+                    Reset filters
+                </button>
+            </div>
+        </t>
+    </t>
+</templates>

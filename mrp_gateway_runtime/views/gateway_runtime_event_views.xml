@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_gateway_runtime_event_tree" model="ir.ui.view">
+        <field name="name">gateway.runtime.event.tree</field>
+        <field name="model">gateway.runtime.event</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="code"/>
+                <field name="event_kind"/>
+                <field name="change_kind"/>
+                <field name="discovery_state"/>
+                <field name="severity"/>
+                <field name="state"/>
+                <field name="adapter_id"/>
+                <field name="device_id"/>
+                <field name="command_id"/>
+                <field name="source_signal"/>
+                <field name="occurred_at"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_gateway_runtime_event_form" model="ir.ui.view">
+        <field name="name">gateway.runtime.event.form</field>
+        <field name="model">gateway.runtime.event</field>
+        <field name="arch" type="xml">
+            <form string="Gateway Runtime Event">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="code"/>
+                            <field name="adapter_id"/>
+                            <field name="entry_id"/>
+                            <field name="device_id"/>
+                            <field name="command_id"/>
+                        </group>
+                        <group>
+                            <field name="event_kind"/>
+                            <field name="change_kind"/>
+                            <field name="discovery_state"/>
+                            <field name="severity"/>
+                            <field name="state"/>
+                            <field name="app_id"/>
+                            <field name="workstation_id"/>
+                            <field name="session_ref"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="message"/>
+                        <field name="result"/>
+                    </group>
+                    <group>
+                        <field name="source_signal"/>
+                        <field name="source_payload_id"/>
+                        <field name="probe_session_id"/>
+                        <field name="state_version"/>
+                        <field name="registry_action"/>
+                        <field name="ui_refresh_hint"/>
+                    </group>
+                    <field name="payload_json" nolabel="1"/>
+                    <field name="normalized_json" nolabel="1"/>
+                    <field name="note" nolabel="1"/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_gateway_s7_point_list" model="ir.ui.view">
+        <field name="name">gateway.s7.point.list</field>
+        <field name="model">gateway.s7.point</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="code"/>
+                <field name="name"/>
+                <field name="state"/>
+                <field name="adapter_id"/>
+                <field name="tag_id"/>
+                <field name="db_number"/>
+                <field name="byte_offset"/>
+                <field name="bit_index"/>
+                <field name="data_type"/>
+                <field name="writable"/>
+            </list>
+        </field>
+    </record>
+    <record id="view_gateway_s7_point_form" model="ir.ui.view">
+        <field name="name">gateway.s7.point.form</field>
+        <field name="model">gateway.s7.point</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_preview_read_plan" type="object" string="Preview Read Plan"/>
+                    <button name="action_preview_write_plan" type="object" string="Preview Write Plan"/>
+                    <button name="action_submit_test_snapshot" type="object" string="Test Snapshot"/>
+                    <button name="action_submit_test_write_ack" type="object" string="Test Write Ack"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,ready,degraded,offline,disabled"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="code"/>
+                            <field name="name"/>
+                            <field name="adapter_id"/>
+                            <field name="tag_id"/>
+                            <field name="signal_id"/>
+                        </group>
+                        <group>
+                            <field name="db_number"/>
+                            <field name="byte_offset"/>
+                            <field name="bit_index"/>
+                            <field name="data_type"/>
+                            <field name="writable"/>
+                            <field name="read_only"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="current_value_text"/>
+                        <field name="current_value_number"/>
+                        <field name="last_snapshot_at"/>
+                        <field name="note"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+</odoo>

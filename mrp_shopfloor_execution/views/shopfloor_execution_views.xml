@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_shopfloor_execution_tree" model="ir.ui.view">
+        <field name="name">shopfloor.execution.tree</field>
+        <field name="model">shopfloor.execution</field>
+        <field name="arch" type="xml">
+                <list>
+                    <field name="name"/>
+                    <field name="state"/>
+                    <field name="action_type"/>
+                    <field name="app_code"/>
+                    <field name="workstation_code"/>
+                    <field name="gateway_entry_code"/>
+                    <field name="gateway_command_code"/>
+                    <field name="exception_code"/>
+                    <field name="session_ref"/>
+                    <field name="reference"/>
+                </list>
+        </field>
+    </record>
+
+    <record id="view_shopfloor_execution_form" model="ir.ui.view">
+        <field name="name">shopfloor.execution.form</field>
+        <field name="model">shopfloor.execution</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="state"/>
+                            <field name="action_type"/>
+                            <field name="reference"/>
+                            <field name="command_key"/>
+                            <field name="gateway_entry_code"/>
+                            <field name="gateway_command_code"/>
+                            <field name="exception_code"/>
+                            <field name="idempotency_key"/>
+                        </group>
+                        <group>
+                            <field name="app_code"/>
+                            <field name="workstation_code"/>
+                            <field name="session_ref"/>
+                            <field name="production_id"/>
+                            <field name="workorder_id"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Payload">
+                            <field name="payload_data" nolabel="1"/>
+                        </page>
+                        <page string="Response">
+                            <field name="response_data" nolabel="1"/>
+                        </page>
+                        <page string="Notes">
+                            <field name="note" nolabel="1"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_shopfloor_exception_tree" model="ir.ui.view">
+        <field name="name">shopfloor.exception.tree</field>
+        <field name="model">shopfloor.exception</field>
+        <field name="arch" type="xml">
+                <list>
+                    <field name="name"/>
+                    <field name="state"/>
+                    <field name="severity"/>
+                    <field name="exception_type"/>
+                    <field name="workstation_code"/>
+                    <field name="gateway_entry_code"/>
+                    <field name="gateway_command_code"/>
+                    <field name="session_ref"/>
+                    <field name="message"/>
+                </list>
+        </field>
+    </record>
+
+    <record id="view_shopfloor_exception_form" model="ir.ui.view">
+        <field name="name">shopfloor.exception.form</field>
+        <field name="model">shopfloor.exception</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="state"/>
+                            <field name="severity"/>
+                            <field name="exception_type"/>
+                            <field name="message"/>
+                            <field name="gateway_entry_code"/>
+                            <field name="gateway_command_code"/>
+                        </group>
+                        <group>
+                            <field name="app_code"/>
+                            <field name="workstation_code"/>
+                            <field name="session_ref"/>
+                            <field name="execution_id"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="payload_data"/>
+                        <field name="details"/>
+                        <field name="resolution_note"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_shopfloor_execution" model="ir.actions.act_window">
+        <field name="name">Executions</field>
+        <field name="res_model">shopfloor.execution</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <record id="action_shopfloor_exception" model="ir.actions.act_window">
+        <field name="name">Exceptions</field>
+        <field name="res_model">shopfloor.exception</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <menuitem id="menu_shopfloor_execution_root"
+              name="Execution"
+              parent="mrp_shopfloor_core.menu_shopfloor_operations"
+              sequence="95"
+              groups="mrp.group_mrp_user"/>
+
+    <menuitem id="menu_shopfloor_execution_records"
+              name="Executions"
+              parent="menu_shopfloor_execution_root"
+              action="action_shopfloor_execution"
+              sequence="10"
+              groups="mrp.group_mrp_user"/>
+
+    <menuitem id="menu_shopfloor_exception_records"
+              name="Exceptions"
+              parent="menu_shopfloor_execution_root"
+              action="action_shopfloor_exception"
+              sequence="20"
+              groups="mrp.group_mrp_user"/>
+</odoo>

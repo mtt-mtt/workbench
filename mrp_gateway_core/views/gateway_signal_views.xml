@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_gateway_signal_tree" model="ir.ui.view">
+        <field name="name">gateway.signal.tree</field>
+        <field name="model">gateway.signal</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="sequence"/>
+                <field name="name"/>
+                <field name="code"/>
+                <field name="entry_id"/>
+                <field name="device_id"/>
+                <field name="state"/>
+                <field name="signal_kind"/>
+                <field name="value_text"/>
+                <field name="value_number"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_gateway_signal_form" model="ir.ui.view">
+        <field name="name">gateway.signal.form</field>
+        <field name="model">gateway.signal</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="code"/>
+                            <field name="entry_id"/>
+                            <field name="device_id"/>
+                            <field name="state"/>
+                            <field name="sequence"/>
+                            <field name="active"/>
+                        </group>
+                        <group>
+                            <field name="signal_kind"/>
+                            <field name="technical_key"/>
+                            <field name="unit"/>
+                            <field name="last_seen_at" readonly="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Value">
+                            <field name="value_text"/>
+                            <field name="value_number"/>
+                        </page>
+                        <page string="Config">
+                            <field name="config_json" widget="text"/>
+                            <field name="config_text" widget="text"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+</odoo>

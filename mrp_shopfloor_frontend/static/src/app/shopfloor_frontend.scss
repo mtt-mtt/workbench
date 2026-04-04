@@ -1,0 +1,913 @@
+.o_mrp_shopfloor_app {
+    --o-mrp-shopfloor-surface: rgba(7, 14, 26, 0.72);
+    --o-mrp-shopfloor-surface-soft: rgba(255, 255, 255, 0.04);
+    --o-mrp-shopfloor-border: rgba(255, 255, 255, 0.08);
+    --o-mrp-shopfloor-border-active: rgba(158, 197, 255, 0.45);
+    --o-mrp-shopfloor-text-muted: rgba(231, 238, 247, 0.72);
+    --o-mrp-shopfloor-text-soft: rgba(231, 238, 247, 0.58);
+    min-height: 100vh;
+    overflow-x: clip;
+    isolation: isolate;
+    color: #e7eef7;
+    background:
+        radial-gradient(circle at top left, rgba(76, 132, 255, 0.3), transparent 35%),
+        radial-gradient(circle at top right, rgba(35, 179, 162, 0.2), transparent 30%),
+        linear-gradient(160deg, #0e1726 0%, #111d31 42%, #08111e 100%);
+}
+
+.o_mrp_shopfloor_backdrop {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background-image:
+        linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+    background-size: 48px 48px;
+    mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.8), transparent 90%);
+}
+
+.o_mrp_shopfloor_shell {
+    position: relative;
+    z-index: 1;
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: clamp(20px, 2.5vw, 32px);
+}
+
+.o_mrp_shopfloor_header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 24px;
+    margin-bottom: 24px;
+}
+
+.o_mrp_shopfloor_kicker {
+    display: inline-block;
+    padding: 6px 10px;
+    margin-bottom: 12px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.08);
+    color: #9ec5ff;
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.o_mrp_shopfloor_header h1 {
+    margin: 0;
+    font-size: clamp(30px, 4vw, 54px);
+    line-height: 1.05;
+    letter-spacing: -0.04em;
+}
+
+.o_mrp_shopfloor_subtitle {
+    max-width: 760px;
+    margin: 14px 0 0;
+    color: rgba(231, 238, 247, 0.72);
+    font-size: 16px;
+}
+
+.o_mrp_shopfloor_header_actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.o_mrp_shopfloor_banner {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 18px;
+    margin-bottom: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.o_mrp_shopfloor_banner--error {
+    border-color: rgba(255, 95, 95, 0.3);
+    background: rgba(255, 95, 95, 0.08);
+}
+
+.o_mrp_shopfloor_workspace_frame {
+    display: grid;
+    grid-template-columns: 280px minmax(0, 1fr) 360px;
+    gap: 20px;
+    align-items: start;
+}
+
+.o_mrp_shopfloor_workspace_frame > * {
+    min-width: 0;
+}
+
+.o_mrp_shopfloor_nav_rail {
+    display: grid;
+    gap: 16px;
+    position: sticky;
+    top: 24px;
+    align-self: start;
+    max-height: calc(100vh - 48px);
+    overflow: auto;
+}
+
+.o_mrp_shopfloor_nav {
+    display: grid;
+    gap: 10px;
+}
+
+.o_mrp_shopfloor_nav_button {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 14px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.04);
+    color: inherit;
+    text-align: left;
+    transition: transform 0.16s ease, border-color 0.16s ease, background 0.16s ease;
+}
+
+.o_mrp_shopfloor_workspace_main {
+    display: grid;
+    gap: 20px;
+    min-width: 0;
+}
+
+.o_mrp_shopfloor_card--rail {
+    padding: 18px;
+}
+
+.o_mrp_shopfloor_rail_title {
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+}
+
+.o_mrp_shopfloor_rail_meta {
+    display: grid;
+    gap: 8px;
+    margin-top: 12px;
+    color: rgba(231, 238, 247, 0.72);
+}
+
+.o_mrp_shopfloor_rail_meta span {
+    padding: 8px 10px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.o_mrp_shopfloor_rail_status {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 14px;
+}
+
+.o_mrp_shopfloor_nav_button:hover,
+.o_mrp_shopfloor_nav_button.is-active {
+    transform: translateY(-1px);
+    border-color: var(--o-mrp-shopfloor-border-active);
+    background: rgba(158, 197, 255, 0.1);
+}
+
+.o_mrp_shopfloor_nav_button small {
+    color: rgba(231, 238, 247, 0.5);
+}
+
+.o_mrp_shopfloor_layout {
+    display: grid;
+    grid-template-columns: 1.2fr 0.8fr;
+    gap: 20px;
+}
+
+.o_mrp_shopfloor_card {
+    padding: 22px;
+    border: 1px solid var(--o-mrp-shopfloor-border);
+    border-radius: 20px;
+    background: var(--o-mrp-shopfloor-surface);
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.22);
+    backdrop-filter: blur(16px);
+    overflow: hidden;
+}
+
+.o_mrp_shopfloor_card--hero {
+    grid-column: 1 / span 2;
+}
+
+.o_mrp_shopfloor_card--summary {
+    display: grid;
+    gap: 14px;
+}
+
+.o_mrp_shopfloor_card--workspace {
+    min-height: 460px;
+    display: grid;
+    gap: 16px;
+}
+
+.o_mrp_shopfloor_panel_stage {
+    position: relative;
+    overflow: hidden;
+    display: grid;
+    gap: 16px;
+}
+
+.o_mrp_shopfloor_panel_stage_body {
+    display: grid;
+    gap: 16px;
+}
+
+.o_mrp_shopfloor_panel_stage_body--panel {
+    gap: 18px;
+}
+
+.o_mrp_shopfloor_panel_stage_header {
+    display: flex;
+    align-items: stretch;
+    justify-content: space-between;
+    gap: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.o_mrp_shopfloor_panel_stage_intro {
+    display: grid;
+    gap: 8px;
+    min-width: 0;
+}
+
+.o_mrp_shopfloor_panel_stage_title {
+    padding: 8px 12px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.06);
+    color: rgba(231, 238, 247, 0.82);
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.o_mrp_shopfloor_panel_stage_description {
+    margin: 0;
+    max-width: 760px;
+    color: rgba(231, 238, 247, 0.66);
+    line-height: 1.45;
+}
+
+.o_mrp_shopfloor_panel_stage_badges {
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-end;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.o_mrp_shopfloor_panel_stage_badges .badge {
+    padding: 8px 12px;
+    border-radius: 999px;
+}
+
+.o_mrp_shopfloor_card_label {
+    margin-bottom: 10px;
+    color: var(--o-mrp-shopfloor-text-soft);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+}
+
+.o_mrp_shopfloor_card_value {
+    font-size: clamp(24px, 2.6vw, 38px);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+}
+
+.o_mrp_shopfloor_meta {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 14px;
+    color: var(--o-mrp-shopfloor-text-muted);
+}
+
+.o_mrp_shopfloor_meta span {
+    padding: 8px 12px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.o_mrp_shopfloor_status {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 16px;
+}
+
+.o_mrp_shopfloor_section_head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 18px;
+}
+
+.o_mrp_shopfloor_section_head h2 {
+    margin: 2px 0 0;
+    font-size: 28px;
+    letter-spacing: -0.03em;
+}
+
+.o_mrp_shopfloor_section_actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.o_mrp_shopfloor_panel_stack {
+    display: grid;
+    gap: 14px;
+}
+
+.o_mrp_shopfloor_panel_split {
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(320px, 0.85fr);
+    gap: 14px;
+    align-items: start;
+}
+
+.o_mrp_shopfloor_panel_split > * {
+    min-width: 0;
+}
+
+.o_mrp_shopfloor_queue_panel_split,
+.o_mrp_shopfloor_panel_split--devices {
+    align-items: start;
+}
+
+.o_mrp_shopfloor_queue_toolbar {
+    display: grid;
+    gap: 14px;
+}
+
+.o_mrp_shopfloor_queue_toolbar_stack {
+    display: grid;
+    gap: 12px;
+}
+
+.o_mrp_shopfloor_queue_toolbar_row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: nowrap;
+}
+
+.o_mrp_shopfloor_queue_toolbar_row--wrap {
+    flex-wrap: wrap;
+}
+
+.o_mrp_shopfloor_queue_toolbar_search {
+    flex: 1 1 240px;
+    min-width: 240px;
+}
+
+.o_mrp_shopfloor_queue_toolbar .form-control {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.12);
+    color: #e7eef7;
+}
+
+.o_mrp_shopfloor_queue_toolbar .form-control::placeholder {
+    color: rgba(231, 238, 247, 0.45);
+}
+
+.o_mrp_shopfloor_queue_toolbar .form-control:focus {
+    border-color: var(--o-mrp-shopfloor-border-active);
+    box-shadow: 0 0 0 0.2rem rgba(158, 197, 255, 0.16);
+    background: rgba(255, 255, 255, 0.07);
+    color: #e7eef7;
+}
+
+.o_mrp_shopfloor_queue_toolbar .btn {
+    white-space: nowrap;
+}
+
+.o_mrp_shopfloor_queue_toolbar .text-uppercase {
+    color: rgba(231, 238, 247, 0.58) !important;
+}
+
+.o_mrp_shopfloor_dashboard_grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    margin-bottom: 18px;
+}
+
+.o_mrp_shopfloor_dashboard_grid .o_mrp_shopfloor_tile {
+    transition: transform 0.16s ease, border-color 0.16s ease, background 0.16s ease;
+}
+
+.o_mrp_shopfloor_dashboard_grid .o_mrp_shopfloor_tile:hover {
+    transform: translateY(-1px);
+    border-color: var(--o-mrp-shopfloor-border-active);
+    background: rgba(158, 197, 255, 0.07);
+}
+
+.o_mrp_shopfloor_tile {
+    padding: 16px;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.o_mrp_shopfloor_tile span {
+    display: block;
+    color: rgba(231, 238, 247, 0.58);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+}
+
+.o_mrp_shopfloor_tile strong {
+    display: block;
+    margin-top: 10px;
+    font-size: 28px;
+}
+
+.o_mrp_shopfloor_tile small {
+    color: rgba(231, 238, 247, 0.68);
+}
+
+.o_mrp_shopfloor_split {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+    margin-top: 12px;
+}
+
+.o_mrp_shopfloor_api_grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+    margin-top: 14px;
+}
+
+.o_mrp_shopfloor_api_head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.o_mrp_shopfloor_api_detail {
+    margin: 10px 0 0;
+    color: rgba(231, 238, 247, 0.76);
+    line-height: 1.5;
+}
+
+.o_mrp_shopfloor_detail_panel {
+    padding: 16px;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.o_mrp_shopfloor_detail_panel--compact {
+    margin-top: 14px;
+}
+
+.o_mrp_shopfloor_detail_title {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+}
+
+.o_mrp_shopfloor_detail_meta {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+    color: var(--o-mrp-shopfloor-text-muted);
+}
+
+.o_mrp_shopfloor_detail_meta span {
+    padding: 7px 10px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.o_mrp_shopfloor_status_summary {
+    display: grid;
+    gap: 10px;
+    margin-top: 0;
+}
+
+.o_mrp_shopfloor_status_summary--toolbar {
+    padding: 0;
+}
+
+.o_mrp_shopfloor_status_summary--compact {
+    gap: 8px;
+}
+
+.o_mrp_shopfloor_status_summary--stacked {
+    gap: 12px;
+}
+
+.o_mrp_shopfloor_status_summary_head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.o_mrp_shopfloor_status_summary_copy {
+    display: grid;
+    gap: 6px;
+    min-width: 0;
+}
+
+.o_mrp_shopfloor_status_summary_subtitle {
+    color: rgba(231, 238, 247, 0.66);
+    line-height: 1.45;
+}
+
+.o_mrp_shopfloor_status_summary_items {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.o_mrp_shopfloor_status_summary_item {
+    display: inline-flex;
+}
+
+.o_mrp_shopfloor_status_summary_item.is-emphasis .o_mrp_shopfloor_status_chip {
+    border-color: rgba(158, 197, 255, 0.35);
+    box-shadow: 0 0 0 1px rgba(158, 197, 255, 0.08) inset;
+}
+
+.o_mrp_shopfloor_status_summary .badge {
+    padding: 8px 12px;
+    border-radius: 999px;
+}
+
+.o_mrp_shopfloor_status_chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    border-radius: 999px;
+    white-space: nowrap;
+    line-height: 1.15;
+}
+
+.o_mrp_shopfloor_status_chip--compact {
+    padding: 6px 10px;
+    font-size: 12px;
+}
+
+.o_mrp_shopfloor_status_chip_detail {
+    font-size: 0.9em;
+    opacity: 0.88;
+}
+
+.o_mrp_shopfloor_action_bar {
+    display: grid;
+    gap: 14px;
+}
+
+.o_mrp_shopfloor_action_bar_head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.o_mrp_shopfloor_action_bar_actions,
+.o_mrp_shopfloor_action_bar_secondary_items {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.o_mrp_shopfloor_action_bar_actions .btn,
+.o_mrp_shopfloor_action_bar_secondary_items .btn {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+}
+
+.o_mrp_shopfloor_action_bar_actions .btn small {
+    color: rgba(255, 255, 255, 0.75);
+    font-size: 11px;
+}
+
+.o_mrp_shopfloor_action_bar_secondary {
+    display: grid;
+    gap: 8px;
+}
+
+.o_mrp_shopfloor_action_bar_secondary_label {
+    color: rgba(231, 238, 247, 0.58);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+}
+
+.o_mrp_shopfloor_action_bar_secondary_items .btn.is-active {
+    border-color: var(--o-mrp-shopfloor-border-active);
+    box-shadow: 0 0 0 1px rgba(158, 197, 255, 0.1) inset;
+}
+
+.o_mrp_shopfloor_feedback_bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    padding: 10px 12px;
+    border-radius: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.o_mrp_shopfloor_feedback_bar--compact {
+    padding: 8px 10px;
+    gap: 6px;
+}
+
+.o_mrp_shopfloor_feedback_bar_detail {
+    color: rgba(231, 238, 247, 0.72);
+}
+
+.o_mrp_shopfloor_feedback_bar_action {
+    margin-left: auto;
+}
+
+.o_mrp_shopfloor_attention_note {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    padding: 10px 12px;
+    border-radius: 14px;
+    border: 1px solid rgba(255, 193, 7, 0.18);
+    background: rgba(255, 193, 7, 0.08);
+}
+
+.o_mrp_shopfloor_attention_note--compact {
+    padding: 8px 10px;
+    gap: 6px;
+}
+
+.o_mrp_shopfloor_attention_note_detail {
+    color: rgba(231, 238, 247, 0.72);
+}
+
+.o_mrp_shopfloor_attention_note .badge {
+    padding: 7px 10px;
+}
+
+.o_mrp_shopfloor_list {
+    display: grid;
+    gap: 10px;
+}
+
+.o_mrp_shopfloor_list > * {
+    min-width: 0;
+}
+
+.o_mrp_shopfloor_list_item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+    padding: 14px 16px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.04);
+    color: inherit;
+    text-align: left;
+    transition: transform 0.16s ease, border-color 0.16s ease, background 0.16s ease;
+}
+
+.o_mrp_shopfloor_list_item:hover,
+.o_mrp_shopfloor_list_item.is-selected {
+    transform: translateY(-1px);
+    border-color: var(--o-mrp-shopfloor-border-active);
+    background: rgba(158, 197, 255, 0.08);
+}
+
+.o_mrp_shopfloor_list_item small {
+    color: rgba(231, 238, 247, 0.5);
+}
+
+.o_mrp_shopfloor_list_item_meta {
+    display: grid;
+    justify-items: end;
+    gap: 6px;
+    text-align: right;
+    color: rgba(231, 238, 247, 0.72);
+}
+
+.o_mrp_shopfloor_activity {
+    margin: 0;
+    padding-left: 18px;
+    display: grid;
+    gap: 10px;
+    color: rgba(231, 238, 247, 0.82);
+}
+
+.o_mrp_shopfloor_timeline {
+    display: grid;
+    gap: 10px;
+}
+
+.o_mrp_shopfloor_timeline--compact {
+    gap: 8px;
+}
+
+.o_mrp_shopfloor_timeline_item_head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.o_mrp_shopfloor_timeline_item {
+    display: grid;
+    gap: 4px;
+    padding: 12px 14px;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.o_mrp_shopfloor_timeline_item small {
+    color: rgba(231, 238, 247, 0.68);
+}
+
+.o_mrp_shopfloor_empty {
+    padding: 14px;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.04);
+    color: rgba(231, 238, 247, 0.68);
+}
+
+.o_mrp_shopfloor_pre {
+    margin: 0;
+    padding: 16px;
+    min-height: 180px;
+    max-height: 280px;
+    overflow: auto;
+    border-radius: 16px;
+    background: rgba(0, 0, 0, 0.24);
+    color: #a9ddff;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.o_mrp_shopfloor_exception_actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 14px;
+}
+
+.o_mrp_shopfloor_exception_item {
+    padding: 14px 16px;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.o_mrp_shopfloor_exception_card {
+    padding: 16px;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    display: grid;
+    gap: 10px;
+}
+
+.o_mrp_shopfloor_exception_card:hover {
+    border-color: var(--o-mrp-shopfloor-border-active);
+    background: rgba(158, 197, 255, 0.07);
+}
+
+.o_mrp_shopfloor_exception_card_head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.o_mrp_shopfloor_exception_detail {
+    margin: 0;
+    color: rgba(231, 238, 247, 0.74);
+    line-height: 1.5;
+}
+
+.o_mrp_shopfloor_metric {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    padding: 14px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.o_mrp_shopfloor_metric:last-child {
+    border-bottom: 0;
+    padding-bottom: 0;
+}
+
+.o_mrp_shopfloor_metric span {
+    color: rgba(231, 238, 247, 0.62);
+}
+
+.o_mrp_shopfloor_metric strong {
+    font-size: 20px;
+}
+
+.o_mrp_shopfloor_side {
+    display: grid;
+    gap: 20px;
+    position: sticky;
+    top: 24px;
+    align-self: start;
+    max-height: calc(100vh - 48px);
+    overflow: auto;
+}
+
+.o_mrp_shopfloor_side .o_mrp_shopfloor_card,
+.o_mrp_shopfloor_panel_stage .o_mrp_shopfloor_card {
+    min-width: 0;
+}
+
+.o_mrp_shopfloor_side .o_mrp_shopfloor_detail_panel,
+.o_mrp_shopfloor_panel_stage .o_mrp_shopfloor_detail_panel,
+.o_mrp_shopfloor_panel_stage .o_mrp_shopfloor_exception_card {
+    transition: transform 0.16s ease, border-color 0.16s ease, background 0.16s ease;
+}
+
+.o_mrp_shopfloor_side .o_mrp_shopfloor_detail_panel:hover,
+.o_mrp_shopfloor_panel_stage .o_mrp_shopfloor_detail_panel:hover {
+    border-color: var(--o-mrp-shopfloor-border-active);
+    background: rgba(158, 197, 255, 0.07);
+}
+
+@media (max-width: 992px) {
+    .o_mrp_shopfloor_header,
+    .o_mrp_shopfloor_workspace_frame,
+    .o_mrp_shopfloor_split,
+    .o_mrp_shopfloor_panel_split,
+    .o_mrp_shopfloor_api_grid,
+    .o_mrp_shopfloor_dashboard_grid,
+    .o_mrp_shopfloor_nav {
+        grid-template-columns: 1fr;
+        display: grid;
+    }
+
+    .o_mrp_shopfloor_card--hero {
+        grid-column: auto;
+    }
+
+    .o_mrp_shopfloor_nav_rail,
+    .o_mrp_shopfloor_side {
+        position: static;
+    }
+
+    .o_mrp_shopfloor_queue_toolbar_row {
+        flex-wrap: wrap;
+    }
+
+    .o_mrp_shopfloor_action_bar_head {
+        flex-direction: column;
+    }
+
+    .o_mrp_shopfloor_shell {
+        padding: 20px;
+    }
+}
+
+@media (max-width: 720px) {
+    .o_mrp_shopfloor_section_head,
+    .o_mrp_shopfloor_header {
+        flex-direction: column;
+    }
+
+    .o_mrp_shopfloor_card--workspace {
+        min-height: auto;
+    }
+
+    .o_mrp_shopfloor_panel_stage_header {
+        flex-direction: column;
+    }
+
+    .o_mrp_shopfloor_panel_stage_badges {
+        justify-content: flex-start;
+    }
+}

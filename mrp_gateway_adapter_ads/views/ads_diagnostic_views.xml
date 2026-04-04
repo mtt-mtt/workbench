@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_gateway_ads_diagnostic_tree" model="ir.ui.view">
+        <field name="name">gateway.ads.diagnostic.tree</field>
+        <field name="model">gateway.ads.diagnostic</field>
+        <field name="arch" type="xml">
+            <list string="ADS Diagnostics">
+                <field name="code"/>
+                <field name="adapter_id"/>
+                <field name="symbol_id"/>
+                <field name="subscription_id"/>
+                <field name="notification_id"/>
+                <field name="kind"/>
+                <field name="state"/>
+                <field name="observed_at"/>
+                <field name="message"/>
+                <field name="detail"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_gateway_ads_diagnostic_search" model="ir.ui.view">
+        <field name="name">gateway.ads.diagnostic.search</field>
+        <field name="model">gateway.ads.diagnostic</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="code"/>
+                <field name="adapter_id"/>
+                <field name="symbol_id"/>
+                <field name="subscription_id"/>
+                <field name="notification_id"/>
+                <field name="kind"/>
+                <field name="state"/>
+                <filter string="Open" name="open" domain="[('state', 'in', ['warning', 'error'])]"/>
+                <filter string="Success" name="success" domain="[('state', '=', 'success')]"/>
+                <filter string="Subscription" name="group_subscription" context="{'group_by': 'subscription_id'}"/>
+                <filter string="Notification" name="group_notification" context="{'group_by': 'notification_id'}"/>
+                <separator string="Group By"/>
+                <filter string="Adapter" name="group_adapter" context="{'group_by': 'adapter_id'}"/>
+                <filter string="Kind" name="group_kind" context="{'group_by': 'kind'}"/>
+                <filter string="State" name="group_state" context="{'group_by': 'state'}"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="view_gateway_ads_diagnostic_form" model="ir.ui.view">
+        <field name="name">gateway.ads.diagnostic.form</field>
+        <field name="model">gateway.ads.diagnostic</field>
+        <field name="arch" type="xml">
+            <form string="ADS Diagnostic">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="code"/>
+                            <field name="name"/>
+                            <field name="adapter_id"/>
+                            <field name="symbol_id"/>
+                            <field name="subscription_id"/>
+                            <field name="notification_id"/>
+                            <field name="kind"/>
+                            <field name="state"/>
+                        </group>
+                        <group>
+                            <field name="observed_at"/>
+                            <field name="active"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="message"/>
+                        <field name="detail"/>
+                    </group>
+                    <group>
+                        <field name="result_json" nolabel="1"/>
+                    </group>
+                    <field name="payload_json" nolabel="1"/>
+                    <field name="note" nolabel="1"/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+</odoo>

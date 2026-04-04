@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_gateway_command_tree" model="ir.ui.view">
+        <field name="name">gateway.command.tree</field>
+        <field name="model">gateway.command</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="code"/>
+                <field name="entry_id"/>
+                <field name="device_id"/>
+                <field name="signal_id"/>
+                <field name="state"/>
+                <field name="command_type"/>
+                <field name="attempt_count"/>
+                <field name="last_attempt_at"/>
+                <field name="processed_at"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_gateway_command_form" model="ir.ui.view">
+        <field name="name">gateway.command.form</field>
+        <field name="model">gateway.command</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="code"/>
+                            <field name="entry_id"/>
+                            <field name="device_id"/>
+                            <field name="signal_id"/>
+                            <field name="state"/>
+                        </group>
+                        <group>
+                            <field name="command_type"/>
+                            <field name="idempotency_key"/>
+                            <field name="attempt_count"/>
+                            <field name="last_attempt_at" readonly="1"/>
+                            <field name="processed_at" readonly="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Request">
+                            <field name="payload_json" widget="text"/>
+                            <field name="request_text" widget="text"/>
+                        </page>
+                        <page string="Response">
+                            <field name="response_text" widget="text"/>
+                            <field name="error_message" widget="text"/>
+                            <field name="diagnostic_state" widget="text"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+</odoo>

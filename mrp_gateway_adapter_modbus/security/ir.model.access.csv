@@ -1,0 +1,5 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_gateway_modbus_adapter_manager,gateway.modbus.adapter manager,model_gateway_modbus_adapter,mrp.group_mrp_manager,1,1,1,1
+access_gateway_modbus_point_manager,gateway.modbus.point manager,model_gateway_modbus_point,mrp.group_mrp_manager,1,1,1,1
+access_gateway_modbus_snapshot_manager,gateway.modbus.snapshot manager,model_gateway_modbus_snapshot,mrp.group_mrp_manager,1,1,1,1
+access_gateway_modbus_write_ack_manager,gateway.modbus.write.ack manager,model_gateway_modbus_write_ack,mrp.group_mrp_manager,1,1,1,1

@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_gateway_runtime_adapters"
+              name="Adapters"
+              parent="mrp_gateway_core.menu_gateway_runtime"
+              action="action_gateway_runtime_adapter"
+              sequence="5"
+              groups="mrp.group_mrp_manager"/>
+
+    <menuitem id="menu_gateway_runtime_console"
+              name="Console"
+              parent="mrp_gateway_core.menu_gateway_runtime"
+              action="action_gateway_runtime_console"
+              sequence="7"
+              groups="mrp.group_mrp_manager"/>
+
+    <menuitem id="menu_gateway_runtime_probe"
+              name="Probe"
+              parent="mrp_gateway_core.menu_gateway_runtime"
+              action="action_gateway_protocol_probe"
+              sequence="8"
+              groups="mrp.group_mrp_manager"/>
+
+    <menuitem id="menu_gateway_runtime_probe_sessions"
+              name="Probe Sessions"
+              parent="mrp_gateway_core.menu_gateway_runtime"
+              action="action_gateway_runtime_probe_session"
+              sequence="9"
+              groups="mrp.group_mrp_manager"/>
+
+    <menuitem id="menu_gateway_runtime_heartbeats"
+              name="Heartbeats"
+              parent="mrp_gateway_core.menu_gateway_runtime"
+              action="action_gateway_runtime_heartbeat"
+              sequence="10"
+              groups="mrp.group_mrp_manager"/>
+
+    <menuitem id="menu_gateway_runtime_events"
+              name="Events"
+              parent="mrp_gateway_core.menu_gateway_runtime"
+              action="action_gateway_runtime_event"
+              sequence="15"
+              groups="mrp.group_mrp_manager"/>
+
+    <menuitem id="menu_gateway_runtime_issues"
+              name="Issues"
+              parent="mrp_gateway_core.menu_gateway_runtime"
+              action="action_gateway_runtime_issue"
+              sequence="18"
+              groups="mrp.group_mrp_manager"/>
+
+    <menuitem id="menu_gateway_runtime_repairs"
+              name="Repairs"
+              parent="mrp_gateway_core.menu_gateway_runtime"
+              action="action_gateway_runtime_repair"
+              sequence="19"
+              groups="mrp.group_mrp_manager"/>
+
+    <menuitem id="menu_gateway_runtime_diagnostics"
+              name="Diagnostics"
+              parent="mrp_gateway_core.menu_gateway_runtime"
+              action="action_gateway_runtime_diagnostic"
+              sequence="20"
+              groups="mrp.group_mrp_manager"/>
+</odoo>

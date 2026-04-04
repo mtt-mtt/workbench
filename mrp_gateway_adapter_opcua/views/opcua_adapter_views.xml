@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_gateway_opcua_adapter_list" model="ir.ui.view">
+        <field name="name">gateway.opcua.adapter.list</field>
+        <field name="model">gateway.opcua.adapter</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="sequence"/>
+                <field name="code"/>
+                <field name="name"/>
+                <field name="state"/>
+                <field name="runtime_lifecycle_state"/>
+                <field name="runtime_health_state"/>
+                <field name="runtime_issue_count"/>
+                <field name="runtime_open_issue_count"/>
+                <field name="endpoint_url"/>
+                <field name="security_policy"/>
+                <field name="security_mode"/>
+                <field name="auth_mode"/>
+                <field name="node_count"/>
+                <field name="runtime_capability_summary"/>
+                <field name="last_sync_at"/>
+            </list>
+        </field>
+    </record>
+    <record id="view_gateway_opcua_adapter_form" model="ir.ui.view">
+        <field name="name">gateway.opcua.adapter.form</field>
+        <field name="model">gateway.opcua.adapter</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_sync_runtime_definition" type="object" string="Sync Runtime" class="btn-primary"/>
+                    <button name="action_open_runtime_adapter" type="object" string="Open Runtime" class="btn-secondary"/>
+                    <button name="action_open_runtime_issues" type="object" string="Runtime Issues" class="btn-secondary"/>
+                    <button name="action_open_runtime_diagnostics" type="object" string="Runtime Diagnostics" class="btn-secondary"/>
+                    <button name="action_refresh_runtime" type="object" string="Refresh Runtime" class="btn-secondary"/>
+                    <button name="action_repair_runtime" type="object" string="Repair Runtime" class="btn-secondary"/>
+                    <button name="action_load_runtime" type="object" string="Load Runtime" class="btn-secondary"/>
+                    <button name="action_reload_runtime" type="object" string="Reload Runtime" class="btn-secondary"/>
+                    <button name="action_refresh_diagnostics" type="object" string="Refresh Diagnostics" class="btn-secondary"/>
+                    <button name="action_preview_connectivity" type="object" string="Preview Connectivity" class="btn-secondary"/>
+                    <button name="action_preview_node_map" type="object" string="Preview Node Map" class="btn-secondary"/>
+                    <button name="action_push_test_snapshot" type="object" string="Test Snapshot" class="btn-secondary"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,ready,degraded,offline,disabled"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="code"/>
+                            <field name="name"/>
+                            <field name="state"/>
+                            <field name="sequence"/>
+                            <field name="active"/>
+                        </group>
+                        <group>
+                            <field name="endpoint_url"/>
+                            <field name="security_policy"/>
+                            <field name="security_mode"/>
+                            <field name="auth_mode"/>
+                            <field name="namespace_uri"/>
+                        </group>
+                    </group>
+                    <group string="Runtime">
+                        <field name="entry_id"/>
+                        <field name="app_id"/>
+                        <field name="workstation_id"/>
+                        <field name="runtime_adapter_id" readonly="1"/>
+                        <field name="runtime_lifecycle_state" readonly="1"/>
+                        <field name="runtime_health_state" readonly="1"/>
+                        <field name="runtime_issue_count" readonly="1"/>
+                        <field name="runtime_open_issue_count" readonly="1"/>
+                        <field name="connection_target" readonly="1"/>
+                        <field name="node_count" readonly="1"/>
+                        <field name="diagnostic_count" readonly="1"/>
+                        <field name="runtime_capability_summary" readonly="1"/>
+                        <field name="last_sync_at" readonly="1"/>
+                        <field name="last_connect_at"/>
+                        <field name="runtime_last_refresh_at" readonly="1"/>
+                        <field name="runtime_last_repair_at" readonly="1"/>
+                        <field name="runtime_last_reload_at" readonly="1"/>
+                    </group>
+                    <notebook>
+                        <page string="Nodes">
+                            <field name="node_ids">
+                                <list editable="bottom">
+                                    <field name="sequence"/>
+                                    <field name="code"/>
+                                    <field name="name"/>
+                                    <field name="node_id"/>
+                                    <field name="node_class"/>
+                                    <field name="data_type"/>
+                                    <field name="access_mode"/>
+                                    <field name="state"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Diagnostics">
+                            <field name="diagnostic_ids" readonly="1">
+                                <list>
+                                    <field name="observed_at"/>
+                                    <field name="kind"/>
+                                    <field name="state"/>
+                                    <field name="message"/>
+                                    <field name="detail"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Notes">
+                            <field name="config_text"/>
+                            <field name="config_json"/>
+                            <field name="diagnostic_state"/>
+                            <field name="runtime_diagnostic_summary"/>
+                            <field name="runtime_capability_json"/>
+                            <field name="note"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+</odoo>

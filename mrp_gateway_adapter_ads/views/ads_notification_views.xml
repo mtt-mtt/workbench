@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_gateway_ads_notification_tree" model="ir.ui.view">
+        <field name="name">gateway.ads.notification.tree</field>
+        <field name="model">gateway.ads.notification</field>
+        <field name="arch" type="xml">
+            <list string="ADS Notifications">
+                <field name="code"/>
+                <field name="adapter_id"/>
+                <field name="symbol_id"/>
+                <field name="subscription_id"/>
+                <field name="event_kind"/>
+                <field name="state"/>
+                <field name="severity"/>
+                <field name="source"/>
+                <field name="received_at"/>
+                <field name="dispatched_at"/>
+                <field name="acknowledged_at"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_gateway_ads_notification_search" model="ir.ui.view">
+        <field name="name">gateway.ads.notification.search</field>
+        <field name="model">gateway.ads.notification</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="code"/>
+                <field name="adapter_id"/>
+                <field name="symbol_id"/>
+                <field name="subscription_id"/>
+                <field name="event_kind"/>
+                <field name="state"/>
+                <field name="severity"/>
+                <field name="source"/>
+                <filter string="Queued" name="queued" domain="[('state', '=', 'queued')]"/>
+                <filter string="Dispatched" name="dispatched" domain="[('state', '=', 'dispatched')]"/>
+                <filter string="Acknowledged" name="acknowledged" domain="[('state', '=', 'acknowledged')]"/>
+                <filter string="Failed" name="failed" domain="[('state', '=', 'failed')]"/>
+                <separator string="Group By"/>
+                <filter string="Adapter" name="group_adapter" context="{'group_by': 'adapter_id'}"/>
+                <filter string="Symbol" name="group_symbol" context="{'group_by': 'symbol_id'}"/>
+                <filter string="Subscription" name="group_subscription" context="{'group_by': 'subscription_id'}"/>
+                <filter string="Event" name="group_event" context="{'group_by': 'event_kind'}"/>
+                <filter string="State" name="group_state" context="{'group_by': 'state'}"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="view_gateway_ads_notification_form" model="ir.ui.view">
+        <field name="name">gateway.ads.notification.form</field>
+        <field name="model">gateway.ads.notification</field>
+        <field name="arch" type="xml">
+            <form string="ADS Notification">
+                <header>
+                    <button name="action_mark_dispatched" type="object" string="Dispatch" class="btn-secondary"/>
+                    <button name="action_mark_acknowledged" type="object" string="Acknowledge" class="btn-primary"/>
+                    <button name="action_mark_failed" type="object" string="Fail" class="btn-secondary"/>
+                    <button name="action_mark_dropped" type="object" string="Drop" class="btn-secondary"/>
+                    <button name="action_open_symbol" type="object" string="Open Symbol" class="btn-secondary"/>
+                    <button name="action_open_subscription" type="object" string="Open Subscription" class="btn-secondary"/>
+                    <button name="action_open_adapter" type="object" string="Open Adapter" class="btn-secondary"/>
+                    <field name="state" widget="statusbar" statusbar_visible="queued,dispatched,acknowledged,failed,dropped"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="code"/>
+                            <field name="name"/>
+                            <field name="adapter_id"/>
+                            <field name="symbol_id"/>
+                            <field name="subscription_id"/>
+                            <field name="event_kind"/>
+                        </group>
+                        <group>
+                            <field name="state"/>
+                            <field name="severity"/>
+                            <field name="source"/>
+                            <field name="active"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="received_at"/>
+                        <field name="dispatched_at"/>
+                        <field name="acknowledged_at"/>
+                    </group>
+                    <field name="payload_json" nolabel="1"/>
+                    <field name="value_text" nolabel="1"/>
+                    <field name="value_json" nolabel="1"/>
+                    <field name="result_json" nolabel="1"/>
+                    <field name="note" nolabel="1"/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+</odoo>

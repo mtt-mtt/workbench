@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_gateway_opcua_node_list" model="ir.ui.view">
+        <field name="name">gateway.opcua.node.list</field>
+        <field name="model">gateway.opcua.node</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="sequence"/>
+                <field name="code"/>
+                <field name="name"/>
+                <field name="adapter_id"/>
+                <field name="node_id"/>
+                <field name="namespace_index"/>
+                <field name="node_class"/>
+                <field name="data_type"/>
+                <field name="access_mode"/>
+                <field name="state"/>
+            </list>
+        </field>
+    </record>
+    <record id="view_gateway_opcua_node_form" model="ir.ui.view">
+        <field name="name">gateway.opcua.node.form</field>
+        <field name="model">gateway.opcua.node</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="code"/>
+                            <field name="name"/>
+                            <field name="adapter_id"/>
+                            <field name="state"/>
+                            <field name="sequence"/>
+                        </group>
+                        <group>
+                            <field name="node_id"/>
+                            <field name="namespace_index"/>
+                            <field name="browse_path"/>
+                            <field name="node_class"/>
+                            <field name="data_type"/>
+                            <field name="access_mode"/>
+                        </group>
+                    </group>
+                    <group string="Runtime">
+                        <field name="sampling_interval"/>
+                        <field name="value_rank"/>
+                        <field name="scale_factor"/>
+                        <field name="unit"/>
+                        <field name="last_value"/>
+                        <field name="last_status"/>
+                        <field name="last_seen_at"/>
+                    </group>
+                    <group string="Notes">
+                        <field name="diagnostic_state"/>
+                        <field name="note"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+</odoo>

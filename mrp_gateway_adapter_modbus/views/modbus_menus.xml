@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_gateway_modbus_root"
+              name="Modbus"
+              parent="mrp_gateway_core.menu_gateway_configuration"
+              sequence="30"
+              groups="mrp.group_mrp_manager"/>
+
+    <menuitem id="menu_gateway_modbus_adapters"
+              name="Adapters"
+              parent="menu_gateway_modbus_root"
+              action="action_gateway_modbus_adapter"
+              sequence="10"
+              groups="mrp.group_mrp_manager"/>
+
+    <menuitem id="menu_gateway_modbus_points"
+              name="Points"
+              parent="menu_gateway_modbus_root"
+              action="action_gateway_modbus_point"
+              sequence="20"
+              groups="mrp.group_mrp_manager"/>
+
+    <menuitem id="menu_gateway_modbus_snapshots"
+              name="Snapshots"
+              parent="menu_gateway_modbus_root"
+              action="action_gateway_modbus_snapshot"
+              sequence="30"
+              groups="mrp.group_mrp_manager"/>
+
+    <menuitem id="menu_gateway_modbus_write_acks"
+              name="Write Acks"
+              parent="menu_gateway_modbus_root"
+              action="action_gateway_modbus_write_ack"
+              sequence="40"
+              groups="mrp.group_mrp_manager"/>
+</odoo>

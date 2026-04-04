@@ -1,0 +1,284 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_gateway_runtime_adapter_tree" model="ir.ui.view">
+        <field name="name">gateway.runtime.adapter.tree</field>
+        <field name="model">gateway.runtime.adapter</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="sequence"/>
+                <field name="name"/>
+                <field name="code"/>
+                <field name="adapter_type"/>
+                <field name="state"/>
+                <field name="lifecycle_state"/>
+                <field name="health_state"/>
+                <field name="health_score"/>
+                <field name="probe_focus_state"/>
+                <field name="capability_summary"/>
+                <field name="probe_summary"/>
+                <field name="entry_id"/>
+                <field name="workstation_id"/>
+                <field name="last_heartbeat_at"/>
+                <field name="last_success_at"/>
+                <field name="last_reload_at"/>
+                <field name="last_repair_at"/>
+                <field name="recent_activity_summary"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_gateway_runtime_adapter_form" model="ir.ui.view">
+        <field name="name">gateway.runtime.adapter.form</field>
+        <field name="model">gateway.runtime.adapter</field>
+        <field name="arch" type="xml">
+            <form string="Gateway Runtime Adapter">
+                <header>
+                    <button name="action_register_adapter" type="object" string="Register / Sync" class="btn-primary"/>
+                    <button name="action_open_attention_route" type="object" string="Open Attention" class="btn-secondary"/>
+                    <button name="action_open_console" type="object" string="Console" class="btn-secondary"/>
+                    <button name="action_open_protocol_probe" type="object" string="Probe" class="btn-secondary"/>
+                    <button name="action_start_probe_session" type="object" string="Start Probe" class="btn-secondary"/>
+                    <button name="action_open_probe_sessions" type="object" string="Probe Sessions" class="btn-secondary"/>
+                    <button name="action_load_adapter" type="object" string="Load" class="btn-secondary"/>
+                    <button name="action_unload_adapter" type="object" string="Unload" class="btn-secondary"/>
+                    <button name="action_open_issues" type="object" string="Issues" class="btn-secondary"/>
+                    <button name="action_open_repairs" type="object" string="Repairs" class="btn-secondary"/>
+                    <button name="action_create_issue" type="object" string="Create Issue" class="btn-secondary"/>
+                    <button name="action_simulate_poll" type="object" string="Simulate Poll" class="btn-secondary"/>
+                    <button name="action_refresh_diagnostics" type="object" string="Refresh Diagnostics" class="btn-secondary"/>
+                    <button name="action_trigger_reconnect" type="object" string="Trigger Reconnect" class="btn-secondary"/>
+                    <button name="action_reload_adapter" type="object" string="Reload" class="btn-secondary"/>
+                    <button name="action_repair_adapter" type="object" string="Repair" class="btn-secondary"/>
+                    <button name="action_mark_ready" type="object" string="Mark Ready" class="btn-secondary"/>
+                    <button name="action_mark_offline" type="object" string="Mark Offline" class="btn-secondary"/>
+                    <button name="action_mark_disabled" type="object" string="Disable" class="btn-secondary"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,ready,degraded,offline,disabled"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_open_attention_route" type="object" class="oe_stat_button" icon="fa-compass">
+                            <div class="o_field_widget o_stat_info">
+                                <span class="o_stat_value">
+                                    <field name="attention_route_summary" nolabel="1"/>
+                                </span>
+                                <span class="o_stat_text">Next Step</span>
+                            </div>
+                        </button>
+                        <button name="action_open_issues" type="object" class="oe_stat_button" icon="fa-exclamation-triangle">
+                            <field name="issue_count" widget="statinfo" string="Issues"/>
+                        </button>
+                        <button name="action_open_repairs" type="object" class="oe_stat_button" icon="fa-wrench">
+                            <field name="repair_issue_count" widget="statinfo" string="Repairs"/>
+                        </button>
+                        <button name="action_open_mqtt_probe" type="object" class="oe_stat_button" icon="fa-rss">
+                            <field name="mqtt_adapter_count" widget="statinfo" string="MQTT"/>
+                        </button>
+                        <button name="action_open_modbus_probe" type="object" class="oe_stat_button" icon="fa-link">
+                            <field name="modbus_adapter_count" widget="statinfo" string="Modbus"/>
+                        </button>
+                        <button name="action_open_opcua_probe" type="object" class="oe_stat_button" icon="fa-circle-o-notch">
+                            <field name="opcua_adapter_count" widget="statinfo" string="OPC UA"/>
+                        </button>
+                        <button name="action_open_ads_probe" type="object" class="oe_stat_button" icon="fa-bolt">
+                            <field name="ads_adapter_count" widget="statinfo" string="ADS"/>
+                        </button>
+                        <button name="action_open_s7_probe" type="object" class="oe_stat_button" icon="fa-cog">
+                            <field name="s7_adapter_count" widget="statinfo" string="S7"/>
+                        </button>
+                        <button name="action_open_probe_sessions" type="object" class="oe_stat_button" icon="fa-stethoscope">
+                            <field name="probe_session_count" widget="statinfo" string="Probe Sessions"/>
+                        </button>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="code"/>
+                            <field name="adapter_type"/>
+                            <field name="sequence"/>
+                            <field name="active"/>
+                        </group>
+                        <group>
+                            <field name="entry_id"/>
+                            <field name="app_id"/>
+                            <field name="workstation_id"/>
+                            <field name="device_code"/>
+                            <field name="runtime_unique_id"/>
+                            <field name="connection_target"/>
+                            <field name="lifecycle_state" readonly="1"/>
+                            <field name="lifecycle_detail" readonly="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Configuration">
+                            <field name="config_json" nolabel="1"/>
+                            <field name="config_text" nolabel="1"/>
+                        </page>
+                        <page string="Capabilities">
+                            <group>
+                                <group>
+                                    <field name="coordinator_mode"/>
+                                    <field name="update_interval_seconds"/>
+                                    <field name="retry_after_seconds"/>
+                                    <field name="always_update"/>
+                                    <field name="first_refresh_required"/>
+                                    <field name="listener_count"/>
+                                </group>
+                                <group>
+                                    <field name="supports_push"/>
+                                    <field name="supports_poll"/>
+                                    <field name="supports_read"/>
+                                    <field name="supports_write"/>
+                                    <field name="supports_subscribe"/>
+                                    <field name="supports_discovery"/>
+                                    <field name="supports_ack"/>
+                                    <field name="supports_diagnostics"/>
+                                    <field name="supports_repair"/>
+                                    <field name="supports_reload"/>
+                                    <field name="supports_load"/>
+                                    <field name="supports_unload"/>
+                                </group>
+                                <field name="capability_summary" readonly="1"/>
+                                <field name="capability_json" nolabel="1" readonly="1"/>
+                            </group>
+                        </page>
+                        <page string="Protocol Probe">
+                            <group>
+                                <group>
+                                    <field name="probe_focus_state" readonly="1"/>
+                                    <field name="probe_focus_summary" readonly="1"/>
+                                    <field name="probe_summary" readonly="1"/>
+                                    <field name="probe_attention_summary" readonly="1"/>
+                                    <field name="probe_session_summary" readonly="1"/>
+                                    <field name="probe_detail" nolabel="1" readonly="1"/>
+                                </group>
+                                <group>
+                                    <button name="action_start_probe_session" type="object" string="Start Probe Session" class="btn-primary"/>
+                                    <button name="action_open_probe_sessions" type="object" string="Open Probe Sessions" class="btn-secondary"/>
+                                    <button name="action_open_mqtt_probe" type="object" string="Open MQTT Probe" class="btn-secondary"/>
+                                    <button name="action_open_modbus_probe" type="object" string="Open Modbus Probe" class="btn-secondary"/>
+                                    <button name="action_open_opcua_probe" type="object" string="Open OPC UA Probe" class="btn-secondary"/>
+                                    <button name="action_open_ads_probe" type="object" string="Open ADS Probe" class="btn-secondary"/>
+                                    <button name="action_open_s7_probe" type="object" string="Open S7 Probe" class="btn-secondary"/>
+                                </group>
+                            </group>
+                            <group>
+                                <field name="probe_focus_state" readonly="1"/>
+                                <field name="mqtt_adapter_count" readonly="1"/>
+                                <field name="modbus_adapter_count" readonly="1"/>
+                                <field name="opcua_adapter_count" readonly="1"/>
+                                <field name="ads_adapter_count" readonly="1"/>
+                                <field name="s7_adapter_count" readonly="1"/>
+                                <field name="probe_session_count" readonly="1"/>
+                                <field name="open_probe_session_count" readonly="1"/>
+                                <field name="last_probe_session_at" readonly="1"/>
+                            </group>
+                        </page>
+                        <page string="Probe Summary">
+                            <group>
+                                <group>
+                                    <field name="probe_focus_state" readonly="1"/>
+                                    <field name="probe_focus_summary" readonly="1"/>
+                                </group>
+                                <group>
+                                    <field name="probe_attention_summary" readonly="1"/>
+                                    <field name="probe_summary" readonly="1"/>
+                                </group>
+                            </group>
+                            <field name="probe_detail" nolabel="1" readonly="1"/>
+                        </page>
+                        <page string="Diagnostics">
+                            <group>
+                                <group>
+                                    <field name="health_state"/>
+                                    <field name="health_score"/>
+                                    <field name="health_detail"/>
+                                    <field name="last_error"/>
+                                    <field name="recent_activity_summary" readonly="1"/>
+                                </group>
+                                <group>
+                                    <field name="timeout_seconds"/>
+                                    <field name="heartbeat_timeout_seconds"/>
+                                    <field name="reconnect_policy"/>
+                                    <field name="reconnect_delay_seconds"/>
+                                    <field name="max_reconnect_attempts"/>
+                                    <field name="reconnect_attempts"/>
+                                    <field name="last_update_success"/>
+                                    <field name="last_exception_class"/>
+                                    <field name="last_exception_message"/>
+                                    <field name="last_update_started_at"/>
+                                    <field name="last_update_finished_at"/>
+                                    <field name="last_update_success_at"/>
+                                    <field name="last_update_failure_at"/>
+                                    <field name="last_reconnect_at"/>
+                                    <field name="last_success_at"/>
+                                    <field name="last_failure_at"/>
+                                </group>
+                            </group>
+                            <field name="recent_activity_timeline" nolabel="1" readonly="1"/>
+                            <field name="diagnostic_state" nolabel="1"/>
+                            <field name="diagnostic_summary" nolabel="1"/>
+                            <group>
+                                <field name="last_success_at"/>
+                                <field name="last_reload_at"/>
+                                <field name="last_repair_at"/>
+                            </group>
+                            <group>
+                                <field name="last_heartbeat_at"/>
+                                <field name="last_poll_at"/>
+                                <field name="heartbeat_count"/>
+                                <field name="event_count"/>
+                                <field name="command_count"/>
+                                <field name="issue_count"/>
+                                <field name="open_issue_count"/>
+                                <field name="repair_issue_count"/>
+                            </group>
+                        </page>
+                        <page string="Issues">
+                            <field name="issue_ids" readonly="1">
+                                <list>
+                                    <field name="code"/>
+                                    <field name="is_fixable"/>
+                                    <field name="recommended_action_key"/>
+                                    <field name="issue_kind"/>
+                                    <field name="severity"/>
+                                    <field name="state"/>
+                                    <field name="last_seen_at"/>
+                                    <field name="resolved_at"/>
+                                    <field name="message"/>
+                                    <field name="recommended_action"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Heartbeats">
+                            <field name="heartbeat_ids">
+                                <list>
+                                    <field name="code"/>
+                                    <field name="status"/>
+                                    <field name="state"/>
+                                    <field name="received_at"/>
+                                    <field name="message"/>
+                                    <field name="latency_ms"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Events">
+                            <field name="event_ids">
+                                <list>
+                                    <field name="code"/>
+                                    <field name="event_kind"/>
+                                    <field name="severity"/>
+                                    <field name="state"/>
+                                    <field name="message"/>
+                                    <field name="result"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Notes">
+                            <field name="note" nolabel="1"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates xml:space="preserve">
+    <t t-name="mrp_shopfloor_frontend.ShopfloorCommandQueueCard" owl="1">
+        <section class="o_mrp_shopfloor_card">
+            <div class="o_mrp_shopfloor_card_label">Command queue status</div>
+            <div class="o_mrp_shopfloor_detail_title">
+                <t t-esc="props.commandQueueStatus.label"/>
+            </div>
+            <div class="o_mrp_shopfloor_detail_meta">
+                <span class="badge rounded-pill" t-att-class="'text-bg-' + (props.commandQueueStatus.stateTone || 'secondary')">
+                    <t t-esc="props.commandQueueStatus.stateLabel || props.commandQueueStatus.state"/>
+                </span>
+            </div>
+            <div class="o_mrp_shopfloor_detail_meta">
+                <span><t t-esc="props.commandQueueStatus.detail"/></span>
+            </div>
+            <div class="o_mrp_shopfloor_detail_meta">
+                <span>Total <t t-esc="props.commandQueueStatus.total"/></span>
+                <span>Queued <t t-esc="props.commandQueueStatus.queued"/></span>
+                <span>Running <t t-esc="props.commandQueueStatus.running"/></span>
+                <span>Done <t t-esc="props.commandQueueStatus.done"/></span>
+                <span>Failed <t t-esc="props.commandQueueStatus.failed"/></span>
+            </div>
+            <div class="o_mrp_shopfloor_timeline">
+                <t t-if="props.commands.length">
+                    <t t-foreach="props.commands" t-as="command" t-key="command.id">
+                        <div class="o_mrp_shopfloor_timeline_item">
+                            <strong><t t-esc="command.name"/></strong>
+                            <small>
+                                <t t-esc="command.type"/> - <t t-esc="command.statusLabel || command.status"/>
+                            </small>
+                            <span class="badge rounded-pill mt-1" t-att-class="'text-bg-' + (command.statusTone || 'secondary')">
+                                <t t-esc="command.statusLabel || command.status"/>
+                            </span>
+                        </div>
+                    </t>
+                </t>
+                <t t-else="">
+                    <div class="o_mrp_shopfloor_empty">No command response yet.</div>
+                </t>
+            </div>
+        </section>
+    </t>
+</templates>

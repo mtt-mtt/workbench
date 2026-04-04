@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates xml:space="preserve">
+    <t t-name="mrp_shopfloor_frontend.ShopfloorExceptionsScreen" owl="1">
+        <div class="o_mrp_shopfloor_panel_stack o_mrp_shopfloor_exceptions_stack">
+            <ShopfloorExceptionActions
+                summary="exceptionSummary"
+                branchSummary="branchSummary"
+                onReportException="reportException"
+            />
+            <ShopfloorExceptionToolbar
+                summary="visibleSummary"
+                branchSummary="branchSummary"
+                severityFilter="state.severityFilter"
+                stateFilter="state.stateFilter"
+                onSeverityFilterChange="onSeverityFilterChange"
+                onStateFilterChange="onStateFilterChange"
+                onClearFilters="onClearFilters"
+            />
+            <ShopfloorExceptionList
+                exceptions="visibleExceptions"
+                summary="visibleSummary"
+                branchSummary="branchSummary"
+                branchSummaryItems="branchSummaryItems"
+                emptyStateLabel="emptyStateLabel"
+                hasActiveFilters="hasActiveFilters"
+                onClearFilters="onClearFilters"
+                onReportException="reportException"
+            />
+        </div>
+    </t>
+</templates>

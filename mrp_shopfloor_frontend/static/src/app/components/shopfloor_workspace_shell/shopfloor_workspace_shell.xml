@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates xml:space="preserve">
+    <t t-name="mrp_shopfloor_frontend.ShopfloorWorkspaceShell" owl="1">
+        <section class="o_mrp_shopfloor_card o_mrp_shopfloor_card--hero">
+            <div class="o_mrp_shopfloor_card_label">Current workstation</div>
+            <div class="o_mrp_shopfloor_card_value"><t t-esc="props.workstation.name"/></div>
+            <div class="o_mrp_shopfloor_meta">
+                <span><t t-esc="props.workstation.code"/></span>
+                <span><t t-esc="props.workstation.profile"/></span>
+                <span><t t-esc="props.workstation.printer"/></span>
+                <span><t t-esc="props.workstation.gateway"/></span>
+            </div>
+            <div class="o_mrp_shopfloor_status">
+                <span t-att-class="props.metrics.deviceOnline ? 'badge rounded-pill text-bg-success' : 'badge rounded-pill text-bg-danger'">
+                    <t t-esc="props.metrics.deviceOnline ? 'Online' : 'Offline'"/>
+                </span>
+                <span class="badge rounded-pill text-bg-secondary"><t t-esc="props.currentPanel"/></span>
+                <span class="badge rounded-pill text-bg-info"><t t-esc="props.metrics.lastSync"/></span>
+                <span class="badge rounded-pill text-bg-dark">Session <t t-esc="sessionLabel"/></span>
+            </div>
+        </section>
+        <section class="o_mrp_shopfloor_card o_mrp_shopfloor_card--summary">
+            <div class="o_mrp_shopfloor_metric">
+                <span>Pending jobs</span>
+                <strong><t t-esc="props.metrics.pendingJobs"/></strong>
+            </div>
+            <div class="o_mrp_shopfloor_metric">
+                <span>Active exceptions</span>
+                <strong><t t-esc="props.metrics.activeExceptions"/></strong>
+            </div>
+            <div class="o_mrp_shopfloor_metric">
+                <span>Command queue</span>
+                <strong><t t-esc="props.commandQueueStatus.total"/></strong>
+            </div>
+            <div class="o_mrp_shopfloor_metric">
+                <span>Backend state</span>
+                <strong><t t-esc="backendStateLabel"/></strong>
+            </div>
+        </section>
+    </t>
+</templates>

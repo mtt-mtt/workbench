@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_gateway_opcua_adapters" model="ir.actions.act_window">
+        <field name="name">OPC UA Adapters</field>
+        <field name="res_model">gateway.opcua.adapter</field>
+        <field name="view_mode">list,form</field>
+    </record>
+    <record id="action_gateway_opcua_nodes" model="ir.actions.act_window">
+        <field name="name">OPC UA Nodes</field>
+        <field name="res_model">gateway.opcua.node</field>
+        <field name="view_mode">list,form</field>
+    </record>
+    <record id="action_gateway_opcua_diagnostics" model="ir.actions.act_window">
+        <field name="name">OPC UA Diagnostics</field>
+        <field name="res_model">gateway.opcua.diagnostic</field>
+        <field name="view_mode">list,form</field>
+    </record>
+</odoo>

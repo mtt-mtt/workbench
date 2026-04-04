@@ -1,0 +1,7 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_gateway_s7_adapter,gateway.s7.adapter,model_gateway_s7_adapter,,1,1,1,1
+access_gateway_s7_tag,gateway.s7.tag,model_gateway_s7_tag,,1,1,1,1
+access_gateway_s7_point,gateway.s7.point,model_gateway_s7_point,,1,1,1,1
+access_gateway_s7_snapshot,gateway.s7.snapshot,model_gateway_s7_snapshot,,1,1,1,1
+access_gateway_s7_write_ack,gateway.s7.write.ack,model_gateway_s7_write_ack,,1,1,1,1
+access_gateway_s7_diagnostic,gateway.s7.diagnostic,model_gateway_s7_diagnostic,,1,1,1,1

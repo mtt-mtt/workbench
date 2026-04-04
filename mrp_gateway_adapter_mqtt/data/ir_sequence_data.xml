@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="seq_gateway_mqtt_adapter" model="ir.sequence">
+            <field name="name">MQTT Adapter</field>
+            <field name="code">gateway.mqtt.adapter</field>
+            <field name="prefix">MQTT-</field>
+            <field name="padding">4</field>
+        </record>
+
+        <record id="seq_gateway_mqtt_topic" model="ir.sequence">
+            <field name="name">MQTT Topic</field>
+            <field name="code">gateway.mqtt.topic</field>
+            <field name="prefix">MQTT-T-</field>
+            <field name="padding">4</field>
+        </record>
+
+        <record id="seq_gateway_mqtt_diagnostic" model="ir.sequence">
+            <field name="name">MQTT Diagnostic</field>
+            <field name="code">gateway.mqtt.diagnostic</field>
+            <field name="prefix">MQTT-D-</field>
+            <field name="padding">4</field>
+        </record>
+    </data>
+</odoo>

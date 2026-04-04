@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates xml:space="preserve">
+    <t t-name="mrp_shopfloor_frontend.ShopfloorExecutionScreen" owl="1">
+        <ShopfloorExecutionActionBar
+            execution="props.execution"
+            onStartExecution="props.onStartExecution"
+            onPauseExecution="props.onPauseExecution"
+            onFinishExecution="props.onFinishExecution"
+        />
+        <ShopfloorExecutionDetailPanel
+            execution="props.execution"
+            selectedQueueContext="props.selectedQueueContext"
+            workstation="props.workstation"
+            sessionRef="props.sessionRef"
+        />
+        <ShopfloorExecutionLogPreview logEntries="props.logEntries"/>
+        <ShopfloorExecutionExceptionActions onReportException="props.onReportException"/>
+    </t>
+</templates>
