@@ -30,6 +30,12 @@
                         <span>Fetching boot payload and preparing the workbench.</span>
                     </section>
                 </t>
+                <t t-if="connectivity.state !== 'online' or connectivity.recovered">
+                    <section t-attf-class="o_mrp_shopfloor_banner o_mrp_shopfloor_banner--#{connectivity.tone}">
+                        <strong><t t-esc="connectivity.label"/></strong>
+                        <span><t t-esc="connectivity.detail"/></span>
+                    </section>
+                </t>
 
                 <div class="o_mrp_shopfloor_workspace_frame">
                     <ShopfloorNavRail
@@ -39,6 +45,7 @@
                         workstation="workstation"
                         sessionRef="sessionRef"
                         metrics="metrics"
+                        gatewayRuntimeSummary="gatewayRuntimeSummary"
                         booted="booted"
                         onNavigatePanel="navigatePanel"
                     />
@@ -58,9 +65,11 @@
                             selectedDevice="selectedDevice"
                             responseSummary="responseSummary"
                             commandQueueStatus="commandQueueStatus"
+                            gatewayRuntimeSummary="gatewayRuntimeSummary"
                             sessionRef="sessionRef"
                             workstation="workstation"
                             metrics="metrics"
+                            connectivity="connectivity"
                             lastResponse="lastResponse"
                             onStartExecution="startExecution"
                             onPauseExecution="pauseExecution"
@@ -76,7 +85,10 @@
                     <ShopfloorInspector
                         responseSummary="responseSummary"
                         commandQueueStatus="commandQueueStatus"
+                        gatewayRuntimeSummary="gatewayRuntimeSummary"
+                        metrics="metrics"
                         commands="commands"
+                        exceptions="exceptions"
                         timelineEntries="timelineEntries"
                         logEntries="logEntries"
                         activity="activity"

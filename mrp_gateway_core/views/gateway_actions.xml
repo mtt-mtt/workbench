@@ -6,10 +6,38 @@
         <field name="view_mode">list,form</field>
     </record>
 
+    <record id="view_gateway_device_search" model="ir.ui.view">
+        <field name="name">gateway.device.search</field>
+        <field name="model">gateway.device</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="code"/>
+                <field name="entry_id"/>
+                <field name="device_uid"/>
+                <field name="external_ref"/>
+                <field name="merge_target_id"/>
+                <filter string="Merge Target Set" name="merge_target_set" domain="[('merge_target_id', '!=', False)]"/>
+                <filter string="Merged" name="merged" domain="[('merge_state', '=', 'merged')]"/>
+                <filter string="Merge Preview" name="merge_preview" domain="[('merge_state', '=', 'preview')]"/>
+                <filter string="Merge Conflict" name="merge_conflict" domain="[('merge_state', '=', 'conflict')]"/>
+                <filter string="Potential Duplicate Hints" name="duplicate_hints" domain="['|', ('device_uid', '!=', False), '|', ('external_ref', '!=', False), '&amp;', ('protocol', '!=', False), ('address', '!=', False)]"/>
+                <separator/>
+                <filter string="Active" name="active" domain="[('active', '=', True)]"/>
+                <filter string="Disabled" name="disabled" domain="[('state', '=', 'disabled')]"/>
+                <separator string="Group By"/>
+                <filter string="Entry" name="group_entry" context="{'group_by': 'entry_id'}"/>
+                <filter string="Merge State" name="group_merge_state" context="{'group_by': 'merge_state'}"/>
+                <filter string="Lifecycle State" name="group_lifecycle_state" context="{'group_by': 'lifecycle_state'}"/>
+            </search>
+        </field>
+    </record>
+
     <record id="action_gateway_device" model="ir.actions.act_window">
         <field name="name">Gateway Devices</field>
         <field name="res_model">gateway.device</field>
         <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_gateway_device_search"/>
     </record>
 
     <record id="action_gateway_signal" model="ir.actions.act_window">

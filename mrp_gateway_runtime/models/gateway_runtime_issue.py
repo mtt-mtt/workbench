@@ -57,6 +57,8 @@ class GatewayRuntimeIssue(models.Model):
             ("refresh_runtime", "Refresh Runtime"),
             ("repair_runtime", "Repair Runtime"),
             ("reload_runtime", "Reload Runtime"),
+            ("request_edge_replay", "Request Edge Replay"),
+            ("review_edge_dead_letter", "Review Edge Dead Letter"),
             ("load_runtime", "Load Runtime"),
             ("unload_runtime", "Unload Runtime"),
             ("configure_adapter", "Configure Adapter"),
@@ -86,7 +88,15 @@ class GatewayRuntimeIssue(models.Model):
 
     @api.model
     def _fixable_action_keys(self):
-        return {"refresh_runtime", "repair_runtime", "reload_runtime", "load_runtime", "unload_runtime"}
+        return {
+            "refresh_runtime",
+            "repair_runtime",
+            "reload_runtime",
+            "request_edge_replay",
+            "review_edge_dead_letter",
+            "load_runtime",
+            "unload_runtime",
+        }
 
     @api.model_create_multi
     def create(self, vals_list):
@@ -155,13 +165,18 @@ class GatewayRuntimeIssue(models.Model):
             }
             payload = record._payload_summary()
             adapter_payload = payload.get("adapter") if isinstance(payload, dict) else {}
+            protocol_payload = payload.get("protocol_runtime") if isinstance(payload, dict) else {}
             if isinstance(adapter_payload, dict) and adapter_payload:
+                protocol_text = ""
+                if isinstance(protocol_payload, dict) and protocol_payload:
+                    protocol_text = protocol_payload.get("summary") or protocol_payload.get("state") or ""
                 record.payload_summary = _compact(
-                    _("%(code)s %(adapter_type)s %(health)s %(runtime)s") % {
+                    _("%(code)s %(adapter_type)s %(health)s %(runtime)s%(protocol)s") % {
                         "code": adapter_payload.get("code") or record.adapter_code or _("adapter"),
                         "adapter_type": adapter_payload.get("adapter_type") or record.adapter_type or _("runtime"),
                         "health": adapter_payload.get("health_state") or _("unknown"),
                         "runtime": adapter_payload.get("state") or _("state"),
+                        "protocol": _(" protocol %(value)s") % {"value": protocol_text} if protocol_text else "",
                     }
                 )
             elif isinstance(payload, dict) and payload:
@@ -204,6 +219,10 @@ class GatewayRuntimeIssue(models.Model):
             return self.action_repair_adapter()
         if action_key == "reload_runtime":
             return self.action_reload_adapter()
+        if action_key == "request_edge_replay":
+            return self.action_request_edge_replay()
+        if action_key == "review_edge_dead_letter":
+            return self.action_review_edge_dead_letter()
         if action_key == "load_runtime" and self.adapter_id:
             self.adapter_id.action_load_adapter()
             return self.action_open_diagnostics()
@@ -232,6 +251,30 @@ class GatewayRuntimeIssue(models.Model):
             action["context"] = {**context, "search_default_adapter_id": self.adapter_id.id, "default_adapter_id": self.adapter_id.id}
         return action
 
+    def action_open_edge_actions(self):
+        self.ensure_one()
+        if self.adapter_id:
+            return self.adapter_id.action_open_edge_actions()
+        return self.action_open_events()
+
+    def action_open_protocol_runtime_issues(self):
+        self.ensure_one()
+        if self.adapter_id:
+            return self.adapter_id.action_open_protocol_runtime_issues()
+        return self.action_open_diagnostics()
+
+    def action_open_protocol_runtime_console(self):
+        self.ensure_one()
+        if self.adapter_id:
+            return self.adapter_id.action_open_protocol_runtime_console()
+        return self.action_open_diagnostics()
+
+    def action_open_protocol_runtime_probe(self):
+        self.ensure_one()
+        if self.adapter_id:
+            return self.adapter_id.action_open_protocol_runtime_probe()
+        return self.action_open_diagnostics()
+
     def action_refresh_adapter_diagnostics(self):
         self.ensure_one()
         if self.adapter_id:
@@ -242,6 +285,18 @@ class GatewayRuntimeIssue(models.Model):
         self.ensure_one()
         if self.adapter_id:
             self.adapter_id.action_repair_adapter()
+        return self.action_open_diagnostics()
+
+    def action_request_edge_replay(self):
+        self.ensure_one()
+        if self.adapter_id:
+            return self.adapter_id.action_request_edge_replay()
+        return self.action_open_diagnostics()
+
+    def action_review_edge_dead_letter(self):
+        self.ensure_one()
+        if self.adapter_id:
+            return self.adapter_id.action_review_edge_dead_letter()
         return self.action_open_diagnostics()
 
     def action_reload_adapter(self):

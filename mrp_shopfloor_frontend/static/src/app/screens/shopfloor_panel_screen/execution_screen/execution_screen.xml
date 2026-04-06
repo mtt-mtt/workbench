@@ -10,6 +10,9 @@
         <ShopfloorExecutionDetailPanel
             execution="props.execution"
             selectedQueueContext="props.selectedQueueContext"
+            logEntries="props.logEntries"
+            gatewayRuntimeSummary="props.gatewayRuntimeSummary"
+            metrics="props.metrics"
             workstation="props.workstation"
             sessionRef="props.sessionRef"
         />

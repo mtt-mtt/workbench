@@ -42,6 +42,13 @@
               sequence="15"
               groups="mrp.group_mrp_manager"/>
 
+    <menuitem id="menu_gateway_runtime_edge_actions"
+              name="Edge Actions"
+              parent="mrp_gateway_core.menu_gateway_runtime"
+              action="action_gateway_runtime_edge_action"
+              sequence="16"
+              groups="mrp.group_mrp_manager"/>
+
     <menuitem id="menu_gateway_runtime_issues"
               name="Issues"
               parent="mrp_gateway_core.menu_gateway_runtime"

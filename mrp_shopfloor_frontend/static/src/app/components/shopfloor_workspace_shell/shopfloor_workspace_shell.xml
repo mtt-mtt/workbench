@@ -14,10 +14,30 @@
                 <span t-att-class="props.metrics.deviceOnline ? 'badge rounded-pill text-bg-success' : 'badge rounded-pill text-bg-danger'">
                     <t t-esc="props.metrics.deviceOnline ? 'Online' : 'Offline'"/>
                 </span>
+                <t t-if="gatewayRuntimeAttentionLabel">
+                    <span t-att-class="'badge rounded-pill text-bg-' + gatewayDriverTone">
+                        <t t-esc="gatewayRuntimeAttentionLabel"/>
+                    </span>
+                </t>
+                <t t-if="gatewayProtocolRuntimeLabel">
+                    <span t-att-class="'badge rounded-pill text-bg-' + gatewayProtocolRuntimeTone">
+                        <t t-esc="gatewayProtocolRuntimeLabel"/>
+                    </span>
+                </t>
                 <span class="badge rounded-pill text-bg-secondary"><t t-esc="props.currentPanel"/></span>
                 <span class="badge rounded-pill text-bg-info"><t t-esc="props.metrics.lastSync"/></span>
                 <span class="badge rounded-pill text-bg-dark">Session <t t-esc="sessionLabel"/></span>
             </div>
+            <t t-if="gatewayRuntimeAttentionSummary">
+                <p class="o_mrp_shopfloor_rail_description">
+                    <t t-esc="gatewayRuntimeAttentionSummary"/>
+                </p>
+            </t>
+            <t t-if="gatewayProtocolRuntimeSummary and gatewayProtocolRuntimeSummary !== gatewayRuntimeAttentionSummary">
+                <p class="o_mrp_shopfloor_rail_description">
+                    <t t-esc="gatewayProtocolRuntimeSummary"/>
+                </p>
+            </t>
         </section>
         <section class="o_mrp_shopfloor_card o_mrp_shopfloor_card--summary">
             <div class="o_mrp_shopfloor_metric">
@@ -35,6 +55,58 @@
             <div class="o_mrp_shopfloor_metric">
                 <span>Backend state</span>
                 <strong><t t-esc="backendStateLabel"/></strong>
+            </div>
+            <div class="o_mrp_shopfloor_metric">
+                <span>Driver issues</span>
+                <strong><t t-esc="gatewayDriverIssueOpen"/></strong>
+            </div>
+            <div class="o_mrp_shopfloor_metric">
+                <span>Protocol attention</span>
+                <strong><t t-esc="gatewayProtocolRuntimeAttentionCount"/></strong>
+            </div>
+            <div class="o_mrp_shopfloor_metric">
+                <span>Edge queued</span>
+                <strong><t t-esc="gatewayEdgeActionQueued"/></strong>
+            </div>
+            <div class="o_mrp_shopfloor_metric">
+                <span>Edge processing</span>
+                <strong><t t-esc="gatewayEdgeActionProcessing"/></strong>
+            </div>
+            <div class="o_mrp_shopfloor_metric">
+                <span>Edge processed</span>
+                <strong><t t-esc="gatewayEdgeActionProcessed"/></strong>
+            </div>
+            <div class="o_mrp_shopfloor_metric">
+                <span>Edge total</span>
+                <strong><t t-esc="gatewayEdgeActionTotal"/></strong>
+            </div>
+            <div class="o_mrp_shopfloor_metric">
+                <span>Replay pending</span>
+                <strong><t t-esc="gatewayEdgeReplayPending"/></strong>
+            </div>
+            <div class="o_mrp_shopfloor_metric">
+                <span>Replay due</span>
+                <strong><t t-esc="gatewayEdgeReplayDue"/></strong>
+            </div>
+            <div class="o_mrp_shopfloor_metric">
+                <span>Replay cooling</span>
+                <strong><t t-esc="gatewayEdgeReplayCooling"/></strong>
+            </div>
+            <div class="o_mrp_shopfloor_metric">
+                <span>Replay coalesced</span>
+                <strong><t t-esc="gatewayEdgeReplayCoalesced"/></strong>
+            </div>
+            <div class="o_mrp_shopfloor_metric">
+                <span>Dead letters</span>
+                <strong><t t-esc="gatewayEdgeDeadLetterCount"/></strong>
+            </div>
+            <div class="o_mrp_shopfloor_metric">
+                <span>Protocol runtimes</span>
+                <strong><t t-esc="gatewayProtocolRuntimeCount"/></strong>
+            </div>
+            <div class="o_mrp_shopfloor_metric">
+                <span>Protocol entries</span>
+                <strong><t t-esc="gatewayProtocolRuntimeEntryCount"/></strong>
             </div>
         </section>
     </t>

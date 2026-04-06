@@ -11,12 +11,51 @@
                 <field name="discovery_state"/>
                 <field name="severity"/>
                 <field name="state"/>
+                <field name="edge_fetch_count"/>
+                <field name="last_edge_fetch_at" optional="hide"/>
                 <field name="adapter_id"/>
+                <field name="entry_id" optional="hide"/>
                 <field name="device_id"/>
                 <field name="command_id"/>
                 <field name="source_signal"/>
+                <field name="registry_action"/>
+                <field name="source_payload_id"/>
+                <field name="result"/>
+                <field name="message"/>
                 <field name="occurred_at"/>
             </list>
+        </field>
+    </record>
+
+    <record id="view_gateway_runtime_event_search" model="ir.ui.view">
+        <field name="name">gateway.runtime.event.search</field>
+        <field name="model">gateway.runtime.event</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="code"/>
+                <field name="adapter_id"/>
+                <field name="event_kind"/>
+                <field name="state"/>
+                <field name="severity"/>
+                <field name="source_signal"/>
+                <field name="registry_action"/>
+                <field name="source_payload_id"/>
+                <field name="ui_refresh_hint"/>
+                <filter string="Open" name="open" domain="[('state', 'in', ['new', 'processing'])]"/>
+                <filter string="Processing" name="processing" domain="[('state', '=', 'processing')]"/>
+                <filter string="Processed" name="processed" domain="[('state', '=', 'processed')]"/>
+                <filter string="Failed" name="failed" domain="[('state', '=', 'failed')]"/>
+                <filter string="Signals" name="signals" domain="[('event_kind', '=', 'signal')]"/>
+                <filter string="Edge Actions" name="edge_actions" domain="[('event_kind', '=', 'signal'), ('source_signal', 'ilike', 'edge_cache_action')]"/>
+                <filter string="Replay Requests" name="edge_action_replay" domain="[('event_kind', '=', 'signal'), ('source_signal', 'ilike', 'edge_cache_action'), ('registry_action', '=', 'replay')]"/>
+                <filter string="Dead-Letter Review" name="edge_action_dead_letter" domain="[('event_kind', '=', 'signal'), ('source_signal', 'ilike', 'edge_cache_action'), ('registry_action', '=', 'review_dead_letter')]"/>
+                <separator string="Group By"/>
+                <filter string="Adapter" name="group_adapter" context="{'group_by': 'adapter_id'}"/>
+                <filter string="Kind" name="group_kind" context="{'group_by': 'event_kind'}"/>
+                <filter string="State" name="group_state" context="{'group_by': 'state'}"/>
+                <filter string="Signal" name="group_signal" context="{'group_by': 'source_signal'}"/>
+                <filter string="Registry Action" name="group_registry_action" context="{'group_by': 'registry_action'}"/>
+            </search>
         </field>
     </record>
 
@@ -25,7 +64,29 @@
         <field name="model">gateway.runtime.event</field>
         <field name="arch" type="xml">
             <form string="Gateway Runtime Event">
+                <header>
+                    <button name="action_open_related_edge_actions" type="object" string="Related Edge Actions" class="btn-secondary"/>
+                    <button name="action_open_related_issues" type="object" string="Related Issues" class="btn-secondary"/>
+                </header>
                 <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_open_related_edge_actions" type="object" class="oe_stat_button" icon="fa-list-alt">
+                            <div class="o_field_widget o_stat_info">
+                                <span class="o_stat_value">
+                                    <field name="registry_action" nolabel="1"/>
+                                </span>
+                                <span class="o_stat_text">Edge Action</span>
+                            </div>
+                        </button>
+                        <button name="action_open_related_issues" type="object" class="oe_stat_button" icon="fa-exclamation-triangle">
+                            <div class="o_field_widget o_stat_info">
+                                <span class="o_stat_value">
+                                    <field name="source_payload_id" nolabel="1"/>
+                                </span>
+                                <span class="o_stat_text">Trace Key</span>
+                            </div>
+                        </button>
+                    </div>
                     <group>
                         <group>
                             <field name="name"/>
@@ -41,6 +102,10 @@
                             <field name="discovery_state"/>
                             <field name="severity"/>
                             <field name="state"/>
+                            <field name="edge_fetch_count"/>
+                            <field name="last_edge_fetch_at"/>
+                            <field name="registry_action"/>
+                            <field name="source_payload_id"/>
                             <field name="app_id"/>
                             <field name="workstation_id"/>
                             <field name="session_ref"/>
@@ -52,10 +117,8 @@
                     </group>
                     <group>
                         <field name="source_signal"/>
-                        <field name="source_payload_id"/>
                         <field name="probe_session_id"/>
                         <field name="state_version"/>
-                        <field name="registry_action"/>
                         <field name="ui_refresh_hint"/>
                     </group>
                     <field name="payload_json" nolabel="1"/>

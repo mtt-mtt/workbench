@@ -12,6 +12,20 @@
                 <span><t t-esc="props.item.reference || 'no reference'"/></span>
                 <span><t t-esc="props.item.createdAt || 'no timestamp'"/></span>
             </div>
+            <div class="o_mrp_shopfloor_detail_meta" t-if="runtimeAttentionLabel || props.latestRuntimeEntry || runtimeSummary">
+                <span t-att-class="runtimeStateClass">
+                    <t t-esc="runtimeAttentionLabel || props.latestRuntimeEntry?.statusLabel || runtimeSummary?.stateLabel || 'Runtime'"/>
+                </span>
+                <span>
+                    <t t-esc="props.latestRuntimeEntry?.title || runtimeSummary?.label || 'Driver diagnostics'"/>
+                </span>
+                <span>
+                    <t t-esc="runtimeAttentionDetail || props.latestRuntimeEntry?.detail || runtimeSummary?.detail || runtimeSummary?.summary || 'No runtime change details yet.'"/>
+                </span>
+                <span t-if="props.latestRuntimeEntry?.timestamp">
+                    Changed <t t-esc="props.latestRuntimeEntry.timestamp"/>
+                </span>
+            </div>
             <div class="o_mrp_shopfloor_detail_meta">
                 <span class="badge rounded-pill" t-att-class="'text-bg-' + (branchToneClass || 'secondary')">
                     Branch <t t-esc="branchLabel"/>
@@ -26,6 +40,7 @@
             <p class="o_mrp_shopfloor_api_detail">
                 <t t-esc="branchDetail"/>
             </p>
+            <ShopfloorFeedbackBar label="feedbackLabel" detail="feedbackDetail" tone="stateToneClass" compact="true"/>
             <t t-if="props.item.details">
                 <p class="o_mrp_shopfloor_exception_detail"><t t-esc="props.item.details"/></p>
             </t>

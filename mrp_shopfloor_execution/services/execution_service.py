@@ -1,4 +1,5 @@
 import json
+from datetime import datetime
 
 from odoo import _
 from odoo import fields
@@ -41,6 +42,185 @@ class ShopfloorExecutionService:
     def _json_dumps(self, value):
         return json.dumps(value, ensure_ascii=False, default=str)
 
+    def _safe_json(self, value):
+        if isinstance(value, dict):
+            return value
+        if not value:
+            return {}
+        if isinstance(value, str):
+            try:
+                parsed = json.loads(value)
+            except (TypeError, ValueError, json.JSONDecodeError):
+                return {}
+            return parsed if isinstance(parsed, dict) else {}
+        return {}
+
+    def _first_value(self, *values):
+        for value in values:
+            if value not in (None, "", False):
+                return value
+        return None
+
+    def _print_execution_summary(self, record):
+        request_payload = self._safe_json(record.payload_json)
+        request_text_payload = self._safe_json(record.request_text)
+        response_payload = self._safe_json(record.response_text)
+        diagnostic_state = self._safe_json(record.diagnostic_state)
+        print_execution = (
+            diagnostic_state.get("print_execution")
+            or response_payload.get("print_execution")
+            or request_payload.get("print_execution")
+            or request_text_payload.get("print_execution")
+            or {}
+        )
+        if not print_execution:
+            return {}
+        driver_ready = (
+            print_execution.get("driver_ready")
+            if "driver_ready" in print_execution
+            else diagnostic_state.get("driver_ready")
+            if "driver_ready" in diagnostic_state
+            else response_payload.get("driver_ready")
+            if "driver_ready" in response_payload
+            else request_payload.get("driver_ready")
+            if "driver_ready" in request_payload
+            else request_text_payload.get("driver_ready")
+            if "driver_ready" in request_text_payload
+            else None
+        )
+        driver_capabilities = self._first_value(
+            print_execution.get("driver_capabilities"),
+            diagnostic_state.get("driver_capabilities"),
+            response_payload.get("driver_capabilities"),
+            request_payload.get("driver_capabilities"),
+            request_text_payload.get("driver_capabilities"),
+        )
+        if not isinstance(driver_capabilities, dict):
+            driver_capabilities = {}
+        return {
+            "state": self._first_value(print_execution.get("state"), print_execution.get("execution_state")),
+            "execution_state": self._first_value(print_execution.get("execution_state"), print_execution.get("state")),
+            "status": self._first_value(print_execution.get("status"), print_execution.get("result")),
+            "result": self._first_value(print_execution.get("result"), print_execution.get("status")),
+            "service_mode": self._first_value(print_execution.get("service_mode"), print_execution.get("execution_mode")),
+            "service_endpoint": self._first_value(print_execution.get("service_endpoint"), print_execution.get("service_url")),
+            "service_job_id": print_execution.get("service_job_id"),
+            "service_status_code": print_execution.get("service_status_code"),
+            "service_error_code": self._first_value(print_execution.get("service_error_code"), response_payload.get("service_error_code")),
+            "service_error_detail": self._first_value(print_execution.get("service_error_detail"), response_payload.get("service_error_detail")),
+            "service_completed_at": self._first_value(print_execution.get("service_completed_at"), response_payload.get("service_completed_at")),
+            "service_accepted_at": self._first_value(print_execution.get("service_accepted_at"), response_payload.get("service_accepted_at")),
+            "service_document_url": self._first_value(print_execution.get("service_document_url"), response_payload.get("service_document_url")),
+            "service_preview_url": self._first_value(print_execution.get("service_preview_url"), response_payload.get("service_preview_url")),
+            "service_printer_code": self._first_value(print_execution.get("service_printer_code"), response_payload.get("service_printer_code")),
+            "printer_status": print_execution.get("printer_status"),
+            "printed_copies": self._first_value(
+                print_execution.get("printed_copies"),
+                diagnostic_state.get("printed_copies"),
+                response_payload.get("printed_copies"),
+                request_payload.get("printed_copies"),
+            ),
+            "printer_name": self._first_value(print_execution.get("printer_name"), request_payload.get("printer_name")),
+            "request_id": self._first_value(print_execution.get("request_id"), request_payload.get("request_id")),
+            "result_text": self._first_value(
+                print_execution.get("result_text"),
+                response_payload.get("response_text"),
+                response_payload.get("message"),
+                diagnostic_state.get("message"),
+            ),
+            "service_summary": self._first_value(
+                print_execution.get("summary"),
+                response_payload.get("summary"),
+                diagnostic_state.get("summary"),
+            ),
+            "error_message": self._first_value(
+                print_execution.get("error_message"),
+                response_payload.get("error_message"),
+                diagnostic_state.get("error_message"),
+                response_payload.get("error"),
+                response_payload.get("message"),
+                diagnostic_state.get("message"),
+            ),
+            "driver_origin": self._first_value(
+                print_execution.get("driver_origin"),
+                diagnostic_state.get("driver_origin"),
+                response_payload.get("driver_origin"),
+                request_payload.get("driver_origin"),
+                request_text_payload.get("driver_origin"),
+            ),
+            "driver_ready": driver_ready,
+            "driver_label": self._first_value(
+                print_execution.get("driver_label"),
+                diagnostic_state.get("driver_label"),
+                response_payload.get("driver_label"),
+                request_payload.get("driver_label"),
+                request_text_payload.get("driver_label"),
+            ),
+            "driver_type": self._first_value(
+                print_execution.get("driver_type"),
+                diagnostic_state.get("driver_type"),
+                response_payload.get("driver_type"),
+                request_payload.get("driver_type"),
+                request_text_payload.get("driver_type"),
+            ),
+            "driver_path": self._first_value(
+                print_execution.get("driver_path"),
+                diagnostic_state.get("driver_path"),
+                response_payload.get("driver_path"),
+                request_payload.get("driver_path"),
+                request_text_payload.get("driver_path"),
+            ),
+            "driver_capabilities": driver_capabilities,
+            "driver_diagnostics": {
+                "origin": self._first_value(
+                    print_execution.get("driver_origin"),
+                    diagnostic_state.get("driver_origin"),
+                    response_payload.get("driver_origin"),
+                    request_payload.get("driver_origin"),
+                    request_text_payload.get("driver_origin"),
+                ),
+                "ready": driver_ready,
+                "label": self._first_value(
+                    print_execution.get("driver_label"),
+                    diagnostic_state.get("driver_label"),
+                    response_payload.get("driver_label"),
+                    request_payload.get("driver_label"),
+                    request_text_payload.get("driver_label"),
+                ),
+                "type": self._first_value(
+                    print_execution.get("driver_type"),
+                    diagnostic_state.get("driver_type"),
+                    response_payload.get("driver_type"),
+                    request_payload.get("driver_type"),
+                    request_text_payload.get("driver_type"),
+                ),
+                "path": self._first_value(
+                    print_execution.get("driver_path"),
+                    diagnostic_state.get("driver_path"),
+                    response_payload.get("driver_path"),
+                    request_payload.get("driver_path"),
+                    request_text_payload.get("driver_path"),
+                ),
+                "status_polling_supported": driver_capabilities.get("status_polling_supported"),
+            },
+            "service_request": print_execution.get("service_request") or {},
+            "service_response": print_execution.get("service_response") or {},
+            "print_plan": self._first_value(
+                print_execution.get("print_plan"),
+                diagnostic_state.get("print_plan"),
+                response_payload.get("print_plan"),
+                request_payload.get("print_plan"),
+            )
+            or {},
+            "barcode_validation": self._first_value(
+                print_execution.get("barcode_validation"),
+                diagnostic_state.get("barcode_validation"),
+                response_payload.get("barcode_validation"),
+                request_payload.get("barcode_validation"),
+            )
+            or {},
+        }
+
     def _maybe_int(self, value):
         if isinstance(value, int):
             return value
@@ -78,6 +258,15 @@ class ShopfloorExecutionService:
 
     def _get_gateway_command_model(self):
         return self._model("gateway.command")
+
+    def _get_gateway_runtime_adapter_model(self):
+        return self._model("gateway.runtime.adapter")
+
+    def _get_gateway_runtime_issue_model(self):
+        return self._model("gateway.runtime.issue")
+
+    def _get_gateway_runtime_event_model(self):
+        return self._model("gateway.runtime.event")
 
     def _get_exception_model(self):
         return self._model("shopfloor.exception")
@@ -164,6 +353,11 @@ class ShopfloorExecutionService:
         }
 
     def _serialize_gateway_command(self, record):
+        request_payload = self._safe_json(record.payload_json)
+        request_summary = self._safe_json(record.request_text)
+        response_summary = self._safe_json(record.response_text)
+        diagnostic_summary = self._safe_json(record.diagnostic_state)
+        print_execution = self._print_execution_summary(record)
         return {
             "id": record.id,
             "code": record.code,
@@ -175,6 +369,20 @@ class ShopfloorExecutionService:
             "command_type": record.command_type,
             "idempotency_key": record.idempotency_key,
             "attempt_count": record.attempt_count,
+            "payload_json": request_payload,
+            "request_summary": request_summary or request_payload,
+            "response_summary": response_summary,
+            "diagnostic_summary": diagnostic_summary,
+            "print_execution": print_execution,
+            "summary": {
+                "state": record.state,
+                "request_summary": request_summary or request_payload,
+                "response_summary": response_summary,
+                "diagnostic_summary": diagnostic_summary,
+                "print_execution": print_execution,
+                "print_plan": print_execution.get("print_plan") or {},
+                "barcode_validation": print_execution.get("barcode_validation") or {},
+            },
         }
 
     def _serialize_workorder_queue_item(self, record):
@@ -394,7 +602,43 @@ class ShopfloorExecutionService:
         return exception
 
     def _serialize_timeline_entry(self, record):
-        result_detail = record.result or record.note or record.message
+        payload = self._safe_json(record.payload)
+        result = self._safe_json(record.result)
+        summary = result.get("summary") or {}
+        print_execution = result.get("print_execution") or summary.get("print_execution") or payload.get("print_execution") or {}
+        print_plan = result.get("print_plan") or summary.get("print_plan") or print_execution.get("print_plan") or payload.get("print_plan") or {}
+        barcode_validation = (
+            result.get("barcode_validation")
+            or summary.get("barcode_validation")
+            or print_execution.get("barcode_validation")
+            or payload.get("barcode_validation")
+            or {}
+        )
+        result_detail = (
+            " | ".join(
+                        [
+                            item
+                            for item in [
+                                f"mode {print_execution.get('service_mode')}" if print_execution.get("service_mode") else None,
+                                f"job {print_execution.get('service_job_id')}" if print_execution.get("service_job_id") else None,
+                                f"driver {print_execution.get('driver_origin')}" if print_execution.get("driver_origin") else None,
+                                (
+                                    f"driver-ready {print_execution.get('driver_ready')}"
+                                    if print_execution.get("driver_ready") is not None
+                                    else None
+                                ),
+                                f"printer {print_execution.get('printer_status')}" if print_execution.get("printer_status") else None,
+                                f"{print_execution.get('printed_copies')} copies"
+                                if print_execution.get("printed_copies") not in (None, "", False)
+                                else None,
+                            ]
+                    if item
+                ]
+            )
+            or record.result
+            or record.note
+            or record.message
+        )
         return {
             "id": record.id,
             "title": record.message or record.event_code or record.name,
@@ -402,6 +646,18 @@ class ShopfloorExecutionService:
             "kind": record.event_type,
             "status": record.severity,
             "timestamp": record.event_at,
+            "gateway_command_ref": record.gateway_command_ref,
+            "print_execution": print_execution,
+            "print_plan": print_plan,
+            "barcode_validation": barcode_validation,
+            "summary": {
+                "gateway_command_ref": record.gateway_command_ref,
+                "print_execution": print_execution,
+                "print_plan": print_plan,
+                "barcode_validation": barcode_validation,
+                "payload": payload,
+                "result": result,
+            },
             "source": "shopfloor.audit.log",
         }
 
@@ -426,14 +682,15 @@ class ShopfloorExecutionService:
             return None
         session_ref = context.get("session_ref") or context.get("session_id")
         workstation_code = context.get("workstation_code")
+        Workstation = self._get_workstation_model()
         domain = []
         if session_ref:
             domain.append(("code", "=", str(session_ref)))
         if workstation_code:
             domain.append(("workstation_id.code", "=", workstation_code))
         session = Session.search(domain, limit=1) if domain else False
-        if not session and workstation_code:
-            workstation = self._get_workstation_model().search([("code", "=", workstation_code)], limit=1) if self._get_workstation_model() else False
+        if not session and workstation_code and Workstation is not None:
+            workstation = Workstation.search([("code", "=", workstation_code)], limit=1)
             if workstation and workstation.current_session_id:
                 session = workstation.current_session_id
         return self._serialize_session(session) if session else None
@@ -552,6 +809,567 @@ class ShopfloorExecutionService:
         records = Audit.search(domain, limit=limit, order="event_at desc, id desc")
         return [self._serialize_timeline_entry(record) for record in records]
 
+    def _runtime_issue_status(self, record):
+        state = str(getattr(record, "state", "") or "new").strip().lower()
+        severity = str(getattr(record, "severity", "") or "medium").strip().lower()
+        if state in {"resolved", "closed", "ignored"}:
+            return "success", _("Resolved")
+        if severity in {"critical", "high"} or state in {"blocked"}:
+            return "danger", _("Danger")
+        if state in {"open", "new", "in_progress"}:
+            return "warning", _("Warning")
+        return "info", _("Info")
+
+    def _serialize_runtime_issue_activity(self, record):
+        status, status_label = self._runtime_issue_status(record)
+        detail_parts = [
+            record.detail or None,
+            record.payload_summary or None,
+            record.repair_summary or None,
+            f"adapter {record.adapter_code}" if record.adapter_code else None,
+            f"action {record.recommended_action_key}" if record.recommended_action_key else None,
+        ]
+        detail = " | ".join(part for part in detail_parts if part) or record.message or record.name
+        timestamp = record.resolved_at or record.last_seen_at or False
+        return {
+            "id": f"runtime-issue-{record.id}",
+            "title": record.message or record.name or _("Runtime issue"),
+            "label": record.message or record.name or _("Runtime issue"),
+            "detail": detail,
+            "kind": "runtime",
+            "status": status,
+            "statusKey": status,
+            "statusLabel": status_label,
+            "statusTone": status,
+            "timestamp": timestamp,
+            "summary": {
+                "issue_id": record.id,
+                "issue_key": record.issue_key,
+                "state": record.state,
+                "severity": record.severity,
+                "adapter_code": record.adapter_code,
+                "adapter_type": record.adapter_type,
+                "recommended_action_key": record.recommended_action_key,
+                "payload_summary": record.payload_summary,
+                "repair_summary": record.repair_summary,
+                "resolved_at": record.resolved_at,
+                "last_seen_at": record.last_seen_at,
+            },
+            "source": "gateway.runtime.issue",
+        }
+
+    def _runtime_edge_action_snapshot(self, record):
+        payload = self._safe_json(record.normalized_json) or self._safe_json(record.payload_json)
+        if not isinstance(payload, dict):
+            payload = {}
+        note = self._safe_json(getattr(record, "note", None))
+        if not isinstance(note, dict):
+            note = {}
+        signal_kind = str(payload.get("signal_kind") or "").strip().lower()
+        source_signal = str(getattr(record, "source_signal", "") or "").strip().lower()
+        if signal_kind != "edge_cache_action" and "edge_cache_action" not in source_signal:
+            return None
+        action_name = str(payload.get("edge_cache_action") or getattr(record, "registry_action", "") or "").strip().lower()
+        issue_key = str(payload.get("issue_key") or "").strip() or None
+        if not action_name:
+            if issue_key and issue_key.endswith(":edge_dead_letter"):
+                action_name = "review_dead_letter"
+            elif issue_key and issue_key.endswith(":edge_replay"):
+                action_name = "replay"
+        if action_name not in {"replay", "review_dead_letter"}:
+            return None
+        return {
+            "action_name": action_name,
+            "issue_key": issue_key,
+            "source_payload_id": getattr(record, "source_payload_id", None) or payload.get("source_payload_id"),
+            "edge_fetch_count": int(getattr(record, "edge_fetch_count", 0) or 0),
+            "last_edge_fetch_at": getattr(record, "last_edge_fetch_at", False) or payload.get("last_edge_fetch_at"),
+            "payload": payload,
+            "note": note,
+        }
+
+    def _runtime_edge_action_title(self, record, snapshot):
+        state = str(getattr(record, "state", "") or "new").strip().lower()
+        action_name = snapshot.get("action_name")
+        action_label = _("Edge replay") if action_name == "replay" else _("Dead-letter review")
+        if state == "processed":
+            return _("%s processed") % action_label
+        if state == "processing":
+            return _("%s processing") % action_label
+        if state == "failed":
+            return _("%s failed") % action_label
+        if state == "cancelled":
+            return _("%s cancelled") % action_label
+        return _("%s requested") % action_label
+
+    def _runtime_event_status(self, record):
+        edge_action = self._runtime_edge_action_snapshot(record)
+        state = str(getattr(record, "state", "") or "new").strip().lower()
+        severity = str(getattr(record, "severity", "") or "medium").strip().lower()
+        event_kind = str(getattr(record, "event_kind", "") or "custom").strip().lower()
+        if edge_action:
+            if state == "failed":
+                return "danger", _("Failed")
+            if state == "processed":
+                return "success", _("Processed")
+            if state == "processing":
+                return "info", _("Processing")
+            if state == "cancelled":
+                return "info", _("Cancelled")
+            if edge_action.get("action_name") == "review_dead_letter":
+                return "warning", _("Pending")
+            return "info", _("Pending")
+        if state == "failed":
+            return "danger", _("Failed")
+        if severity in {"critical", "high"}:
+            return "danger", _("Danger")
+        if event_kind in {"alarm", "diagnostic"}:
+            return "warning", _("Warning")
+        if state == "processed":
+            return "success", _("Processed")
+        if state == "cancelled":
+            return "info", _("Cancelled")
+        return "info", _("Info")
+
+    def _runtime_protocol_runtime_snapshot(self, record):
+        def _as_dict(value):
+            payload = self._safe_json(value)
+            return payload if isinstance(payload, dict) else {}
+
+        def _has_runtime_markers(value):
+            if not isinstance(value, dict) or not value:
+                return False
+            return any(
+                key in value
+                for key in (
+                    "state",
+                    "summary",
+                    "count",
+                    "entry_count",
+                    "detail",
+                    "state_counts",
+                    "kind_counts",
+                    "protocol_runtime_state",
+                    "protocol_runtime_summary",
+                    "protocol_runtime_count",
+                    "protocol_runtime_entry_count",
+                    "protocol_runtime_state_counts",
+                    "protocol_runtime_kind_counts",
+                )
+            )
+
+        def _format_counts(counts):
+            if not isinstance(counts, dict) or not counts:
+                return ""
+            parts = []
+            for key in sorted(counts):
+                value = counts.get(key)
+                if value in (None, "", False):
+                    continue
+                parts.append(f"{key}={value}")
+            return ", ".join(parts)
+
+        payload = _as_dict(record.normalized_json) or _as_dict(record.payload_json)
+        if not payload:
+            return None
+
+        candidates = []
+        for key in ("protocol_runtime", "edge_protocol_runtime"):
+            candidate = _as_dict(payload.get(key))
+            if _has_runtime_markers(candidate):
+                candidates.append((key, candidate))
+
+        edge_diagnostics = _as_dict(payload.get("edge_diagnostics"))
+        if edge_diagnostics:
+            if _has_runtime_markers(edge_diagnostics):
+                candidates.append(("edge_diagnostics", edge_diagnostics))
+            candidate = _as_dict(edge_diagnostics.get("protocol_runtime"))
+            if _has_runtime_markers(candidate):
+                candidates.append(("edge_diagnostics.protocol_runtime", candidate))
+
+        for key in ("summary", "data", "diagnostic_summary", "diagnostic_state"):
+            container = _as_dict(payload.get(key))
+            if not container:
+                continue
+            if _has_runtime_markers(container):
+                candidates.append((key, container))
+            for nested_key in ("protocol_runtime", "edge_protocol_runtime"):
+                candidate = _as_dict(container.get(nested_key))
+                if _has_runtime_markers(candidate):
+                    candidates.append((f"{key}.{nested_key}", candidate))
+
+        if _has_runtime_markers(payload):
+            candidates.append(("payload", payload))
+
+        runtime_source = None
+        runtime = None
+        for source, candidate in candidates:
+            runtime_source = source
+            runtime = candidate
+            break
+        if not runtime:
+            return None
+
+        state = str(runtime.get("state") or runtime.get("protocol_runtime_state") or "unknown").strip().lower() or "unknown"
+        summary = runtime.get("summary") or runtime.get("protocol_runtime_summary") or _("No protocol runtime data")
+        detail = runtime.get("detail") or runtime.get("protocol_runtime_detail") or summary
+        count = int(runtime.get("count") or runtime.get("protocol_runtime_count") or 0)
+        entry_count = int(runtime.get("entry_count") or runtime.get("protocol_runtime_entry_count") or 0)
+        state_counts = self._safe_json(runtime.get("state_counts") or runtime.get("protocol_runtime_state_counts"))
+        kind_counts = self._safe_json(runtime.get("kind_counts") or runtime.get("protocol_runtime_kind_counts"))
+        state_counts_summary = (
+            runtime.get("state_counts_summary")
+            or runtime.get("protocol_runtime_state_counts_summary")
+            or _format_counts(state_counts)
+        )
+        kind_counts_summary = (
+            runtime.get("kind_counts_summary")
+            or runtime.get("protocol_runtime_kind_counts_summary")
+            or _format_counts(kind_counts)
+        )
+        if state in {"error", "failed"}:
+            status = "danger"
+            status_label = _("Error")
+            title = _("Protocol runtime error")
+        elif state in {"attention", "warning"}:
+            status = "warning"
+            status_label = _("Attention")
+            title = _("Protocol runtime attention")
+        elif state in {"ready", "healthy", "ok"}:
+            status = "success"
+            status_label = _("Ready")
+            title = _("Protocol runtime ready")
+        else:
+            status = "info"
+            status_label = _("Info")
+            title = _("Protocol runtime update")
+        detail_parts = [
+            detail if detail != title else None,
+            _("state %s") % state if state else None,
+            _("items %s") % count if count else None,
+            _("entries %s") % entry_count if entry_count else None,
+            _("state counts %s") % state_counts_summary if state_counts_summary else None,
+            _("kind counts %s") % kind_counts_summary if kind_counts_summary else None,
+        ]
+        detail = " | ".join(str(part) for part in detail_parts if part) or summary or title
+        return {
+            "source": runtime_source,
+            "state": state,
+            "summary": summary,
+            "detail": detail,
+            "count": count,
+            "entry_count": entry_count,
+            "state_counts_summary": state_counts_summary,
+            "kind_counts_summary": kind_counts_summary,
+            "status": status,
+            "status_label": status_label,
+            "title": title,
+        }
+
+    def _serialize_runtime_event_activity(self, record):
+        status, status_label = self._runtime_event_status(record)
+        edge_action = self._runtime_edge_action_snapshot(record)
+        protocol_runtime = self._runtime_protocol_runtime_snapshot(record)
+        payload = self._safe_json(record.normalized_json) or self._safe_json(record.payload_json)
+        payload_bits = []
+        if isinstance(payload, dict):
+            payload_bits.extend(
+                [
+                    payload.get("summary"),
+                    payload.get("message"),
+                    payload.get("signal"),
+                    payload.get("ui_refresh_hint"),
+                ]
+            )
+        title = record.message or record.name or _("Runtime event")
+        if protocol_runtime:
+            status = protocol_runtime.get("status") or status
+            status_label = protocol_runtime.get("status_label") or status_label
+            title = protocol_runtime.get("title") or title
+            payload_bits = [
+                protocol_runtime.get("summary"),
+                protocol_runtime.get("detail") if protocol_runtime.get("detail") != protocol_runtime.get("summary") else None,
+                _("state %s") % protocol_runtime.get("state") if protocol_runtime.get("state") else None,
+                _("items %s") % protocol_runtime.get("count") if protocol_runtime.get("count") else None,
+                _("entries %s") % protocol_runtime.get("entry_count") if protocol_runtime.get("entry_count") else None,
+                _("state counts %s") % protocol_runtime.get("state_counts_summary") if protocol_runtime.get("state_counts_summary") else None,
+                _("kind counts %s") % protocol_runtime.get("kind_counts_summary") if protocol_runtime.get("kind_counts_summary") else None,
+            ]
+        if edge_action:
+            title = self._runtime_edge_action_title(record, edge_action)
+            fetch_count = edge_action.get("edge_fetch_count") or 0
+            note_summary = edge_action.get("note", {}).get("summary")
+            payload_bits = [
+                _("state %s") % (record.state or _("new")),
+                _("result %s") % (record.result or _("pending")),
+                note_summary if isinstance(note_summary, str) else json.dumps(note_summary, ensure_ascii=False) if note_summary else None,
+                _("fetches %s") % fetch_count,
+                _("trace %s") % edge_action.get("source_payload_id") if edge_action.get("source_payload_id") else None,
+                _("issue %s") % edge_action.get("issue_key") if edge_action.get("issue_key") else None,
+                _("last fetch %s") % edge_action.get("last_edge_fetch_at") if edge_action.get("last_edge_fetch_at") else None,
+            ]
+        message_text = record.message or None
+        if protocol_runtime and message_text and message_text.strip().lower() in {"runtime event", "runtime"}:
+            message_text = None
+        detail_parts = [
+            None if edge_action else message_text,
+            None if edge_action else record.result or None,
+            f"{record.event_kind} / {record.change_kind}" if record.event_kind or record.change_kind else None,
+            record.discovery_state or None,
+            record.source_signal or None,
+            record.ui_refresh_hint or None,
+            f"adapter {record.adapter_id.code}" if record.adapter_id else None,
+            f"command {record.command_id.code}" if record.command_id else None,
+        ]
+        detail_parts.extend(bit for bit in payload_bits if bit)
+        detail = " | ".join(str(part) for part in detail_parts if part) or record.name or _("Runtime event")
+        timestamp = (
+            record.processed_at or edge_action.get("last_edge_fetch_at") or record.occurred_at or False
+            if edge_action
+            else record.occurred_at or record.processed_at or False
+        )
+        protocol_runtime_merge_key = self._protocol_runtime_timeline_dedupe_key(record, protocol_runtime)
+        return {
+            "id": f"runtime-event-{record.id}",
+            "title": title,
+            "label": title,
+            "detail": detail,
+            "kind": "runtime",
+            "status": status,
+            "statusKey": status,
+            "statusLabel": status_label,
+            "statusTone": status,
+            "timestamp": timestamp,
+            "summary": {
+                "event_id": record.id,
+                "event_code": record.code,
+                "event_kind": record.event_kind,
+                "severity": record.severity,
+                "state": record.state,
+                "change_kind": record.change_kind,
+                "discovery_state": record.discovery_state,
+                "source_signal": record.source_signal,
+                "result": record.result,
+                "adapter_code": record.adapter_id.code if record.adapter_id else None,
+                "entry_code": record.entry_id.code if record.entry_id else None,
+                "device_code": record.device_id.code if record.device_id else None,
+                "command_code": record.command_id.code if record.command_id else None,
+                "occurred_at": record.occurred_at,
+                "processed_at": record.processed_at,
+                "registry_action": record.registry_action,
+                "source_payload_id": record.source_payload_id,
+                "edge_fetch_count": record.edge_fetch_count,
+                "last_edge_fetch_at": record.last_edge_fetch_at,
+                "protocol_runtime_source": protocol_runtime.get("source") if protocol_runtime else None,
+                "protocol_runtime_state": protocol_runtime.get("state") if protocol_runtime else None,
+                "protocol_runtime_summary": protocol_runtime.get("summary") if protocol_runtime else None,
+                "protocol_runtime_detail": protocol_runtime.get("detail") if protocol_runtime else None,
+                "protocol_runtime_count": protocol_runtime.get("count") if protocol_runtime else None,
+                "protocol_runtime_entry_count": protocol_runtime.get("entry_count") if protocol_runtime else None,
+                "protocol_runtime_state_counts_summary": protocol_runtime.get("state_counts_summary") if protocol_runtime else None,
+                "protocol_runtime_kind_counts_summary": protocol_runtime.get("kind_counts_summary") if protocol_runtime else None,
+                "protocol_runtime_merge_key": protocol_runtime_merge_key,
+                "protocol_runtime_dedupe_key": protocol_runtime_merge_key,
+                "issue_key": edge_action.get("issue_key") if edge_action else None,
+                "edge_cache_action": edge_action.get("action_name") if edge_action else None,
+            },
+            "source": "gateway.runtime.event",
+        }
+
+    def _adapter_matches_context(self, adapter, context):
+        if not adapter:
+            return False
+        workstation_code = context.get("workstation_code")
+        app_code = context.get("app_code")
+        entry_code = context.get("gateway_entry_code") or context.get("gateway_ref") or context.get("gateway_code")
+        adapter_entry = getattr(adapter, "entry_id", None)
+        if entry_code and (not adapter_entry or str(adapter_entry.code) != str(entry_code)):
+            return False
+        if workstation_code:
+            workstation_match = bool(
+                (getattr(adapter, "workstation_id", None) and str(adapter.workstation_id.code) == str(workstation_code))
+                or (adapter_entry and getattr(adapter_entry, "workstation_ref", None) and str(adapter_entry.workstation_ref) == str(workstation_code))
+            )
+            if not workstation_match:
+                return False
+        if app_code:
+            app_match = bool(
+                (getattr(adapter, "app_id", None) and str(adapter.app_id.code) == str(app_code))
+                or (adapter_entry and getattr(adapter_entry, "app_ref", None) and str(adapter_entry.app_ref) == str(app_code))
+            )
+            if not app_match:
+                return False
+        return True
+
+    def _runtime_event_matches_context(self, record, context):
+        workstation_code = context.get("workstation_code")
+        app_code = context.get("app_code")
+        entry_code = context.get("gateway_entry_code") or context.get("gateway_ref") or context.get("gateway_code")
+        session_ref = context.get("session_ref") or context.get("session_id")
+        entry = getattr(record, "entry_id", None)
+        if entry_code and (not entry or str(entry.code) != str(entry_code)):
+            return False
+        if workstation_code:
+            workstation_match = bool(
+                (getattr(record, "workstation_id", None) and str(record.workstation_id.code) == str(workstation_code))
+                or (entry and getattr(entry, "workstation_ref", None) and str(entry.workstation_ref) == str(workstation_code))
+            )
+            if not workstation_match:
+                return False
+        if app_code:
+            app_match = bool(
+                (getattr(record, "app_id", None) and str(record.app_id.code) == str(app_code))
+                or (entry and getattr(entry, "app_ref", None) and str(entry.app_ref) == str(app_code))
+            )
+            if not app_match:
+                return False
+        if session_ref and getattr(record, "session_ref", None) and str(record.session_ref) != str(session_ref):
+            return False
+        return True
+
+    def _search_runtime_issue_activity(self, context, limit=6):
+        Issue = self._get_gateway_runtime_issue_model()
+        if Issue is None:
+            return []
+        records = Issue.search([], limit=max(limit * 6, 24), order="last_seen_at desc, id desc")
+        result = []
+        for record in records:
+            if self._adapter_matches_context(getattr(record, "adapter_id", None), context):
+                result.append(self._serialize_runtime_issue_activity(record))
+            if len(result) >= limit:
+                break
+        return result
+
+    def _search_runtime_event_activity(self, context, limit=6):
+        Event = self._get_gateway_runtime_event_model()
+        if Event is None:
+            return []
+        records = Event.search([], limit=max(limit * 6, 24), order="occurred_at desc, id desc")
+        result = []
+        seen_keys = set()
+        for record in records:
+            if self._runtime_event_matches_context(record, context):
+                entry = self._serialize_runtime_event_activity(record)
+                dedupe_key = self._timeline_entry_dedupe_key(entry)
+                if dedupe_key and dedupe_key in seen_keys:
+                    continue
+                if dedupe_key:
+                    seen_keys.add(dedupe_key)
+                result.append(entry)
+            if len(result) >= limit:
+                break
+        return result
+
+    def _normalize_timeline_dedupe_token(self, value):
+        if value in (None, False):
+            return ""
+        if isinstance(value, dict):
+            value = json.dumps(value, sort_keys=True, ensure_ascii=False, default=str)
+        elif isinstance(value, (list, tuple, set)):
+            value = json.dumps(list(value), sort_keys=True, ensure_ascii=False, default=str)
+        else:
+            value = str(value)
+        return " ".join(value.split()).strip().lower()
+
+    def _protocol_runtime_timeline_dedupe_key(self, record_or_summary, protocol_runtime=None):
+        summary = protocol_runtime if isinstance(protocol_runtime, dict) else record_or_summary if isinstance(record_or_summary, dict) else {}
+        if not isinstance(summary, dict) or not summary:
+            return None
+        adapter_code = self._normalize_timeline_dedupe_token(summary.get("adapter_code"))
+        entry_code = self._normalize_timeline_dedupe_token(summary.get("entry_code"))
+        runtime_source = self._normalize_timeline_dedupe_token(summary.get("protocol_runtime_source"))
+        runtime_state = self._normalize_timeline_dedupe_token(summary.get("protocol_runtime_state"))
+        runtime_summary = self._normalize_timeline_dedupe_token(
+            summary.get("protocol_runtime_summary") or summary.get("protocol_runtime_detail")
+        )
+        runtime_count = self._normalize_timeline_dedupe_token(summary.get("protocol_runtime_count"))
+        runtime_entry_count = self._normalize_timeline_dedupe_token(summary.get("protocol_runtime_entry_count"))
+        state_counts_summary = self._normalize_timeline_dedupe_token(summary.get("protocol_runtime_state_counts_summary"))
+        kind_counts_summary = self._normalize_timeline_dedupe_token(summary.get("protocol_runtime_kind_counts_summary"))
+        if not adapter_code and record_or_summary is not None and protocol_runtime is not None:
+            adapter = getattr(record_or_summary, "adapter_id", None)
+            entry = getattr(record_or_summary, "entry_id", None)
+            adapter_code = self._normalize_timeline_dedupe_token(adapter.code if adapter else None)
+            entry_code = self._normalize_timeline_dedupe_token(entry.code if entry else None)
+            runtime_source = runtime_source or self._normalize_timeline_dedupe_token("gateway.runtime.event")
+        if not any(
+            (
+                adapter_code,
+                entry_code,
+                runtime_source,
+                runtime_state,
+                runtime_summary,
+                runtime_count,
+                runtime_entry_count,
+                state_counts_summary,
+                kind_counts_summary,
+            )
+        ):
+            return None
+        parts = [
+            "protocol-runtime",
+            f"adapter:{adapter_code or 'any'}",
+        ]
+        if entry_code:
+            parts.append(f"entry:{entry_code}")
+        if runtime_source:
+            parts.append(f"source:{runtime_source}")
+        parts.append(f"state:{runtime_state or 'unknown'}")
+        if runtime_summary:
+            parts.append(f"summary:{runtime_summary}")
+        parts.append(f"count:{runtime_count or '0'}")
+        parts.append(f"entries:{runtime_entry_count or '0'}")
+        if state_counts_summary:
+            parts.append(f"states:{state_counts_summary}")
+        if kind_counts_summary:
+            parts.append(f"kinds:{kind_counts_summary}")
+        return "|".join(parts)
+
+    def _timeline_entry_sort_key(self, entry):
+        raw_value = entry.get("timestamp") or entry.get("createdAt") or entry.get("created_at")
+        try:
+            value = fields.Datetime.to_datetime(raw_value) if raw_value else None
+        except Exception:
+            value = None
+        return value or datetime.min
+
+    def _timeline_entry_dedupe_key(self, entry):
+        if not isinstance(entry, dict):
+            return None
+        if entry.get("source") != "gateway.runtime.event":
+            return entry.get("id")
+        summary = entry.get("summary") or {}
+        edge_cache_action = summary.get("edge_cache_action")
+        source_payload_id = summary.get("source_payload_id")
+        state = summary.get("state")
+        if edge_cache_action and source_payload_id and state:
+            return f"runtime-edge-action:{source_payload_id}:{edge_cache_action}:{state}"
+        protocol_runtime_key = summary.get("protocol_runtime_dedupe_key") or summary.get("protocol_runtime_merge_key")
+        if not protocol_runtime_key:
+            protocol_runtime_key = self._protocol_runtime_timeline_dedupe_key(summary)
+        if protocol_runtime_key:
+            return protocol_runtime_key
+        return entry.get("id")
+
+    def _merge_timeline_entries(self, *groups, limit=12):
+        merged = []
+        for group in groups:
+            for entry in group or []:
+                merged.append(entry)
+        merged.sort(key=self._timeline_entry_sort_key, reverse=True)
+        result = []
+        seen_keys = set()
+        for entry in merged:
+            dedupe_key = self._timeline_entry_dedupe_key(entry)
+            if dedupe_key and dedupe_key in seen_keys:
+                continue
+            if dedupe_key:
+                seen_keys.add(dedupe_key)
+            result.append(entry)
+            if len(result) >= limit:
+                break
+        return result
+
     def _build_metrics(self, queue, devices, exceptions, commands):
         online_states = {"ready", "degraded", "running", "active", "ok", "draft"}
         return {
@@ -561,13 +1379,199 @@ class ShopfloorExecutionService:
             "commandTotal": len(commands),
         }
 
+    def _build_gateway_runtime_summary(self, context):
+        Adapter = self._get_gateway_runtime_adapter_model()
+        if Adapter is None:
+            return {}
+        adapters = Adapter.search([], order="sequence, id").filtered(lambda record: self._adapter_matches_context(record, context))
+        adapter_count = len(adapters)
+        issue_total = sum(adapters.mapped("driver_issue_count"))
+        issue_open = sum(adapters.mapped("open_driver_issue_count"))
+        issue_adapters = len(adapters.filtered(lambda record: record.driver_issue_count))
+        open_issue_adapters = len(adapters.filtered(lambda record: record.open_driver_issue_count))
+        driver_ready = len(adapters.filtered(lambda record: record.driver_diagnostic_state == "ready"))
+        driver_attention = len(adapters.filtered(lambda record: record.driver_diagnostic_state == "attention"))
+        driver_error = len(adapters.filtered(lambda record: record.driver_diagnostic_state == "error"))
+        driver_unknown = len(adapters.filtered(lambda record: record.driver_diagnostic_state in (False, None, "unknown")))
+        replay_pending = sum(adapters.mapped("edge_replay_pending_count"))
+        replay_due = sum(adapters.mapped("edge_replay_due_count"))
+        replay_scheduled = sum(adapters.mapped("edge_replay_scheduled_count"))
+        replay_coalesced = sum(adapters.mapped("edge_replay_coalesced_count"))
+        dead_letter_total = sum(adapters.mapped("edge_dead_letter_count"))
+        replay_adapters = len(adapters.filtered(lambda record: record.edge_replay_pending_count))
+        replay_due_adapters = len(adapters.filtered(lambda record: record.edge_replay_due_count))
+        replay_scheduled_adapters = len(adapters.filtered(lambda record: record.edge_replay_scheduled_count))
+        dead_letter_adapters = len(adapters.filtered(lambda record: record.edge_dead_letter_count))
+        edge_action_total = sum(adapters.mapped("edge_action_count"))
+        edge_action_pending = sum(adapters.mapped("pending_edge_action_count"))
+        edge_action_processing = sum(adapters.mapped("processing_edge_action_count"))
+        edge_action_processed = sum(adapters.mapped("processed_edge_action_count"))
+        edge_action_adapters = len(adapters.filtered(lambda record: record.edge_action_count))
+        edge_action_processing_adapters = len(adapters.filtered(lambda record: record.processing_edge_action_count))
+        replay_summaries = [summary for summary in adapters.mapped("edge_replay_summary") if summary and "pending_count=0" not in summary]
+        replay_last_summaries = [summary for summary in adapters.mapped("edge_last_replay_summary") if summary]
+        replay_outcomes = [outcome for outcome in adapters.mapped("edge_last_replay_outcome") if outcome]
+        dead_letter_summaries = [summary for summary in adapters.mapped("edge_dead_letter_summary") if summary and "dead_letter_count=0" not in summary]
+        replay_summary_text = (
+            replay_last_summaries[0]
+            if replay_last_summaries and replay_pending
+            else replay_summaries[0]
+            if replay_summaries
+            else (_("pending_count=%s, kinds=none") % replay_pending)
+        )
+        if dead_letter_total:
+            state = "danger"
+            label = _("Edge dead letters present")
+            detail = _("%(total)s dead letter(s) across %(adapters)s adapter(s).") % {
+                "total": dead_letter_total,
+                "adapters": dead_letter_adapters or adapter_count,
+            }
+        elif issue_open:
+            state = "danger"
+            label = _("Driver issues open")
+            detail = _("%(open)s open issue(s) across %(adapters)s adapter(s).") % {
+                "open": issue_open,
+                "adapters": open_issue_adapters or issue_adapters or adapter_count,
+            }
+        elif replay_due:
+            state = "warning"
+            label = _("Edge replay due")
+            detail = _("%(due)s replay item(s) are ready to resend across %(adapters)s adapter(s); %(coalesced)s duplicate request(s) already coalesced.") % {
+                "due": replay_due,
+                "adapters": replay_due_adapters or replay_adapters or adapter_count,
+                "coalesced": replay_coalesced,
+            }
+        elif replay_scheduled and set(replay_outcomes) == {"waiting_backoff"}:
+            state = "info"
+            label = _("Edge replay cooling down")
+            detail = _("%(scheduled)s replay item(s) are waiting for retry across %(adapters)s adapter(s); %(coalesced)s duplicate request(s) already coalesced.") % {
+                "scheduled": replay_scheduled,
+                "adapters": replay_scheduled_adapters or replay_adapters or adapter_count,
+                "coalesced": replay_coalesced,
+            }
+        elif edge_action_processing:
+            state = "info"
+            label = _("Edge actions processing")
+            detail = _("%(processing)s action(s) processing across %(adapters)s adapter(s).") % {
+                "processing": edge_action_processing,
+                "adapters": edge_action_processing_adapters or edge_action_adapters or adapter_count,
+            }
+        elif replay_pending:
+            state = "warning"
+            label = _("Edge replay pending")
+            detail = _("%(pending)s replay item(s) pending across %(adapters)s adapter(s); %(coalesced)s duplicate request(s) already coalesced.") % {
+                "pending": replay_pending,
+                "adapters": replay_adapters or adapter_count,
+                "coalesced": replay_coalesced,
+            }
+        elif adapter_count:
+            state = "success" if not (driver_attention or driver_error) else "warning"
+            label = _("Driver diagnostics clear") if state == "success" else _("Driver diagnostics need review")
+            detail = _("%(ready)s ready, %(attention)s attention, %(error)s error.") % {
+                "ready": driver_ready,
+                "attention": driver_attention,
+                "error": driver_error,
+            }
+        else:
+            state = "secondary"
+            label = _("Driver diagnostics unavailable")
+            detail = _("No runtime adapters matched the current workstation context.")
+        summaries = [summary for summary in adapters.mapped("driver_issue_summary") if summary]
+        edge_action_summaries = [summary for summary in adapters.mapped("edge_action_summary") if summary and not summary.startswith("0 action(s), 0 pending")]
+        recent_issues = self._search_runtime_issue_activity(context, limit=3)
+        recent_events = self._search_runtime_event_activity(context, limit=3)
+        recent_activity = self._merge_timeline_entries(recent_events, recent_issues, limit=6)
+        summary = (
+            dead_letter_summaries[0]
+            if dead_letter_summaries
+            else replay_last_summaries[0]
+            if replay_last_summaries and replay_pending
+            else replay_summaries[0]
+            if replay_summaries
+            else edge_action_summaries[0]
+            if edge_action_summaries
+            else summaries[0]
+            if summaries
+            else detail
+        )
+        return {
+            "state": state,
+            "label": label,
+            "detail": detail,
+            "summary": summary,
+            "adapter_count": adapter_count,
+            "driver_issue_counts": {
+                "total": issue_total,
+                "open": issue_open,
+                "resolved": max(issue_total - issue_open, 0),
+                "adapters": issue_adapters,
+                "open_adapters": open_issue_adapters,
+            },
+            "driver_counts": {
+                "ready": driver_ready,
+                "attention": driver_attention,
+                "error": driver_error,
+                "unknown": driver_unknown,
+            },
+            "edge_replay": {
+                "pending": replay_pending,
+                "due": replay_due,
+                "scheduled": replay_scheduled,
+                "adapters": replay_adapters,
+                "due_adapters": replay_due_adapters,
+                "scheduled_adapters": replay_scheduled_adapters,
+                "coalesced_count": replay_coalesced,
+                "last_outcome": replay_outcomes[0] if replay_outcomes else None,
+                "last_summary": replay_last_summaries[0] if replay_last_summaries else None,
+                "summary": replay_summary_text,
+            },
+            "edge_action_counts": {
+                "total": edge_action_total,
+                "pending": edge_action_pending,
+                "processing": edge_action_processing,
+                "processed": edge_action_processed,
+                "adapters": edge_action_adapters,
+                "processing_adapters": edge_action_processing_adapters,
+            },
+            "edge_action_summary": edge_action_summaries[0]
+            if edge_action_summaries
+            else (_("%(total)s action(s), %(pending)s pending, %(processing)s processing, %(processed)s processed") % {
+                "total": edge_action_total,
+                "pending": edge_action_pending,
+                "processing": edge_action_processing,
+                "processed": edge_action_processed,
+            }),
+            "edge_dead_letter": {
+                "count": dead_letter_total,
+                "adapters": dead_letter_adapters,
+                "summary": dead_letter_summaries[0] if dead_letter_summaries else (_("dead_letter_count=%s, kinds=none") % dead_letter_total),
+            },
+            "recent_activity": recent_activity,
+            "recent_events": recent_events,
+            "recent_issues": recent_issues,
+        }
+
     def _build_state_snapshot(self, context):
         queue = self._search_workorders(context)
         devices = self._search_devices(context)
         recent_commands = self._recent_records("gateway.command", context, self._serialize_gateway_command)
         recent_exceptions = self._recent_records("shopfloor.exception", context, self._serialize_exception)
-        timeline = self._search_timeline(context)
+        runtime_events = self._search_runtime_event_activity(context)
+        runtime_issues = self._search_runtime_issue_activity(context)
+        runtime_activity = self._merge_timeline_entries(runtime_events, runtime_issues)
+        timeline = self._merge_timeline_entries(self._search_timeline(context), runtime_events, runtime_issues)
+        gateway_runtime = self._build_gateway_runtime_summary(context)
         metrics = self._build_metrics(queue, devices, recent_exceptions, recent_commands)
+        if gateway_runtime:
+            metrics.update(
+                {
+                    "driverIssueOpen": (gateway_runtime.get("driver_issue_counts") or {}).get("open", 0),
+                    "driverIssueAdapters": (gateway_runtime.get("driver_issue_counts") or {}).get("open_adapters", 0),
+                    "edgeActionProcessing": (gateway_runtime.get("edge_action_counts") or {}).get("processing", 0),
+                    "edgeReplayPending": (gateway_runtime.get("edge_replay") or {}).get("pending", 0),
+                    "edgeDeadLetterCount": (gateway_runtime.get("edge_dead_letter") or {}).get("count", 0),
+                }
+            )
         return {
             "queue": queue,
             "devices": devices,
@@ -576,12 +1580,17 @@ class ShopfloorExecutionService:
             "commands": recent_commands,
             "recent_commands": recent_commands,
             "timeline": timeline,
+            "activity": runtime_activity,
+            "recent_runtime_activity": runtime_activity,
+            "recent_runtime_events": runtime_events,
+            "recent_runtime_issues": runtime_issues,
             "metrics": metrics,
+            "gateway_runtime": gateway_runtime,
         }
 
     def _recent_records(self, model_name, context, serializer, limit=5):
         model = self._model(model_name)
-        if not model:
+        if model is None:
             return []
         domain = []
         workstation_code = context.get("workstation_code")
@@ -930,7 +1939,7 @@ class ShopfloorExecutionService:
                 "can_create_execution": True,
                 "can_report_exception": True,
                 "can_print": True,
-                "can_queue_gateway_command": bool(self._get_gateway_command_model()),
+                "can_queue_gateway_command": self._registry_has_model("gateway.command"),
             },
         }
         response = self._build_envelope(

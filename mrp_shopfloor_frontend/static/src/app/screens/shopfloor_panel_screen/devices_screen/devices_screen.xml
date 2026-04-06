@@ -10,6 +10,12 @@
                 <ShopfloorStatusSummary items="deviceSummaryItems"/>
             </div>
         </div>
+        <ShopfloorFeedbackBar
+            label="deviceFeedback.label"
+            detail="deviceFeedback.detail"
+            tone="deviceFeedback.tone"
+            compact="true"
+        />
         <ShopfloorDeviceActionBar
             selectedDevice="props.selectedDevice"
             selectedDeviceVisible="selectedDeviceVisible"
@@ -27,6 +33,9 @@
                 commands="props.commands"
                 recentActions="recentActions"
                 commandSummary="commandSummary"
+                latestRuntimeEntry="latestRuntimeEntry"
+                gatewayRuntimeSummary="props.gatewayRuntimeSummary"
+                metrics="props.metrics"
             />
         </div>
         <ShopfloorDeviceToolbar
@@ -53,6 +62,9 @@
                 selectedDevice="props.selectedDevice"
                 summary="visibleDeviceSummary"
                 selectedDeviceVisible="selectedDeviceVisible"
+                latestRuntimeEntry="latestRuntimeEntry"
+                gatewayRuntimeSummary="props.gatewayRuntimeSummary"
+                metrics="props.metrics"
                 onClearFilters="clearFilters"
             />
         </div>

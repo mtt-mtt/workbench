@@ -18,6 +18,15 @@
                 onAction="noopFeedbackAction"
                 compact="true"
             />
+            <t t-if="runtimeFeedback">
+                <ShopfloorFeedbackBar
+                    label="runtimeFeedback.label"
+                    detail="runtimeFeedback.detail"
+                    tone="runtimeFeedback.tone"
+                    onAction="noopFeedbackAction"
+                    compact="true"
+                />
+            </t>
             <ShopfloorStatusSummary items="commandSummaryItems" compact="true"/>
             <div class="o_mrp_shopfloor_command_lifecycle mt-3">
                 <t t-foreach="commandStateSteps" t-as="step" t-key="step.key">
@@ -31,6 +40,22 @@
                 <span>Latest state <t t-esc="commandStateLabel"/></span>
                 <span><t t-esc="commandStateDetail"/></span>
             </div>
+            <t t-if="latestPrintExecutionLabel">
+                <div class="o_mrp_shopfloor_detail_meta mt-2">
+                    <span class="badge rounded-pill" t-att-class="'text-bg-' + (commandSummary.latestPrintExecutionTone || 'info')">
+                        <t t-esc="latestPrintExecutionLabel"/>
+                    </span>
+                </div>
+            </t>
+            <t t-if="latestPrintExecutionDetails.length">
+                <div class="o_mrp_shopfloor_detail_meta mt-2">
+                    <t t-foreach="latestPrintExecutionDetails" t-as="detail" t-key="detail.key">
+                        <span class="badge rounded-pill text-bg-light">
+                            <t t-esc="detail.label"/>
+                        </span>
+                    </t>
+                </div>
+            </t>
             <t t-if="entries.length">
                 <div class="o_mrp_shopfloor_timeline o_mrp_shopfloor_timeline--compact mt-3">
                     <t t-foreach="displayEntries" t-as="displayEntry" t-key="displayEntry.id">
@@ -47,6 +72,22 @@
                             <small>
                                 <t t-esc="displayEntry.detail"/>
                             </small>
+                            <t t-if="displayEntry.printExecutionLabel">
+                            <small>
+                                <span class="badge rounded-pill" t-att-class="'text-bg-' + (displayEntry.printExecutionTone || 'info')">
+                                    <t t-esc="displayEntry.printExecutionLabel"/>
+                                </span>
+                            </small>
+                            </t>
+                            <t t-if="displayEntry.printExecutionDetails && displayEntry.printExecutionDetails.length">
+                                <small>
+                                    <t t-foreach="displayEntry.printExecutionDetails" t-as="detail" t-key="detail.key">
+                                        <span class="badge rounded-pill text-bg-light me-1">
+                                            <t t-esc="detail.label"/>
+                                        </span>
+                                    </t>
+                                </small>
+                            </t>
                             <small>
                                 <t t-esc="displayEntry.createdAt"/>
                             </small>

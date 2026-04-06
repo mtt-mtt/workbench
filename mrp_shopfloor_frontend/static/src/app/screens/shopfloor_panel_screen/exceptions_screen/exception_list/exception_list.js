@@ -13,6 +13,18 @@ export class ShopfloorExceptionList extends Component {
         summary: Object,
         branchSummary: Object,
         branchSummaryItems: Array,
+        latestRuntimeEntry: {
+            type: Object,
+            optional: true,
+        },
+        gatewayRuntimeSummary: {
+            type: [Object, Boolean],
+            optional: true,
+        },
+        metrics: {
+            type: [Object, Boolean],
+            optional: true,
+        },
         emptyStateLabel: String,
         hasActiveFilters: Boolean,
         onClearFilters: Function,

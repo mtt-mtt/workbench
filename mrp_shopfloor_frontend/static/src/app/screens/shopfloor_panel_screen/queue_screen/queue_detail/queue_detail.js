@@ -2,6 +2,64 @@
 
 import { Component } from "@odoo/owl";
 
+function normalizeTone(value) {
+    const normalized = String(value || "secondary").trim().toLowerCase();
+    if (normalized === "success" || normalized === "done") {
+        return "success";
+    }
+    if (normalized === "warning" || normalized === "queued" || normalized === "submitted" || normalized === "acknowledged") {
+        return "warning";
+    }
+    if (normalized === "danger" || normalized === "failed" || normalized === "error" || normalized === "attention") {
+        return "danger";
+    }
+    if (normalized === "info" || normalized === "active" || normalized === "runtime") {
+        return "info";
+    }
+    return "secondary";
+}
+
+function buildSharedProtocolRuntimeFeedback(metrics = {}) {
+    const sharedAttention = metrics?.protocolRuntimeAttention;
+    const attentionCount = sharedAttention === null || sharedAttention === undefined ? null : Number(sharedAttention) || 0;
+    const label = metrics?.protocolRuntimeLabel || null;
+    const detail = metrics?.protocolRuntimeDetail || null;
+    const tone = String(metrics?.protocolRuntimeTone || "").trim().toLowerCase() || null;
+    if (!label && !detail && !tone && attentionCount === null) {
+        return null;
+    }
+    const resolvedTone =
+        tone ||
+        (attentionCount !== null ? (attentionCount > 0 ? "warning" : "success") : null) ||
+        "secondary";
+    const resolvedLabel =
+        label ||
+        (attentionCount !== null
+            ? attentionCount > 0
+                ? `Protocol runtime attention ${attentionCount}`
+                : "Protocol runtime ready"
+            : resolvedTone === "danger"
+              ? "Protocol runtime error"
+              : resolvedTone === "warning"
+                ? "Protocol runtime attention"
+                : resolvedTone === "success"
+                  ? "Protocol runtime ready"
+                  : "Protocol runtime");
+    const resolvedDetail =
+        detail ||
+        (attentionCount !== null
+            ? attentionCount > 0
+                ? `${attentionCount} protocol runtime(s) need follow-up.`
+                : "Protocol runtime attention is clear."
+            : `${resolvedLabel} reported.`);
+    return {
+        label: resolvedLabel,
+        detail: resolvedDetail,
+        tone: resolvedTone,
+        attentionCount,
+    };
+}
+
 export class ShopfloorQueueDetail extends Component {
     static template = "mrp_shopfloor_frontend.ShopfloorQueueDetail";
     static props = {
@@ -9,6 +67,18 @@ export class ShopfloorQueueDetail extends Component {
         summary: Object,
         selectedQueueContext: Object,
         selectedQueueVisible: Boolean,
+        latestRuntimeEntry: {
+            type: Object,
+            optional: true,
+        },
+        gatewayRuntimeSummary: {
+            type: [Object, Boolean],
+            optional: true,
+        },
+        metrics: {
+            type: [Object, Boolean],
+            optional: true,
+        },
         onClearFilters: Function,
     };
 
@@ -97,6 +167,67 @@ export class ShopfloorQueueDetail extends Component {
 
     get selectedContextProductionRef() {
         return this.props.selectedQueueContext?.production_ref || this.props.selectedQueueItem?.production_ref || "n/a";
+    }
+
+    get protocolRuntimeAttentionCount() {
+        const sharedFeedback = buildSharedProtocolRuntimeFeedback(this.props.metrics || {});
+        if (!sharedFeedback) {
+            return null;
+        }
+        return sharedFeedback.attentionCount;
+    }
+
+    get protocolRuntimeFeedback() {
+        const sharedFeedback = buildSharedProtocolRuntimeFeedback(this.props.metrics || {});
+        if (!sharedFeedback) {
+            return null;
+        }
+        return sharedFeedback;
+    }
+
+    get runtimeSummary() {
+        return this.props.gatewayRuntimeSummary || null;
+    }
+
+    get runtimeFeedback() {
+        if (this.protocolRuntimeFeedback) {
+            return this.protocolRuntimeFeedback;
+        }
+        const runtimeEntry = this.props.latestRuntimeEntry || null;
+        if (runtimeEntry) {
+            return {
+                label:
+                    runtimeEntry.protocolRuntimeLabel ||
+                    runtimeEntry.title ||
+                    runtimeEntry.label ||
+                    (runtimeEntry.kind === "protocol_runtime" || runtimeEntry.kind === "protocol-runtime"
+                        ? "Protocol runtime diagnostics"
+                        : "Driver diagnostics"),
+                detail:
+                    [
+                        runtimeEntry.protocolRuntimeDetail ||
+                            runtimeEntry.detail ||
+                            runtimeEntry.protocolRuntimeStateSummary,
+                        runtimeEntry.timestamp ? `Changed ${runtimeEntry.timestamp}` : null,
+                    ]
+                        .filter(Boolean)
+                        .join(" | ") || "Runtime event recorded.",
+                tone: runtimeEntry.protocolRuntimeTone || runtimeEntry.statusTone || runtimeEntry.status || "info",
+            };
+        }
+        const runtimeSummary = this.runtimeSummary;
+        if (runtimeSummary) {
+            return {
+                label: runtimeSummary.label || "Driver diagnostics",
+                detail: runtimeSummary.detail || runtimeSummary.summary || "Runtime diagnostics available.",
+                tone: runtimeSummary.stateTone || runtimeSummary.state || "secondary",
+            };
+        }
+        return null;
+    }
+
+    get runtimeStateClass() {
+        return `badge rounded-pill text-bg-${normalizeTone(this.runtimeFeedback?.tone || "secondary")}`;
     }
 
     clearFilters(ev) {

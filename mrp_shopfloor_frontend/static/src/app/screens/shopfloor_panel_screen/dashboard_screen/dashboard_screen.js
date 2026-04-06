@@ -26,6 +26,7 @@ export class ShopfloorDashboardScreen extends Component {
         metrics: Object,
         commands: Array,
         exceptions: Array,
+        gatewayRuntimeSummary: [Object, Boolean],
         lastResponse: [Object, Boolean],
         onStartExecution: Function,
         onPauseExecution: Function,
@@ -48,6 +49,8 @@ export class ShopfloorDashboardScreen extends Component {
             exceptions: this.props.exceptions,
             responseSummary: this.props.responseSummary,
             commandQueueStatus: this.props.commandQueueStatus,
+            gatewayRuntimeSummary: this.props.gatewayRuntimeSummary,
+            metrics: this.props.metrics,
         };
     }
 
@@ -56,6 +59,8 @@ export class ShopfloorDashboardScreen extends Component {
             execution: this.props.execution,
             selectedQueueItem: this.props.selectedQueueItem,
             selectedQueueContext: this.props.selectedQueueContext,
+            commands: this.props.commands,
+            logEntries: this.props.logEntries,
         };
     }
 
@@ -65,6 +70,10 @@ export class ShopfloorDashboardScreen extends Component {
             commandQueueStatus: this.props.commandQueueStatus,
             sessionRef: this.props.sessionRef,
             lastResponse: this.props.lastResponse,
+            commands: this.props.commands,
+            gatewayRuntimeSummary: this.props.gatewayRuntimeSummary,
+            metrics: this.props.metrics,
+            logEntries: this.props.logEntries,
         };
     }
 }

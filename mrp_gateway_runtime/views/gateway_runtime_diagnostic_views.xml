@@ -15,8 +15,22 @@
                 <field name="coordinator_mode"/>
                 <field name="issue_count"/>
                 <field name="open_issue_count"/>
+                <field name="edge_cache_issue_count"/>
+                <field name="open_edge_cache_issue_count"/>
+                <field name="edge_action_count"/>
+                <field name="pending_edge_action_count"/>
+                <field name="processing_edge_action_count"/>
+                <field name="driver_issue_count"/>
+                <field name="open_driver_issue_count"/>
+                <field name="edge_replay_pending_count"/>
+                <field name="edge_dead_letter_count"/>
+                <field name="edge_action_summary"/>
                 <field name="repair_issue_count"/>
                 <field name="attention_route_summary"/>
+                <field name="driver_diagnostic_state"/>
+                <field name="edge_replay_summary"/>
+                <field name="edge_dead_letter_summary"/>
+                <field name="print_driver_summary"/>
                 <field name="console_summary"/>
                 <field name="console_attention_summary"/>
                 <field name="recent_activity_summary"/>
@@ -43,12 +57,28 @@
                 <field name="coordinator_mode"/>
                 <field name="issue_count"/>
                 <field name="open_issue_count"/>
+                <field name="edge_cache_issue_count"/>
+                <field name="open_edge_cache_issue_count"/>
+                <field name="edge_action_count"/>
+                <field name="pending_edge_action_count"/>
+                <field name="processing_edge_action_count"/>
+                <field name="driver_issue_count"/>
+                <field name="open_driver_issue_count"/>
+                <field name="edge_replay_pending_count"/>
+                <field name="edge_replay_due_count"/>
+                <field name="edge_replay_scheduled_count"/>
+                <field name="edge_replay_coalesced_count"/>
+                <field name="edge_last_replay_summary"/>
+                <field name="edge_dead_letter_count"/>
                 <field name="repair_issue_count"/>
                 <field name="attention_route_summary"/>
+                <filter string="Edge Cache Issues" name="edge_cache_issues" domain="[('issue_ids.issue_key', 'ilike', 'edge_')]"/>
                 <field name="console_summary"/>
                 <field name="console_attention_summary"/>
                 <filter string="Needs Attention" name="needs_attention" domain="['|', ('issue_ids.state', 'in', ['new', 'open', 'in_progress']), ('health_state', 'in', ['warning', 'degraded', 'offline'])]"/>
                 <filter string="Open Issues" name="open_issues" domain="[('issue_ids.state', 'in', ['new', 'open', 'in_progress'])]"/>
+                <filter string="Driver Issues" name="driver_issues" domain="[('issue_ids.issue_key', 'ilike', 'driver_diagnostic')]"/>
+                <filter string="Open Driver Issues" name="open_driver_issues" domain="[('issue_ids.issue_key', 'ilike', 'driver_diagnostic'), ('issue_ids.state', 'in', ['new', 'open', 'in_progress'])]"/>
                 <filter string="Fixable Issues" name="fixable_issues" domain="[('issue_ids.is_fixable', '=', True)]"/>
                 <filter string="Repair Queue" name="repair_queue" domain="[('issue_ids.state', 'in', ['new', 'open', 'in_progress']), ('issue_ids.is_fixable', '=', True)]"/>
                 <filter string="Pending Probes" name="pending_probes" domain="[('probe_session_ids.state', 'in', ['draft', 'running'])]"/>
@@ -81,6 +111,15 @@
                 <field name="health_state"/>
                 <field name="health_score"/>
                 <field name="capability_summary"/>
+                <field name="driver_diagnostic_state"/>
+                <field name="driver_diagnostic_summary"/>
+                <field name="edge_protocol_runtime_state"/>
+                <field name="edge_protocol_runtime_summary"/>
+                <field name="edge_replay_summary"/>
+                <field name="edge_dead_letter_summary"/>
+                <field name="edge_action_summary"/>
+                <field name="print_driver_summary"/>
+                <field name="print_driver_polling_summary"/>
                 <field name="console_summary"/>
                 <field name="console_attention_summary"/>
                 <field name="probe_summary"/>
@@ -88,6 +127,15 @@
                 <field name="recent_activity_summary"/>
                 <field name="issue_count"/>
                 <field name="open_issue_count"/>
+                <field name="edge_cache_issue_count"/>
+                <field name="open_edge_cache_issue_count"/>
+                <field name="edge_action_count"/>
+                <field name="pending_edge_action_count"/>
+                <field name="driver_issue_count"/>
+                <field name="open_driver_issue_count"/>
+                <field name="edge_replay_pending_count"/>
+                <field name="edge_dead_letter_count"/>
+                <field name="edge_protocol_runtime_count"/>
                 <field name="repair_issue_count"/>
                 <field name="last_update_success"/>
                 <field name="retry_after_seconds"/>

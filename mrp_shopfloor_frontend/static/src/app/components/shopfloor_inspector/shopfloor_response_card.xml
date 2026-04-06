@@ -4,16 +4,73 @@
         <section class="o_mrp_shopfloor_card">
             <div class="o_mrp_shopfloor_card_label">Backend response</div>
             <div class="o_mrp_shopfloor_detail_title">
-                <t t-esc="props.responseSummary.label || props.responseSummary.headline"/>
+                <t t-esc="feedbackLabel"/>
             </div>
             <div class="o_mrp_shopfloor_detail_meta">
                 <span class="badge rounded-pill" t-att-class="'text-bg-' + (props.responseSummary.stateTone || props.responseSummary.tone || 'secondary')">
                     <t t-esc="props.responseSummary.stateLabel || props.responseSummary.state || 'Idle'"/>
                 </span>
+                <t t-if="responsePrintExecutionLabel">
+                    <span class="badge rounded-pill" t-att-class="'text-bg-' + responsePrintExecutionTone">
+                        <t t-esc="responsePrintExecutionLabel"/>
+                    </span>
+                </t>
                 <span><t t-esc="props.responseSummary.nextPage || 'no next page'"/></span>
-                <span><t t-esc="props.lastResponseText ? 'raw payload available' : 'seed only'"/></span>
+                <span><t t-esc="payloadAvailabilityLabel"/></span>
             </div>
-            <p class="o_mrp_shopfloor_api_detail"><t t-esc="props.responseSummary.detail"/></p>
+            <t t-if="attentionLabel">
+                <div class="o_mrp_shopfloor_detail_meta">
+                    <span class="badge rounded-pill" t-att-class="'text-bg-' + (exceptionCount ? 'warning' : (gatewayDriverIssueOpen ? gatewayDriverTone : (props.responseSummary.stateTone || props.responseSummary.tone || 'secondary')))">
+                        <t t-esc="attentionLabel"/>
+                    </span>
+                </div>
+            </t>
+            <p class="o_mrp_shopfloor_api_detail"><t t-esc="feedbackDetail"/></p>
+            <div class="o_mrp_shopfloor_detail_meta">
+                <span>Open exceptions <t t-esc="props.responseSummary.openExceptionCount || 0"/></span>
+                <span>Critical <t t-esc="props.responseSummary.criticalExceptionCount || 0"/></span>
+                <span><t t-esc="props.responseSummary.latestCommandLabel || 'no command trail'"/></span>
+                <t t-if="gatewayDriverIssueOpen">
+                    <span>Open driver issues <t t-esc="gatewayDriverIssueOpen"/></span>
+                </t>
+            </div>
+            <t t-if="gatewayDriverSummary">
+                <div class="o_mrp_shopfloor_detail_meta">
+                    <span class="badge rounded-pill" t-att-class="'text-bg-' + gatewayDriverTone">
+                        <t t-esc="gatewayDriverSummary"/>
+                    </span>
+                </div>
+            </t>
+            <t t-if="gatewayProtocolRuntimeLabel || gatewayProtocolRuntimeDetail">
+                <div class="o_mrp_shopfloor_detail_meta">
+                    <t t-if="gatewayProtocolRuntimeLabel">
+                        <span class="badge rounded-pill" t-att-class="'text-bg-' + gatewayProtocolRuntimeTone">
+                            <t t-esc="gatewayProtocolRuntimeLabel"/>
+                        </span>
+                    </t>
+                    <t t-if="gatewayProtocolRuntimeDetail">
+                        <span class="badge rounded-pill text-bg-light">
+                            <t t-esc="gatewayProtocolRuntimeDetail"/>
+                        </span>
+                    </t>
+                </div>
+            </t>
+            <t t-if="responsePrintExecutionLabel">
+                <div class="o_mrp_shopfloor_detail_meta">
+                    <span class="badge rounded-pill" t-att-class="'text-bg-' + responsePrintExecutionTone">
+                        <t t-esc="responsePrintExecutionLabel"/>
+                    </span>
+                </div>
+            </t>
+            <t t-if="responsePrintExecutionDetails.length">
+                <div class="o_mrp_shopfloor_detail_meta">
+                    <t t-foreach="responsePrintExecutionDetails" t-as="detail" t-key="detail.key">
+                        <span class="badge rounded-pill text-bg-light">
+                            <t t-esc="detail.label"/>
+                        </span>
+                    </t>
+                </div>
+            </t>
             <pre class="o_mrp_shopfloor_pre"><t t-esc="props.lastResponseText || props.responseSummary.detail || 'No raw payload available.'"/></pre>
         </section>
     </t>

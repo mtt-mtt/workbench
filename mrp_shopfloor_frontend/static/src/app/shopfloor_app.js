@@ -301,6 +301,10 @@ export class ShopfloorFrontendAction extends Component {
         return this.store.state.metrics;
     }
 
+    get connectivity() {
+        return this.store.state.connectivity;
+    }
+
     get currentUserName() {
         return this.store.state.currentUser.name;
     }
@@ -379,6 +383,10 @@ export class ShopfloorFrontendAction extends Component {
 
     get commandQueueStatus() {
         return this.store.state.commandQueueStatus;
+    }
+
+    get gatewayRuntimeSummary() {
+        return this.store.state.gatewayRuntimeSummary;
     }
 
     get responseSummary() {

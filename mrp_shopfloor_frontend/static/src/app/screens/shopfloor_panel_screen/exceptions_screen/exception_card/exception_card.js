@@ -2,6 +2,7 @@
 
 import { Component, useState } from "@odoo/owl";
 import { ShopfloorAttentionNote } from "../../../../../components/shopfloor_status_components/shopfloor_attention_note";
+import { ShopfloorFeedbackBar } from "../../../../../components/shopfloor_status_components/shopfloor_feedback_bar";
 import { ShopfloorStatusBadge } from "../../../../../components/shopfloor_status_components/shopfloor_status_badge";
 import {
     exceptionAttentionLabel,
@@ -59,14 +60,44 @@ const EXCEPTION_ACTIONS = [
     },
 ];
 
+function normalizeTone(value) {
+    const normalized = String(value || "secondary").trim().toLowerCase();
+    if (normalized === "success" || normalized === "done") {
+        return "success";
+    }
+    if (normalized === "warning" || normalized === "queued" || normalized === "submitted" || normalized === "acknowledged") {
+        return "warning";
+    }
+    if (normalized === "danger" || normalized === "failed" || normalized === "error" || normalized === "attention") {
+        return "danger";
+    }
+    if (normalized === "info" || normalized === "active" || normalized === "runtime") {
+        return "info";
+    }
+    return "secondary";
+}
+
 export class ShopfloorExceptionCard extends Component {
     static template = "mrp_shopfloor_frontend.ShopfloorExceptionCard";
     static components = {
         ShopfloorAttentionNote,
+        ShopfloorFeedbackBar,
         ShopfloorStatusBadge,
     };
     static props = {
         item: Object,
+        latestRuntimeEntry: {
+            type: Object,
+            optional: true,
+        },
+        gatewayRuntimeSummary: {
+            type: [Object, Boolean],
+            optional: true,
+        },
+        metrics: {
+            type: [Object, Boolean],
+            optional: true,
+        },
         onReportException: Function,
     };
 
@@ -140,6 +171,103 @@ export class ShopfloorExceptionCard extends Component {
 
     get branchToneClass() {
         return exceptionStateBranchTone(this.stateKey);
+    }
+
+    get feedbackLabel() {
+        return this.props.item?.label || this.props.item?.title || "Exception";
+    }
+
+    get feedbackDetail() {
+        return (
+            this.props.item?.resolutionNote ||
+            this.props.item?.details ||
+            this.branchDetail ||
+            "Exception is waiting for the next operator action."
+        );
+    }
+
+    get runtimeSummary() {
+        return this.props.gatewayRuntimeSummary || null;
+    }
+
+    get sharedProtocolRuntimeFeedback() {
+        const metrics = this.props.metrics || {};
+        const sharedAttention = metrics.protocolRuntimeAttention;
+        const attentionCount = sharedAttention === null || sharedAttention === undefined ? null : Number(sharedAttention) || 0;
+        const label = metrics.protocolRuntimeLabel || null;
+        const detail = metrics.protocolRuntimeDetail || null;
+        const tone = String(metrics.protocolRuntimeTone || "").trim().toLowerCase() || null;
+        if (!label && !detail && !tone && attentionCount === null) {
+            return null;
+        }
+        const resolvedTone =
+            tone ||
+            (attentionCount !== null ? (attentionCount > 0 ? "warning" : "success") : null) ||
+            "secondary";
+        const resolvedLabel =
+            label ||
+            (attentionCount !== null
+                ? attentionCount > 0
+                    ? `Protocol runtime attention ${attentionCount}`
+                    : "Protocol runtime ready"
+                : resolvedTone === "danger"
+                  ? "Protocol runtime error"
+                  : resolvedTone === "warning"
+                    ? "Protocol runtime attention"
+                    : resolvedTone === "success"
+                      ? "Protocol runtime ready"
+                      : "Protocol runtime");
+        const resolvedDetail =
+            detail ||
+            (attentionCount !== null
+                ? attentionCount > 0
+                    ? `${attentionCount} protocol runtime(s) need follow-up.`
+                    : "Protocol runtime attention is clear."
+                : `${resolvedLabel} reported.`);
+        return {
+            label: resolvedLabel,
+            detail: resolvedDetail,
+            tone: resolvedTone,
+            attentionCount,
+        };
+    }
+
+    get sharedProtocolRuntimeAttentionCount() {
+        const sharedFeedback = this.sharedProtocolRuntimeFeedback;
+        if (!sharedFeedback) {
+            return null;
+        }
+        return sharedFeedback.attentionCount;
+    }
+
+    get runtimeAttentionLabel() {
+        const sharedFeedback = this.sharedProtocolRuntimeFeedback;
+        if (sharedFeedback) {
+            return sharedFeedback.label;
+        }
+        return null;
+    }
+
+    get runtimeAttentionDetail() {
+        const sharedFeedback = this.sharedProtocolRuntimeFeedback;
+        if (sharedFeedback) {
+            return sharedFeedback.detail || this.runtimeSummary?.summary || this.runtimeSummary?.detail;
+        }
+        return null;
+    }
+
+    get runtimeStateClass() {
+        const sharedFeedback = this.sharedProtocolRuntimeFeedback;
+        if (sharedFeedback) {
+            return `badge rounded-pill text-bg-${normalizeTone(sharedFeedback.tone || "secondary")}`;
+        }
+        return `badge rounded-pill text-bg-${normalizeTone(
+            this.props.latestRuntimeEntry?.statusTone ||
+                this.props.latestRuntimeEntry?.status ||
+                this.runtimeSummary?.stateTone ||
+                this.runtimeSummary?.state ||
+                "secondary"
+        )}`;
     }
 
     get actions() {

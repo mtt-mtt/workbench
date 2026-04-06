@@ -3,8 +3,17 @@
     <t t-name="mrp_shopfloor_frontend.ShopfloorActivityCard" owl="1">
         <section class="o_mrp_shopfloor_card">
             <div class="o_mrp_shopfloor_card_label">Activity log</div>
+            <t t-if="protocolRuntimeFeedback">
+                <ShopfloorFeedbackBar
+                    label="protocolRuntimeFeedback.label"
+                    detail="protocolRuntimeFeedback.detail"
+                    tone="protocolRuntimeFeedback.tone"
+                    onAction.bind="noopFeedbackAction"
+                    compact="true"
+                />
+            </t>
             <ul class="o_mrp_shopfloor_activity">
-                <t t-foreach="props.activity" t-as="item" t-key="item">
+                <t t-foreach="props.activity" t-as="item" t-key="item.id || item.label || item.title || item">
                     <li>
                         <t t-esc="item.label || item.title || item"/>
                         <t t-if="item.statusLabel || item.status">
@@ -12,7 +21,16 @@
                                 <t t-esc="item.statusLabel || item.status"/>
                             </span>
                         </t>
+                        <t t-if="item.timestamp">
+                            <small class="ms-2 text-muted"><t t-esc="item.timestamp"/></small>
+                        </t>
+                        <t t-if="item.detail">
+                            <div class="text-muted small mt-1"><t t-esc="item.detail"/></div>
+                        </t>
                     </li>
+                </t>
+                <t t-if="!props.activity.length">
+                    <li class="text-muted small">No activity has been recorded yet.</li>
                 </t>
             </ul>
         </section>

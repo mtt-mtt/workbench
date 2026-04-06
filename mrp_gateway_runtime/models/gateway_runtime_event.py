@@ -82,6 +82,8 @@ class GatewayRuntimeEvent(models.Model):
     message = fields.Char()
     result = fields.Char()
     occurred_at = fields.Datetime(default=fields.Datetime.now, required=True)
+    last_edge_fetch_at = fields.Datetime()
+    edge_fetch_count = fields.Integer(default=0)
     processed_at = fields.Datetime()
     note = fields.Text()
 
@@ -96,3 +98,56 @@ class GatewayRuntimeEvent(models.Model):
             if vals.get("code", "/") in (None, "/", "New"):
                 vals["code"] = self.env["ir.sequence"].next_by_code("gateway.runtime.event") or _("New")
         return super().create(vals_list)
+
+    def action_open_related_issues(self):
+        self.ensure_one()
+        issue_key = self._edge_issue_key()
+        domain = []
+        if self.adapter_id:
+            domain.append(("adapter_id", "=", self.adapter_id.id))
+        if issue_key:
+            domain.append(("issue_key", "=", issue_key))
+        action = self.env.ref("mrp_gateway_runtime.action_gateway_runtime_issue").read()[0]
+        action["name"] = _("Related Runtime Issues")
+        if domain:
+            action["domain"] = domain
+        context = action.get("context")
+        if not isinstance(context, dict):
+            context = {}
+        if self.adapter_id:
+            context = {**context, "search_default_adapter_id": self.adapter_id.id, "default_adapter_id": self.adapter_id.id}
+        action["context"] = context
+        return action
+
+    def action_open_related_edge_actions(self):
+        self.ensure_one()
+        trace_key = self.source_payload_id or self._edge_issue_key()
+        domain = [("event_kind", "=", "signal"), ("source_signal", "ilike", "edge_cache_action")]
+        if self.adapter_id:
+            domain.insert(0, ("adapter_id", "=", self.adapter_id.id))
+        if trace_key:
+            domain.append(("source_payload_id", "=", trace_key))
+        action = self.env.ref("mrp_gateway_runtime.action_gateway_runtime_edge_action").read()[0]
+        action["name"] = _("Related Edge Actions")
+        action["domain"] = domain
+        context = action.get("context")
+        if not isinstance(context, dict):
+            context = {}
+        if self.adapter_id:
+            context = {**context, "search_default_adapter_id": self.adapter_id.id, "default_adapter_id": self.adapter_id.id}
+        action["context"] = {**context, "search_default_edge_actions": 1}
+        return action
+
+    def _edge_issue_key(self):
+        self.ensure_one()
+        if not self.payload_json:
+            return False
+        try:
+            import json
+
+            payload = json.loads(self.payload_json)
+        except Exception:
+            return False
+        if not isinstance(payload, dict):
+            return False
+        return payload.get("issue_key")

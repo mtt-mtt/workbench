@@ -5,6 +5,14 @@
             <div class="o_mrp_shopfloor_card_label">Exception transitions</div>
             <div class="o_mrp_shopfloor_panel_stack">
                 <ShopfloorStatusSummary items="summaryItems" title="'Exception summary'" subtitle="'Use the actions below to move the exception through the workflow.'"/>
+                <t t-if="runtimeFeedback">
+                    <ShopfloorFeedbackBar
+                        label="runtimeFeedback.label"
+                        detail="runtimeFeedback.detail"
+                        tone="runtimeFeedback.tone"
+                        compact="true"
+                    />
+                </t>
                 <div class="o_mrp_shopfloor_api_detail">
                     <t t-esc="branchSummaryText"/>
                 </div>

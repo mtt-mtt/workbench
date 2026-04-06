@@ -3,17 +3,43 @@
     <t t-name="mrp_shopfloor_frontend.ShopfloorTimelineCard" owl="1">
         <section class="o_mrp_shopfloor_card">
             <div class="o_mrp_shopfloor_card_label"><t t-esc="props.title"/></div>
+            <t t-if="protocolRuntimeFeedback">
+                <ShopfloorFeedbackBar
+                    label="protocolRuntimeFeedback.label"
+                    detail="protocolRuntimeFeedback.detail"
+                    tone="protocolRuntimeFeedback.tone"
+                    onAction.bind="noopFeedbackAction"
+                    compact="true"
+                />
+            </t>
             <div t-att-class="props.compact ? 'o_mrp_shopfloor_timeline o_mrp_shopfloor_timeline--compact' : 'o_mrp_shopfloor_timeline'">
                 <t t-if="props.entries.length">
                     <t t-foreach="props.entries" t-as="entry" t-key="entry.id">
                         <div class="o_mrp_shopfloor_timeline_item">
-                            <div class="o_mrp_shopfloor_timeline_item_head">
-                                <strong><t t-esc="entry.label || entry.title"/></strong>
+                        <div class="o_mrp_shopfloor_timeline_item_head">
+                            <strong><t t-esc="entry.label || entry.title"/></strong>
+                            <div class="o_mrp_shopfloor_detail_meta">
                                 <span class="badge rounded-pill" t-att-class="'text-bg-' + (entry.statusTone || entry.status || 'secondary')">
                                     <t t-esc="entry.statusLabel || entry.status || entry.kind"/>
                                 </span>
+                                <t t-if="entry.timestamp">
+                                    <small class="text-muted"><t t-esc="entry.timestamp"/></small>
+                                </t>
                             </div>
+                        </div>
                             <small><t t-esc="entry.detail || entry.statusLabel || entry.status || entry.kind"/></small>
+                            <div class="o_mrp_shopfloor_detail_meta mt-2" t-if="entry.printExecutionLabel or entry.printExecutionDetails">
+                                <t t-if="entry.printExecutionLabel">
+                                    <span class="badge rounded-pill" t-att-class="'text-bg-' + (entry.printExecutionTone || 'info')">
+                                        <t t-esc="entry.printExecutionLabel"/>
+                                    </span>
+                                </t>
+                                <t t-if="entry.printExecutionDetails and entry.printExecutionDetails.length">
+                                    <t t-foreach="entry.printExecutionDetails" t-as="detail" t-key="detail.key">
+                                        <span><t t-esc="detail.label"/></span>
+                                    </t>
+                                </t>
+                            </div>
                         </div>
                     </t>
                 </t>

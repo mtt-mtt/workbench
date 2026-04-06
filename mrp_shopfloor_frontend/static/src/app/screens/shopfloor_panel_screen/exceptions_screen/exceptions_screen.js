@@ -1,6 +1,7 @@
 /** @odoo-module **/
 
 import { Component, useState } from "@odoo/owl";
+import { findLatestRuntimeEntry, normalizeRuntimeEntry } from "../../../../utils/shopfloor_runtime_entries";
 import {
     exceptionSummaryItems,
     summarizeExceptions,
@@ -25,6 +26,9 @@ export class ShopfloorExceptionsScreen extends Component {
     };
     static props = {
         exceptions: Array,
+        logEntries: Array,
+        gatewayRuntimeSummary: [Object, Boolean],
+        metrics: [Object, Boolean],
         onReportException: Function,
     };
 
@@ -92,6 +96,10 @@ export class ShopfloorExceptionsScreen extends Component {
             return "No exceptions match the current filters.";
         }
         return "No exceptions have been reported yet.";
+    }
+
+    get latestRuntimeEntry() {
+        return normalizeRuntimeEntry(findLatestRuntimeEntry(this.props.logEntries || []));
     }
 
     reportException(ev) {

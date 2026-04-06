@@ -4,7 +4,7 @@
         <section class="o_mrp_shopfloor_card">
             <div class="o_mrp_shopfloor_card_label">Command queue status</div>
             <div class="o_mrp_shopfloor_detail_title">
-                <t t-esc="props.commandQueueStatus.label"/>
+                <t t-esc="latestFeedbackLabel"/>
             </div>
             <div class="o_mrp_shopfloor_detail_meta">
                 <span class="badge rounded-pill" t-att-class="'text-bg-' + (props.commandQueueStatus.stateTone || 'secondary')">
@@ -12,7 +12,10 @@
                 </span>
             </div>
             <div class="o_mrp_shopfloor_detail_meta">
-                <span><t t-esc="props.commandQueueStatus.detail"/></span>
+                <span><t t-esc="latestFeedbackDetail"/></span>
+            </div>
+            <div class="o_mrp_shopfloor_detail_meta">
+                <span class="badge rounded-pill text-bg-light"><t t-esc="actionSummary"/></span>
             </div>
             <div class="o_mrp_shopfloor_detail_meta">
                 <span>Total <t t-esc="props.commandQueueStatus.total"/></span>
@@ -21,6 +24,30 @@
                 <span>Done <t t-esc="props.commandQueueStatus.done"/></span>
                 <span>Failed <t t-esc="props.commandQueueStatus.failed"/></span>
             </div>
+            <t t-if="props.commandQueueStatus.latestPrintExecutionBadge">
+                <div class="o_mrp_shopfloor_detail_meta">
+                    <span class="badge rounded-pill" t-att-class="'text-bg-' + (props.commandQueueStatus.latestPrintExecutionTone || 'info')">
+                        <t t-esc="props.commandQueueStatus.latestPrintExecutionBadge"/>
+                    </span>
+                </div>
+            </t>
+            <t t-if="latestPrintExecutionDetails.length">
+                <div class="o_mrp_shopfloor_detail_meta">
+                    <t t-foreach="latestPrintExecutionDetails" t-as="detail" t-key="detail.key">
+                        <span class="badge rounded-pill text-bg-light">
+                            <t t-esc="detail.label"/>
+                        </span>
+                    </t>
+                </div>
+            </t>
+            <t t-if="latestException">
+                <div class="o_mrp_shopfloor_detail_meta">
+                    <span class="badge rounded-pill text-bg-warning">
+                        Exception <t t-esc="latestException.stateLabel || latestException.state || 'active'"/>
+                    </span>
+                    <span><t t-esc="latestException.title || latestException.reference || latestException.id"/></span>
+                </div>
+            </t>
             <div class="o_mrp_shopfloor_timeline">
                 <t t-if="props.commands.length">
                     <t t-foreach="props.commands" t-as="command" t-key="command.id">
@@ -29,6 +56,16 @@
                             <small>
                                 <t t-esc="command.type"/> - <t t-esc="command.statusLabel || command.status"/>
                             </small>
+                            <small>
+                                <t t-esc="command.note || command.detail || command.target || 'No extra command detail.'"/>
+                            </small>
+                            <t t-if="command.printExecutionLabel">
+                                <small>
+                                    <span class="badge rounded-pill" t-att-class="'text-bg-' + (command.printExecutionTone || 'info')">
+                                        <t t-esc="command.printExecutionLabel"/>
+                                    </span>
+                                </small>
+                            </t>
                             <span class="badge rounded-pill mt-1" t-att-class="'text-bg-' + (command.statusTone || 'secondary')">
                                 <t t-esc="command.statusLabel || command.status"/>
                             </span>

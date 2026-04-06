@@ -17,6 +17,14 @@
                     <span><t t-esc="props.selectedDevice.channel || 'no channel'"/></span>
                     <span><t t-esc="props.selectedDevice.location || 'no location'"/></span>
                 </div>
+                <div class="o_mrp_shopfloor_detail_meta" t-if="runtimeFeedback">
+                    <span t-att-class="runtimeStateClass">
+                        <t t-esc="runtimeFeedback.label"/>
+                    </span>
+                    <span>
+                        <t t-esc="runtimeFeedback.detail"/>
+                    </span>
+                </div>
                 <t t-if="filterSummaryLabel">
                     <div class="o_mrp_shopfloor_empty"><t t-esc="filterSummaryLabel"/></div>
                 </t>

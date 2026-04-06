@@ -23,7 +23,13 @@
         <t t-if="hasItems">
             <div class="o_mrp_shopfloor_list">
                 <t t-foreach="props.exceptions" t-as="item" t-key="item.id">
-                    <ShopfloorExceptionCard item="item" onReportException="props.onReportException"/>
+                    <ShopfloorExceptionCard
+                        item="item"
+                        latestRuntimeEntry="props.latestRuntimeEntry"
+                        gatewayRuntimeSummary="props.gatewayRuntimeSummary"
+                        metrics="props.metrics"
+                        onReportException="props.onReportException"
+                    />
                 </t>
             </div>
         </t>

@@ -1,6 +1,7 @@
 /** @odoo-module **/
 
 import { Component, useState } from "@odoo/owl";
+import { findLatestRuntimeEntry, normalizeRuntimeEntry } from "../../../../utils/shopfloor_runtime_entries";
 import { ShopfloorQueueDetail } from "./queue_detail/queue_detail";
 import { ShopfloorQueueList } from "./queue_list/queue_list";
 import { ShopfloorQueueToolbar } from "./queue_toolbar/queue_toolbar";
@@ -163,6 +164,9 @@ export class ShopfloorQueueScreen extends Component {
         queue: Array,
         selectedQueueItem: Object,
         selectedQueueContext: Object,
+        logEntries: Array,
+        gatewayRuntimeSummary: [Object, Boolean],
+        metrics: [Object, Boolean],
         onOpenQueueItem: Function,
         onRefreshQueue: Function,
     };
@@ -231,6 +235,10 @@ export class ShopfloorQueueScreen extends Component {
                 (this.state.statusFilter || "all") !== "all" ||
                 (this.state.sortKey || "priority_desc") !== "priority_desc"
         );
+    }
+
+    get latestRuntimeEntry() {
+        return normalizeRuntimeEntry(findLatestRuntimeEntry(this.props.logEntries || []));
     }
 
     openQueueItem(ev) {

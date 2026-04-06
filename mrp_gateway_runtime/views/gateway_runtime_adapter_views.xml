@@ -15,10 +15,20 @@
                 <field name="health_score"/>
                 <field name="probe_focus_state"/>
                 <field name="capability_summary"/>
+                <field name="dispatch_state"/>
+                <field name="listener_state"/>
                 <field name="probe_summary"/>
                 <field name="entry_id"/>
                 <field name="workstation_id"/>
+                <field name="edge_replay_pending_count"/>
+                <field name="edge_dead_letter_count"/>
+                <field name="protocol_runtime_issue_count"/>
+                <field name="open_protocol_runtime_issue_count"/>
+                <field name="edge_protocol_runtime_state"/>
+                <field name="edge_protocol_runtime_count"/>
                 <field name="last_heartbeat_at"/>
+                <field name="last_dispatch_at"/>
+                <field name="last_listener_sync_at"/>
                 <field name="last_success_at"/>
                 <field name="last_reload_at"/>
                 <field name="last_repair_at"/>
@@ -37,16 +47,25 @@
                     <button name="action_open_attention_route" type="object" string="Open Attention" class="btn-secondary"/>
                     <button name="action_open_console" type="object" string="Console" class="btn-secondary"/>
                     <button name="action_open_protocol_probe" type="object" string="Probe" class="btn-secondary"/>
+                    <button name="action_open_protocol_runtime_issues" type="object" string="Protocol Runtime Issues" class="btn-secondary"/>
+                    <button name="action_open_protocol_runtime_console" type="object" string="Protocol Runtime Console" class="btn-secondary"/>
+                    <button name="action_open_protocol_runtime_probe" type="object" string="Protocol Runtime Probe" class="btn-secondary"/>
                     <button name="action_start_probe_session" type="object" string="Start Probe" class="btn-secondary"/>
                     <button name="action_open_probe_sessions" type="object" string="Probe Sessions" class="btn-secondary"/>
                     <button name="action_load_adapter" type="object" string="Load" class="btn-secondary"/>
                     <button name="action_unload_adapter" type="object" string="Unload" class="btn-secondary"/>
                     <button name="action_open_issues" type="object" string="Issues" class="btn-secondary"/>
+                    <button name="action_request_edge_replay" type="object" string="Request Replay" class="btn-secondary"/>
+                    <button name="action_review_edge_dead_letter" type="object" string="Review Dead Letters" class="btn-secondary"/>
                     <button name="action_open_repairs" type="object" string="Repairs" class="btn-secondary"/>
                     <button name="action_create_issue" type="object" string="Create Issue" class="btn-secondary"/>
                     <button name="action_simulate_poll" type="object" string="Simulate Poll" class="btn-secondary"/>
                     <button name="action_refresh_diagnostics" type="object" string="Refresh Diagnostics" class="btn-secondary"/>
                     <button name="action_trigger_reconnect" type="object" string="Trigger Reconnect" class="btn-secondary"/>
+                    <button name="action_pause_dispatch" type="object" string="Pause Dispatch" class="btn-secondary"/>
+                    <button name="action_resume_dispatch" type="object" string="Resume Dispatch" class="btn-secondary"/>
+                    <button name="action_sync_listeners" type="object" string="Sync Listeners" class="btn-secondary"/>
+                    <button name="action_cleanup_listeners" type="object" string="Cleanup Listeners" class="btn-secondary"/>
                     <button name="action_reload_adapter" type="object" string="Reload" class="btn-secondary"/>
                     <button name="action_repair_adapter" type="object" string="Repair" class="btn-secondary"/>
                     <button name="action_mark_ready" type="object" string="Mark Ready" class="btn-secondary"/>
@@ -66,6 +85,18 @@
                         </button>
                         <button name="action_open_issues" type="object" class="oe_stat_button" icon="fa-exclamation-triangle">
                             <field name="issue_count" widget="statinfo" string="Issues"/>
+                        </button>
+                        <button name="action_open_driver_issues" type="object" class="oe_stat_button" icon="fa-print">
+                            <field name="driver_issue_count" widget="statinfo" string="Driver Issues"/>
+                        </button>
+                    <button name="action_open_edge_cache_issues" type="object" class="oe_stat_button" icon="fa-database">
+                            <field name="edge_cache_issue_count" widget="statinfo" string="Edge Cache"/>
+                        </button>
+                        <button name="action_open_protocol_runtime_issues" type="object" class="oe_stat_button" icon="fa-sitemap">
+                            <field name="protocol_runtime_issue_count" widget="statinfo" string="Protocol Runtime"/>
+                        </button>
+                        <button name="action_open_edge_actions" type="object" class="oe_stat_button" icon="fa-list-alt">
+                            <field name="edge_action_count" widget="statinfo" string="Edge Actions"/>
                         </button>
                         <button name="action_open_repairs" type="object" class="oe_stat_button" icon="fa-wrench">
                             <field name="repair_issue_count" widget="statinfo" string="Repairs"/>
@@ -121,7 +152,12 @@
                                     <field name="retry_after_seconds"/>
                                     <field name="always_update"/>
                                     <field name="first_refresh_required"/>
+                                    <field name="dispatch_state"/>
+                                    <field name="listener_state"/>
                                     <field name="listener_count"/>
+                                    <field name="lifecycle_checkpoint"/>
+                                    <field name="dispatch_summary" readonly="1"/>
+                                    <field name="listener_summary" readonly="1"/>
                                 </group>
                                 <group>
                                     <field name="supports_push"/>
@@ -193,7 +229,31 @@
                                     <field name="health_score"/>
                                     <field name="health_detail"/>
                                     <field name="last_error"/>
+                                    <field name="driver_diagnostic_state" readonly="1"/>
+                                    <field name="driver_diagnostic_summary" readonly="1"/>
+                                    <field name="driver_diagnostic_detail" readonly="1"/>
+                                    <field name="driver_issue_summary" readonly="1"/>
+                                    <field name="edge_cache_issue_summary" readonly="1"/>
+                                    <field name="protocol_runtime_issue_summary" readonly="1"/>
+                                    <field name="edge_action_summary" readonly="1"/>
+                                    <field name="print_driver_summary" readonly="1"/>
+                                    <field name="print_driver_state_summary" readonly="1"/>
+                                    <field name="print_driver_polling_summary" readonly="1"/>
+                                    <field name="edge_replay_summary" readonly="1"/>
+                                    <field name="edge_last_replay_summary" readonly="1"/>
+                                    <field name="edge_dead_letter_summary" readonly="1"/>
+                                    <field name="edge_protocol_runtime_state" readonly="1"/>
+                                    <field name="edge_protocol_runtime_summary" readonly="1"/>
+                                    <field name="edge_protocol_runtime_count" readonly="1"/>
+                                    <field name="edge_protocol_runtime_entry_count" readonly="1"/>
+                                    <field name="edge_protocol_runtime_state_counts_summary" readonly="1"/>
+                                    <field name="edge_protocol_runtime_kind_counts_summary" readonly="1"/>
+                                    <field name="console_summary" readonly="1"/>
+                                    <field name="console_attention_summary" readonly="1"/>
+                                    <field name="attention_route_summary" readonly="1"/>
                                     <field name="recent_activity_summary" readonly="1"/>
+                                    <field name="dispatch_summary" readonly="1"/>
+                                    <field name="listener_summary" readonly="1"/>
                                 </group>
                                 <group>
                                     <field name="timeout_seconds"/>
@@ -210,6 +270,9 @@
                                     <field name="last_update_success_at"/>
                                     <field name="last_update_failure_at"/>
                                     <field name="last_reconnect_at"/>
+                                    <field name="last_dispatch_at"/>
+                                    <field name="last_listener_sync_at"/>
+                                    <field name="last_listener_cleanup_at"/>
                                     <field name="last_success_at"/>
                                     <field name="last_failure_at"/>
                                 </group>
@@ -217,6 +280,8 @@
                             <field name="recent_activity_timeline" nolabel="1" readonly="1"/>
                             <field name="diagnostic_state" nolabel="1"/>
                             <field name="diagnostic_summary" nolabel="1"/>
+                            <field name="listener_contract_json" nolabel="1"/>
+                            <field name="dispatch_contract_json" nolabel="1"/>
                             <group>
                                 <field name="last_success_at"/>
                                 <field name="last_reload_at"/>
@@ -230,6 +295,29 @@
                                 <field name="command_count"/>
                                 <field name="issue_count"/>
                                 <field name="open_issue_count"/>
+                                <field name="edge_replay_pending_count"/>
+                                <field name="edge_replay_due_count"/>
+                                <field name="edge_replay_scheduled_count"/>
+                                <field name="edge_replay_coalesced_count"/>
+                                <field name="edge_last_replay_outcome"/>
+                                <field name="edge_last_replay_summary" readonly="1"/>
+                                <field name="edge_dead_letter_count"/>
+                                <field name="edge_protocol_runtime_state"/>
+                                <field name="edge_protocol_runtime_summary"/>
+                                <field name="edge_protocol_runtime_count"/>
+                                <field name="edge_protocol_runtime_entry_count"/>
+                                <field name="edge_protocol_runtime_state_counts_summary"/>
+                                <field name="edge_protocol_runtime_kind_counts_summary"/>
+                                <field name="edge_cache_issue_count"/>
+                                <field name="open_edge_cache_issue_count"/>
+                                <field name="protocol_runtime_issue_count"/>
+                                <field name="open_protocol_runtime_issue_count"/>
+                                <field name="edge_action_count"/>
+                                <field name="pending_edge_action_count"/>
+                                <field name="processing_edge_action_count"/>
+                                <field name="processed_edge_action_count"/>
+                                <field name="driver_issue_count"/>
+                                <field name="open_driver_issue_count"/>
                                 <field name="repair_issue_count"/>
                             </group>
                         </page>

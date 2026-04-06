@@ -20,7 +20,48 @@
                         <t t-esc="props.metrics.deviceOnline ? 'Online' : 'Offline'"/>
                     </span>
                     <span class="badge rounded-pill text-bg-secondary"><t t-esc="props.booted ? 'Booted' : 'Waiting'"/></span>
+                    <t t-if="gatewayRuntimeAttentionLabel">
+                        <span t-att-class="'badge rounded-pill text-bg-' + gatewayDriverTone">
+                            <t t-esc="gatewayRuntimeAttentionLabel"/>
+                        </span>
+                    </t>
+                    <t t-if="gatewayProtocolRuntimeLabel">
+                        <span t-att-class="'badge rounded-pill text-bg-' + gatewayProtocolRuntimeTone">
+                            <t t-esc="gatewayProtocolRuntimeLabel"/>
+                        </span>
+                    </t>
                 </div>
+                <t t-if="gatewayDriverSummary">
+                    <p class="o_mrp_shopfloor_rail_description">
+                        <t t-esc="gatewayDriverSummary"/>
+                    </p>
+                </t>
+                <t t-if="gatewayProtocolRuntimeSummary and gatewayProtocolRuntimeSummary !== gatewayDriverSummary">
+                    <p class="o_mrp_shopfloor_rail_description">
+                        <t t-esc="gatewayProtocolRuntimeSummary"/>
+                    </p>
+                </t>
+                <t t-if="gatewayEdgeActionTotal">
+                    <div class="o_mrp_shopfloor_rail_meta">
+                        <span>Queued <t t-esc="gatewayEdgeActionQueued"/></span>
+                        <span>Processing <t t-esc="gatewayEdgeActionProcessing"/></span>
+                        <span>Processed <t t-esc="gatewayEdgeActionProcessed"/></span>
+                    </div>
+                </t>
+                <t t-if="gatewayProtocolRuntimeAttentionCount">
+                    <div class="o_mrp_shopfloor_rail_meta">
+                        <span>Protocol attention <t t-esc="gatewayProtocolRuntimeAttentionCount"/></span>
+                    </div>
+                </t>
+                <t t-if="gatewayEdgeReplayPending or gatewayEdgeReplayDue or gatewayEdgeReplayCooling or gatewayEdgeDeadLetterCount">
+                    <div class="o_mrp_shopfloor_rail_meta">
+                        <span>Replay <t t-esc="gatewayEdgeReplayPending"/></span>
+                        <span>Due <t t-esc="gatewayEdgeReplayDue"/></span>
+                        <span>Cooling <t t-esc="gatewayEdgeReplayCooling"/></span>
+                        <span>Coalesced <t t-esc="gatewayEdgeReplayCoalesced"/></span>
+                        <span>Dead letters <t t-esc="gatewayEdgeDeadLetterCount"/></span>
+                    </div>
+                </t>
             </section>
             <nav class="o_mrp_shopfloor_nav" aria-label="Shopfloor panels">
                 <t t-foreach="navigationPanels" t-as="panel" t-key="panel.key">
@@ -48,6 +89,33 @@
                     <span><t t-esc="props.workstation.gateway"/></span>
                     <span><t t-esc="props.sessionRef || 'no session'"/></span>
                 </div>
+                <t t-if="gatewayRuntimeAttentionLabel">
+                    <div class="o_mrp_shopfloor_rail_meta">
+                        <span><t t-esc="gatewayRuntimeAttentionLabel"/></span>
+                        <span><t t-esc="gatewayDriverSummary || 'Runtime attention active'"/></span>
+                    </div>
+                </t>
+                <t t-if="gatewayEdgeActionTotal">
+                    <div class="o_mrp_shopfloor_rail_meta">
+                        <span>Queued <t t-esc="gatewayEdgeActionQueued"/></span>
+                        <span>Processing <t t-esc="gatewayEdgeActionProcessing"/></span>
+                        <span>Processed <t t-esc="gatewayEdgeActionProcessed"/></span>
+                    </div>
+                </t>
+                <t t-if="gatewayProtocolRuntimeAttentionCount">
+                    <div class="o_mrp_shopfloor_rail_meta">
+                        <span>Protocol attention <t t-esc="gatewayProtocolRuntimeAttentionCount"/></span>
+                    </div>
+                </t>
+                <t t-if="gatewayEdgeReplayPending or gatewayEdgeReplayDue or gatewayEdgeReplayCooling or gatewayEdgeDeadLetterCount">
+                    <div class="o_mrp_shopfloor_rail_meta">
+                        <span>Replay <t t-esc="gatewayEdgeReplayPending"/></span>
+                        <span>Due <t t-esc="gatewayEdgeReplayDue"/></span>
+                        <span>Cooling <t t-esc="gatewayEdgeReplayCooling"/></span>
+                        <span>Coalesced <t t-esc="gatewayEdgeReplayCoalesced"/></span>
+                        <span>Dead letters <t t-esc="gatewayEdgeDeadLetterCount"/></span>
+                    </div>
+                </t>
             </section>
         </aside>
     </t>

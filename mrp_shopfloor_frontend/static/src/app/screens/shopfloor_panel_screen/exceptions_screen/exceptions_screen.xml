@@ -5,6 +5,9 @@
             <ShopfloorExceptionActions
                 summary="exceptionSummary"
                 branchSummary="branchSummary"
+                latestRuntimeEntry="latestRuntimeEntry"
+                gatewayRuntimeSummary="props.gatewayRuntimeSummary"
+                metrics="props.metrics"
                 onReportException="reportException"
             />
             <ShopfloorExceptionToolbar
@@ -21,6 +24,9 @@
                 summary="visibleSummary"
                 branchSummary="branchSummary"
                 branchSummaryItems="branchSummaryItems"
+                latestRuntimeEntry="latestRuntimeEntry"
+                gatewayRuntimeSummary="props.gatewayRuntimeSummary"
+                metrics="props.metrics"
                 emptyStateLabel="emptyStateLabel"
                 hasActiveFilters="hasActiveFilters"
                 onClearFilters="onClearFilters"

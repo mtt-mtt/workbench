@@ -36,6 +36,12 @@
             <ShopfloorQueueDetail
                 selectedQueueItem="props.selectedQueueItem"
                 summary="visibleSummary"
+                selectedQueueContext="props.selectedQueueContext"
+                selectedQueueVisible="selectedQueueVisible"
+                latestRuntimeEntry="latestRuntimeEntry"
+                gatewayRuntimeSummary="props.gatewayRuntimeSummary"
+                metrics="props.metrics"
+                onClearFilters="onClearFilters"
             />
         </div>
     </t>

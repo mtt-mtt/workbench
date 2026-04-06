@@ -246,11 +246,19 @@ class GatewayRuntimeService:
 
     def _adapter_health_from_adapter(self, adapter):
         if not adapter:
+            summary = {
+                "missing": True,
+                "health_state": "unknown",
+                "health_score": 0,
+                "health_detail": "Adapter not found",
+            }
             return {
                 "health_state": "unknown",
                 "health_score": 0,
                 "health_detail": "Adapter not found",
-                "diagnostic_summary": json.dumps({"missing": True}, ensure_ascii=False),
+                "diagnostic_summary": json.dumps(summary, ensure_ascii=False),
+                "diagnostic_state": json.dumps(summary, ensure_ascii=False),
+                "summary": summary,
             }
 
         diag = self._parse_json(adapter.diagnostic_state)
@@ -313,6 +321,214 @@ class GatewayRuntimeService:
             "summary": summary,
         }
 
+    def _edge_diagnostics_snapshot(self, value):
+        diagnostic_state = self._parse_json(value)
+        if not diagnostic_state:
+            return {}
+        edge_diagnostics = self._as_dict(diagnostic_state.get("edge_diagnostics"))
+        if edge_diagnostics:
+            return edge_diagnostics
+        if diagnostic_state.get("gateway_code") and diagnostic_state.get("checks"):
+            return diagnostic_state
+        nested = self._as_dict(diagnostic_state.get("diagnostic_state"))
+        if nested.get("gateway_code") and nested.get("checks"):
+            return nested
+        return {}
+
+    def _edge_registry_snapshot(self, value):
+        diagnostic_state = self._parse_json(value)
+        if not diagnostic_state:
+            return {}
+        edge_registry = self._as_dict(diagnostic_state.get("edge_registry"))
+        if edge_registry:
+            return edge_registry
+        edge_diagnostics = self._edge_diagnostics_snapshot(value)
+        nested_registry = self._as_dict(edge_diagnostics.get("registry"))
+        if nested_registry:
+            return nested_registry
+        nested = self._as_dict(diagnostic_state.get("diagnostic_state"))
+        return self._as_dict(nested.get("edge_registry") or nested.get("registry"))
+
+    def _edge_replay_snapshot(self, value):
+        diagnostic_state = self._parse_json(value)
+        if not diagnostic_state:
+            return {}
+        replay_summary = self._as_dict(diagnostic_state.get("replay_summary"))
+        if replay_summary:
+            return replay_summary
+        edge_diagnostics = self._edge_diagnostics_snapshot(value)
+        nested = self._as_dict(edge_diagnostics.get("replay"))
+        if nested:
+            return nested
+        cache_summary = self._as_dict(edge_diagnostics.get("cache"))
+        return self._as_dict(cache_summary.get("outbound_replay"))
+
+    def _edge_dead_letter_snapshot(self, value):
+        diagnostic_state = self._parse_json(value)
+        if not diagnostic_state:
+            return {}
+        dead_letter = self._as_dict(diagnostic_state.get("dead_letter_summary"))
+        if dead_letter:
+            return dead_letter
+        edge_diagnostics = self._edge_diagnostics_snapshot(value)
+        nested = self._as_dict(edge_diagnostics.get("dead_letter"))
+        if nested:
+            return nested
+        cache_summary = self._as_dict(edge_diagnostics.get("cache"))
+        return self._as_dict(cache_summary.get("outbound_dead_letter"))
+
+    def _edge_replay_history_snapshot(self, value):
+        diagnostic_state = self._parse_json(value)
+        if not diagnostic_state:
+            return {}
+        history = self._as_dict(diagnostic_state.get("replay_history"))
+        if history:
+            return history
+        edge_diagnostics = self._edge_diagnostics_snapshot(value)
+        nested = self._as_dict(edge_diagnostics.get("replay_history"))
+        if nested:
+            return nested
+        cache_summary = self._as_dict(edge_diagnostics.get("cache"))
+        return self._as_dict(cache_summary.get("outbound_replay_history"))
+
+    def _edge_last_replay_cycle_snapshot(self, value):
+        diagnostic_state = self._parse_json(value)
+        if not diagnostic_state:
+            return {}
+        last_replay_cycle = self._as_dict(diagnostic_state.get("last_outbound_replay_cycle"))
+        if last_replay_cycle:
+            return last_replay_cycle
+        edge_diagnostics = self._edge_diagnostics_snapshot(value)
+        nested = self._as_dict(edge_diagnostics.get("last_replay_cycle"))
+        if nested:
+            return nested
+        cache_summary = self._as_dict(edge_diagnostics.get("cache"))
+        return self._as_dict(cache_summary.get("last_outbound_replay_cycle"))
+
+    def _edge_protocol_runtime_snapshot(self, value):
+        diagnostic_state = self._parse_json(value)
+        if not diagnostic_state:
+            return {}
+
+        edge_diagnostics = self._edge_diagnostics_snapshot(value)
+        edge_protocol_runtime = self._as_dict(
+            diagnostic_state.get("edge_protocol_runtime") or diagnostic_state.get("protocol_runtime")
+        )
+        if not edge_protocol_runtime:
+            edge_protocol_runtime = self._as_dict(edge_diagnostics.get("protocol_runtime"))
+        if not edge_protocol_runtime:
+            nested_runtime = self._as_dict(edge_diagnostics.get("runtime"))
+            edge_protocol_runtime = self._as_dict(nested_runtime.get("protocol_runtime"))
+
+        runtime_items = []
+        seen_fingerprints = set()
+        sources = (
+            diagnostic_state.get("edge_protocol_runtimes"),
+            diagnostic_state.get("protocol_runtimes"),
+            edge_protocol_runtime.get("runtimes"),
+            edge_protocol_runtime.get("protocol_runtimes"),
+            edge_diagnostics.get("protocol_runtimes"),
+            self._as_dict(edge_diagnostics.get("runtime")).get("protocol_runtimes"),
+        )
+        for source in sources:
+            if not source:
+                continue
+            items = source.get("runtimes") if isinstance(source, dict) else source
+            if isinstance(items, dict):
+                items = list(items.values())
+            if not isinstance(items, list):
+                continue
+            for item in items:
+                runtime_item = self._as_dict(item)
+                if not runtime_item:
+                    continue
+                fingerprint = (
+                    runtime_item.get("adapter_code") or runtime_item.get("code") or runtime_item.get("name"),
+                    runtime_item.get("protocol_type") or runtime_item.get("adapter_type") or runtime_item.get("kind"),
+                    runtime_item.get("runtime_state") or runtime_item.get("state"),
+                    runtime_item.get("factory_available"),
+                )
+                if fingerprint in seen_fingerprints:
+                    continue
+                seen_fingerprints.add(fingerprint)
+                runtime_items.append(runtime_item)
+
+        state_counts = self._as_dict(
+            edge_protocol_runtime.get("state_counts") or edge_protocol_runtime.get("protocol_runtime_state_counts")
+        )
+        kind_counts = self._as_dict(
+            edge_protocol_runtime.get("kind_counts") or edge_protocol_runtime.get("protocol_runtime_kind_counts")
+        )
+        needs_state_counts = not state_counts
+        needs_kind_counts = not kind_counts
+        if needs_state_counts or needs_kind_counts:
+            for runtime_item in runtime_items:
+                if needs_state_counts:
+                    state = str(
+                        runtime_item.get("protocol_runtime_state")
+                        or runtime_item.get("runtime_state")
+                        or runtime_item.get("state")
+                        or "unknown"
+                    ).strip().lower() or "unknown"
+                    state_counts[state] = int(state_counts.get(state) or 0) + 1
+                if needs_kind_counts:
+                    kind = str(
+                        runtime_item.get("protocol_type")
+                        or runtime_item.get("adapter_type")
+                        or runtime_item.get("kind")
+                        or "unknown"
+                    ).strip().lower() or "unknown"
+                    kind_counts[kind] = int(kind_counts.get(kind) or 0) + 1
+
+        count = self._maybe_int(
+            edge_protocol_runtime.get("count"),
+            self._maybe_int(edge_protocol_runtime.get("protocol_runtime_count"), len(runtime_items)),
+        )
+        entry_count = self._maybe_int(
+            edge_protocol_runtime.get("entry_count"),
+            self._maybe_int(edge_protocol_runtime.get("protocol_runtime_entry_count"), len(runtime_items)),
+        )
+        ready_count = int(state_counts.get("ready") or 0)
+        stopped_count = int(state_counts.get("stopped") or 0)
+        pending_count = int(state_counts.get("pending") or 0)
+        unavailable_count = int(state_counts.get("unavailable") or 0) + int(state_counts.get("no-factory") or 0)
+        error_count = int(state_counts.get("error") or 0)
+
+        if error_count > 0:
+            state = "error"
+        elif pending_count > 0 or unavailable_count > 0:
+            state = "attention"
+        elif count or entry_count or runtime_items:
+            state = "ready"
+        else:
+            state = "unknown"
+
+        summary_bits = [
+            f"count={count}",
+            f"ready={ready_count}",
+            f"stopped={stopped_count}",
+            f"pending={pending_count}",
+            f"unavailable={unavailable_count}",
+            f"error={error_count}",
+        ]
+        if kind_counts:
+            summary_bits.append(f"kinds={','.join(sorted(kind_counts))}")
+
+        return {
+            "count": count,
+            "entry_count": entry_count,
+            "ready_count": ready_count,
+            "stopped_count": stopped_count,
+            "pending_count": pending_count,
+            "unavailable_count": unavailable_count,
+            "error_count": error_count,
+            "state": state,
+            "state_counts": state_counts,
+            "kind_counts": kind_counts,
+            "runtimes": runtime_items,
+            "summary": ", ".join(summary_bits),
+        }
+
     def _apply_adapter_health(self, adapter, *, health_state=None, health_detail=None, diagnostic_state=None, mark_success=False, mark_failure=False):
         values = {}
         if health_state:
@@ -342,11 +558,11 @@ class GatewayRuntimeService:
 
     def _issue_has_field(self, field_name):
         model = self._issue_model()
-        return bool(model and field_name in model._fields)
+        return model is not None and field_name in model._fields
 
     def _issue_selection_value(self, field_name, preferred, fallback=None):
         model = self._issue_model()
-        if not model or field_name not in model._fields:
+        if model is None or field_name not in model._fields:
             return fallback if fallback is not None else (preferred[0] if preferred else None)
         field = model._fields[field_name]
         selection = field.selection
@@ -387,11 +603,11 @@ class GatewayRuntimeService:
         state = getattr(issue, "state", None)
         return state in {"resolved", "closed", "done", "cancelled", "ignored"}
 
-    def _find_runtime_issue(self, adapter, issue_kind=None, include_resolved=False):
+    def _find_runtime_issue(self, adapter, issue_kind=None, include_resolved=False, issue_key=None):
         Issue = self._issue_model()
         if Issue is None or not adapter:
             return None
-        issue_key = f"runtime:{adapter.code}:{issue_kind}" if adapter and issue_kind else None
+        issue_key = issue_key or (f"runtime:{adapter.code}:{issue_kind}" if adapter and issue_kind else None)
         domain = [("adapter_id", "=", adapter.id)] if self._issue_has_field("adapter_id") else []
         if issue_key and self._issue_has_field("issue_key"):
             domain = [("issue_key", "=", issue_key)]
@@ -405,16 +621,30 @@ class GatewayRuntimeService:
                 return issue
         return issues[:1]
 
-    def _upsert_runtime_issue(self, adapter, *, issue_kind, severity="medium", message="", detail=None, payload=None, recommended_action=None, state=None):
+    def _upsert_runtime_issue(
+        self,
+        adapter,
+        *,
+        issue_kind,
+        severity="medium",
+        message="",
+        detail=None,
+        payload=None,
+        recommended_action=None,
+        state=None,
+        issue_key=None,
+        name=None,
+    ):
         Issue = self._issue_model()
         if Issue is None or not adapter:
             return None
-        issue = self._find_runtime_issue(adapter, issue_kind=issue_kind)
+        issue_key = issue_key or f"runtime:{adapter.code}:{issue_kind}"
+        issue = self._find_runtime_issue(adapter, issue_kind=issue_kind, issue_key=issue_key)
         values = {}
         if self._issue_has_field("name"):
-            values["name"] = f"{adapter.code}:{issue_kind}"
+            values["name"] = name or f"{adapter.code}:{issue_kind}"
         if self._issue_has_field("issue_key"):
-            values["issue_key"] = f"runtime:{adapter.code}:{issue_kind}"
+            values["issue_key"] = issue_key
         if self._issue_has_field("adapter_id"):
             values["adapter_id"] = adapter.id
         if self._issue_has_field("entry_id") and getattr(adapter, "entry_id", None):
@@ -456,8 +686,8 @@ class GatewayRuntimeService:
             return issue
         return Issue.create(values)
 
-    def _resolve_runtime_issue(self, adapter, *, issue_kind, detail=None, payload=None):
-        issue = self._find_runtime_issue(adapter, issue_kind=issue_kind)
+    def _resolve_runtime_issue(self, adapter, *, issue_kind, detail=None, payload=None, issue_key=None):
+        issue = self._find_runtime_issue(adapter, issue_kind=issue_kind, issue_key=issue_key)
         if not issue or self._issue_is_resolved(issue):
             return issue
         values = {}
@@ -474,6 +704,169 @@ class GatewayRuntimeService:
         if values:
             issue.write(values)
         return issue
+
+    def _sync_driver_diagnostic_issue(self, adapter):
+        if not adapter:
+            return None
+        issue_key = f"runtime:{adapter.code}:driver_diagnostic"
+        payload = {
+            "adapter": {
+                "code": adapter.code,
+                "name": adapter.name,
+                "state": adapter.state,
+                "adapter_type": adapter.adapter_type,
+                "health_state": adapter.health_state,
+                "health_score": adapter.health_score,
+            },
+            "driver_diagnostic_state": adapter.driver_diagnostic_state,
+            "driver_diagnostic_summary": adapter.driver_diagnostic_summary,
+            "driver_diagnostic_detail": adapter.driver_diagnostic_detail,
+            "print_driver_summary": adapter.print_driver_summary,
+            "print_driver_state_summary": adapter.print_driver_state_summary,
+            "print_driver_polling_summary": adapter.print_driver_polling_summary,
+        }
+        driver_state = adapter.driver_diagnostic_state or "unknown"
+        if driver_state == "error":
+            return self._upsert_runtime_issue(
+                adapter,
+                issue_kind="diagnostic",
+                issue_key=issue_key,
+                name=f"{adapter.code}:driver_diagnostic",
+                severity="high",
+                message=adapter.driver_diagnostic_summary or "Print driver requires attention",
+                detail=adapter.driver_diagnostic_detail or adapter.driver_diagnostic_summary or "Print driver diagnostics reported an error state.",
+                payload=payload,
+                recommended_action="reload_runtime",
+                state=self._issue_state_open_value(),
+            )
+        if driver_state == "attention":
+            return self._upsert_runtime_issue(
+                adapter,
+                issue_kind="diagnostic",
+                issue_key=issue_key,
+                name=f"{adapter.code}:driver_diagnostic",
+                severity="medium",
+                message=adapter.driver_diagnostic_summary or "Print driver diagnostics need review",
+                detail=adapter.driver_diagnostic_detail or adapter.driver_diagnostic_summary or "Print driver diagnostics reported a non-terminal attention state.",
+                payload=payload,
+                recommended_action="refresh_runtime",
+                state=self._issue_state_open_value(),
+            )
+        return self._resolve_runtime_issue(
+            adapter,
+            issue_kind="diagnostic",
+            issue_key=issue_key,
+            detail=adapter.driver_diagnostic_summary or "Print driver diagnostics recovered",
+            payload=payload,
+        )
+
+    def _sync_edge_cache_issues(self, adapter):
+        if not adapter:
+            return None
+        replay_payload = {
+            "adapter": {
+                "code": adapter.code,
+                "name": adapter.name,
+                "state": adapter.state,
+                "adapter_type": adapter.adapter_type,
+                "health_state": adapter.health_state,
+                "health_score": adapter.health_score,
+            },
+            "edge_replay_pending_count": adapter.edge_replay_pending_count,
+            "edge_replay_summary": adapter.edge_replay_summary,
+            "edge_dead_letter_count": adapter.edge_dead_letter_count,
+            "edge_dead_letter_summary": adapter.edge_dead_letter_summary,
+        }
+        dead_letter_issue = None
+        replay_issue = None
+        if int(adapter.edge_dead_letter_count or 0) > 0:
+            dead_letter_issue = self._upsert_runtime_issue(
+                adapter,
+                issue_kind="diagnostic",
+                issue_key=f"runtime:{adapter.code}:edge_dead_letter",
+                name=f"{adapter.code}:edge_dead_letter",
+                severity="high",
+                message=adapter.edge_dead_letter_summary or "Edge dead-letter backlog requires review",
+                detail=adapter.edge_dead_letter_summary or "One or more edge outbound requests exhausted retry budget and were moved to dead-letter.",
+                payload=replay_payload,
+                recommended_action="review_edge_dead_letter",
+                state=self._issue_state_open_value(),
+            )
+        else:
+            dead_letter_issue = self._resolve_runtime_issue(
+                adapter,
+                issue_kind="diagnostic",
+                issue_key=f"runtime:{adapter.code}:edge_dead_letter",
+                detail=adapter.edge_dead_letter_summary or "Edge dead-letter backlog cleared",
+                payload=replay_payload,
+            )
+        if int(adapter.edge_replay_pending_count or 0) > 0:
+            replay_issue = self._upsert_runtime_issue(
+                adapter,
+                issue_kind="diagnostic",
+                issue_key=f"runtime:{adapter.code}:edge_replay",
+                name=f"{adapter.code}:edge_replay",
+                severity="medium",
+                message=adapter.edge_replay_summary or "Edge replay backlog pending",
+                detail=adapter.edge_replay_summary or "Edge outbound replay queue still contains pending requests.",
+                payload=replay_payload,
+                recommended_action="request_edge_replay",
+                state=self._issue_state_open_value(),
+            )
+        else:
+            replay_issue = self._resolve_runtime_issue(
+                adapter,
+                issue_kind="diagnostic",
+                issue_key=f"runtime:{adapter.code}:edge_replay",
+                detail=adapter.edge_replay_summary or "Edge replay backlog cleared",
+                payload=replay_payload,
+            )
+        return {"dead_letter": dead_letter_issue, "replay": replay_issue}
+
+    def _sync_protocol_runtime_issue(self, adapter):
+        if not adapter:
+            return None
+        payload = {
+            "adapter": {
+                "code": adapter.code,
+                "name": adapter.name,
+                "state": adapter.state,
+                "adapter_type": adapter.adapter_type,
+                "health_state": adapter.health_state,
+                "health_score": adapter.health_score,
+            },
+            "protocol_runtime": {
+                "state": adapter.edge_protocol_runtime_state,
+                "summary": adapter.edge_protocol_runtime_summary,
+                "count": adapter.edge_protocol_runtime_count,
+                "entry_count": adapter.edge_protocol_runtime_entry_count,
+                "state_counts_summary": adapter.edge_protocol_runtime_state_counts_summary,
+                "kind_counts_summary": adapter.edge_protocol_runtime_kind_counts_summary,
+                "detail": adapter.edge_protocol_runtime_detail,
+            },
+        }
+        issue_key = f"runtime:{adapter.code}:protocol_runtime"
+        runtime_state = adapter.edge_protocol_runtime_state or "unknown"
+        if runtime_state in {"attention", "error"}:
+            return self._upsert_runtime_issue(
+                adapter,
+                issue_kind="diagnostic",
+                issue_key=issue_key,
+                name=f"{adapter.code}:protocol_runtime",
+                severity="high" if runtime_state == "error" else "medium",
+                message=adapter.edge_protocol_runtime_summary or "Protocol runtime requires review",
+                detail=adapter.edge_protocol_runtime_detail or adapter.edge_protocol_runtime_summary or "Protocol runtime summary reported an attention state.",
+                payload=payload,
+                recommended_action="reload_runtime" if runtime_state == "error" else "review_runtime",
+                state=self._issue_state_open_value(),
+            )
+        return self._resolve_runtime_issue(
+            adapter,
+            issue_kind="diagnostic",
+            issue_key=issue_key,
+            detail=adapter.edge_protocol_runtime_summary or "Protocol runtime diagnostics recovered",
+            payload=payload,
+        )
 
     def _runtime_issue_summary(self, adapter):
         Issue = self._issue_model()
@@ -537,10 +930,23 @@ class GatewayRuntimeService:
             return None
         return self.env["gateway.entry"].sudo().search([("code", "=", entry_code)], limit=1)
 
-    def _resolve_device(self, device_code):
+    def _resolve_entry_reference(self, entry_ref):
+        if not entry_ref or not self._registry_has_model("gateway.entry"):
+            return None
+        if hasattr(entry_ref, "_name") and getattr(entry_ref, "_name", None) == "gateway.entry":
+            return entry_ref.exists()
+        try:
+            return self.env["gateway.entry"].sudo().browse(int(entry_ref)).exists()
+        except (TypeError, ValueError):
+            return self._resolve_entry(entry_ref)
+
+    def _resolve_device(self, device_code, entry=None):
         if not device_code or not self._registry_has_model("gateway.device"):
             return None
-        return self.env["gateway.device"].sudo().search([("code", "=", device_code)], limit=1)
+        domain = [("code", "=", device_code)]
+        if entry:
+            domain.append(("entry_id", "=", entry.id if hasattr(entry, "id") else int(entry)))
+        return self.env["gateway.device"].sudo().search(domain, limit=1)
 
     def _resolve_device_from_payload(self, payload=None):
         data = self._as_dict(payload)
@@ -577,6 +983,16 @@ class GatewayRuntimeService:
             return None
         return self.env["gateway.runtime.adapter"].sudo().search([("code", "=", adapter_code)], limit=1)
 
+    def _resolve_adapter_reference(self, adapter_ref):
+        if not adapter_ref or not self._registry_has_model("gateway.runtime.adapter"):
+            return None
+        if hasattr(adapter_ref, "_name") and getattr(adapter_ref, "_name", None) == "gateway.runtime.adapter":
+            return adapter_ref.exists()
+        try:
+            return self.env["gateway.runtime.adapter"].sudo().browse(int(adapter_ref)).exists()
+        except (TypeError, ValueError):
+            return self._resolve_adapter(adapter_ref)
+
     def _resolve_app(self, app_code):
         if not app_code or not self._registry_has_model("shopfloor.app"):
             return None
@@ -590,14 +1006,43 @@ class GatewayRuntimeService:
     def _resolve_command(self, payload):
         if not self._registry_has_model("gateway.command"):
             return None
-        command_id = payload.get("command_id")
-        command_code = payload.get("command_code")
+        command_id = payload.get("command_id") or payload.get("id")
+        command_code = payload.get("command_code") or payload.get("code") or payload.get("command_ref")
         Command = self.env["gateway.command"].sudo()
         if command_id:
-            return Command.browse(int(command_id)).exists()
+            try:
+                command = Command.browse(int(command_id)).exists()
+                if command:
+                    return command
+            except (TypeError, ValueError):
+                pass
         if command_code:
             return Command.search([("code", "=", command_code)], limit=1)
         return None
+
+    def _command_response_payload(self, command):
+        payload = self._serialize_command(command)
+        payload["summary"] = {
+            "state": payload["state"],
+            "attempt_count": payload["attempt_count"],
+            "acknowledged": payload["state"] in {"acknowledged", "done", "failed", "cancelled"},
+            "terminal": payload["state"] in {"done", "failed", "cancelled"},
+            "has_response": bool(payload.get("response_text")),
+            "has_error": bool(payload.get("error_message")),
+            "request_summary": payload.get("request_summary"),
+            "response_summary": payload.get("response_summary"),
+            "diagnostic_summary": payload.get("diagnostic_summary"),
+            "print_plan": payload.get("print_plan"),
+            "barcode_validation": payload.get("barcode_validation"),
+        }
+        return payload
+
+    def _command_error_response(self, message, *, errors=None):
+        return {
+            "ok": False,
+            "errors": errors or [message],
+            "message": {"type": "warning", "text": message},
+        }
 
     def _probe_session_model(self):
         if not self._registry_has_model("gateway.runtime.probe.session"):
@@ -621,13 +1066,39 @@ class GatewayRuntimeService:
 
     def _resolve_runtime_context(self, payload=None):
         data = self._as_dict(payload)
-        adapter = self._resolve_adapter(data.get("adapter_code") or data.get("code"))
-        entry = self._resolve_entry(data.get("entry_code")) or (adapter.entry_id if adapter and adapter.entry_id else None)
+        command = self._resolve_command(data)
+        adapter = self._resolve_adapter_reference(data.get("adapter_id")) or self._resolve_adapter(data.get("adapter_code"))
+        entry = (
+            self._resolve_entry_reference(data.get("entry_id"))
+            or self._resolve_entry(data.get("entry_code"))
+            or (command.entry_id if command and command.entry_id else None)
+            or (adapter.entry_id if adapter and adapter.entry_id else None)
+        )
+        if not adapter and command:
+            adapter = self._resolve_adapter_for_command(command)
+        if not adapter and entry and self._registry_has_model("gateway.runtime.adapter"):
+            adapter_domain = [("entry_id", "=", entry.id)]
+            device = command.device_id if command and getattr(command, "device_id", None) else None
+            if device:
+                adapter_domain.append(("device_code", "=", device.code))
+            adapter = self.env["gateway.runtime.adapter"].sudo().search(adapter_domain, limit=1)
         device = self._resolve_device_from_payload(data)
+        if not device and command and getattr(command, "device_id", None):
+            device = command.device_id
         workstation = self._resolve_workstation(data.get("workstation_code")) or (
             adapter.workstation_id if adapter and adapter.workstation_id else None
         )
         app = self._resolve_app(data.get("app_code")) or (adapter.app_id if adapter and adapter.app_id else None)
+        if not workstation and command and getattr(command, "workstation_ref", None):
+            workstation = self._resolve_workstation(command.workstation_ref)
+        if not app and command and getattr(command, "app_ref", None):
+            app = self._resolve_app(command.app_ref)
+        if not workstation and entry and getattr(entry, "workstation_ref", None):
+            workstation = self._resolve_workstation(entry.workstation_ref)
+        if not app and entry and getattr(entry, "app_ref", None):
+            app = self._resolve_app(entry.app_ref)
+        if not app and workstation and getattr(workstation, "app_id", None):
+            app = workstation.app_id
         if not device and adapter and adapter.device_code:
             device = self._resolve_device(adapter.device_code)
         return {
@@ -637,6 +1108,7 @@ class GatewayRuntimeService:
             "device": device,
             "workstation": workstation,
             "app": app,
+            "command": command,
         }
 
     def _device_registry_values(self, payload=None, *, adapter=None, entry=None, workstation=None, app=None, now=None):
@@ -792,6 +1264,23 @@ class GatewayRuntimeService:
             "message": data.get("message") or data.get("note") or "",
             "payload_json": json.dumps(data, ensure_ascii=False, default=str),
         }
+        for key in (
+            "diagnostic_summary",
+            "diagnostic_state",
+            "edge_diagnostics",
+            "edge_registry",
+            "registry_summary",
+            "replay_summary",
+            "cache_summary",
+            "printer_diagnostics",
+            "change_kind",
+            "ui_refresh_hint",
+            "signal",
+            "event_kind",
+            "client_ref",
+        ):
+            if data.get(key) is not None:
+                normalized[key] = data.get(key)
         normalized["normalized_json"] = json.dumps(normalized, ensure_ascii=False, default=str)
         return normalized
 
@@ -820,6 +1309,37 @@ class GatewayRuntimeService:
             return "topology"
         if event_kind in {"diagnostic", "probe"}:
             return "probe"
+        return default
+
+    def _event_kind_value(self, payload=None, default="custom"):
+        data = self._as_dict(payload)
+        event_kind = data.get("event_kind") or default
+        allowed = {"heartbeat", "status", "signal", "command", "diagnostic", "alarm", "custom"}
+        if event_kind in allowed:
+            return event_kind
+        aliases = {
+            "device_event": "signal",
+            "device.event": "signal",
+            "device_status": "status",
+            "device.status": "status",
+            "status_sync": "status",
+            "status_update": "status",
+            "signal_event": "signal",
+            "command_ack": "command",
+            "command_result": "command",
+            "diagnostic_event": "diagnostic",
+            "probe": "diagnostic",
+            "error": "alarm",
+            "warning": "alarm",
+        }
+        if event_kind in aliases:
+            return aliases[event_kind]
+        if data.get("signal"):
+            return "signal"
+        if data.get("command_id") or data.get("command_code") or data.get("command_ref"):
+            return "command"
+        if self._change_kind(data) == "probe":
+            return "diagnostic"
         return default
 
     def _discovery_state(self, payload=None, *, default="bound"):
@@ -927,6 +1447,54 @@ class GatewayRuntimeService:
         }
         return coordinator
 
+    def _listener_runtime_state(self, adapter, desired_state):
+        if desired_state not in {"idle", "attached", "suspended", "error"}:
+            return desired_state
+        if adapter and not adapter.supports_subscribe:
+            return "idle"
+        return desired_state
+
+    def _coordination_values(
+        self,
+        adapter=None,
+        *,
+        dispatch_state=None,
+        listener_state=None,
+        lifecycle_checkpoint=None,
+        occurred_at=None,
+        mark_dispatch=False,
+        mark_sync=False,
+        mark_cleanup=False,
+        listener_count=None,
+        listener_contract=None,
+        dispatch_contract=None,
+    ):
+        occurred_at = occurred_at or self._now()
+        values = {}
+        if dispatch_state is not None:
+            values["dispatch_state"] = dispatch_state
+        if listener_state is not None:
+            values["listener_state"] = self._listener_runtime_state(adapter, listener_state)
+        if lifecycle_checkpoint is not None:
+            values["lifecycle_checkpoint"] = lifecycle_checkpoint
+        if mark_dispatch:
+            values["last_dispatch_at"] = occurred_at
+        if mark_sync:
+            values["last_listener_sync_at"] = occurred_at
+        if mark_cleanup:
+            values["last_listener_cleanup_at"] = occurred_at
+        if listener_count is not None:
+            values["listener_count"] = max(0, int(listener_count or 0))
+        if listener_contract is not None:
+            values["listener_contract_json"] = (
+                self._json_dumps(listener_contract) if isinstance(listener_contract, (dict, list, tuple)) else listener_contract
+            )
+        if dispatch_contract is not None:
+            values["dispatch_contract_json"] = (
+                self._json_dumps(dispatch_contract) if isinstance(dispatch_contract, (dict, list, tuple)) else dispatch_contract
+            )
+        return values
+
     def build_capability_payload(self, payload=None, adapter=None):
         data = self._as_dict(payload)
         adapter = adapter or self._resolve_adapter(data.get("adapter_code") or data.get("code"))
@@ -1031,7 +1599,7 @@ class GatewayRuntimeService:
             {
                 **data,
                 "name": data.get("name") or data.get("code") or f"{change_kind.title()} update",
-                "event_kind": event_kind or data.get("event_kind") or "status",
+                "event_kind": self._event_kind_value(event_kind or data.get("event_kind") or "status", default="status"),
                 "adapter_code": adapter.code if adapter else data.get("adapter_code") or data.get("code"),
                 "entry_code": entry.code if entry else data.get("entry_code"),
                 "device_code": device.code if device else data.get("device_code"),
@@ -1066,8 +1634,12 @@ class GatewayRuntimeService:
         }
 
     def dispatch_state_only(self, payload=None):
+        data = self._as_dict(payload)
         return self.upsert_registry_then_dispatch(
-            payload,
+            {
+                **data,
+                "lifecycle_checkpoint": data.get("lifecycle_checkpoint") or "signal_dispatched",
+            },
             change_kind="state",
             discovery_state=self._discovery_state(payload, default="bound"),
             event_kind="status",
@@ -1099,6 +1671,9 @@ class GatewayRuntimeService:
             "entry_code": entry.code if entry else data.get("entry_code"),
             "device_code": data.get("device_code") or (adapter.device_code if adapter else None),
             "workstation_code": data.get("workstation_code") or (adapter.workstation_id.code if adapter and adapter.workstation_id else None),
+            "source_payload_id": data.get("source_payload_id"),
+            "registry_action": data.get("registry_action"),
+            "issue_key": data.get("issue_key"),
             "payload": data,
         }
         event = None
@@ -1106,15 +1681,17 @@ class GatewayRuntimeService:
             event = self._log_runtime_event(
                 {
                     "event_kind": "signal",
+                    "signal_kind": signal_payload["kind"],
                     "name": signal_name,
                     "adapter_code": signal_payload["adapter_code"],
                     "entry_code": signal_payload["entry_code"],
                     "device_code": signal_payload["device_code"],
                     "workstation_code": signal_payload["workstation_code"],
+                    "payload": signal_payload["payload"],
                     "change_kind": data.get("change_kind") or "state",
                     "discovery_state": data.get("discovery_state") or "bound",
                     "source_signal": signal_name,
-                    "source_payload_id": self._fingerprint_payload(data),
+                    "source_payload_id": data.get("source_payload_id") or self._fingerprint_payload(data),
                     "probe_session_id": data.get("probe_session_id"),
                     "state_version": data.get("state_version") or self._fingerprint_payload(signal_payload),
                     "registry_action": data.get("registry_action"),
@@ -1122,7 +1699,20 @@ class GatewayRuntimeService:
                     "message": data.get("message") or data.get("reason") or signal_name,
                     "severity": data.get("severity") or "low",
                     "result": data.get("result") or data.get("state") or "dispatched",
+                    "edge_cache_action": data.get("edge_cache_action"),
+                    "issue_key": data.get("issue_key"),
                 }
+            )
+        if adapter:
+            adapter.write(
+                self._coordination_values(
+                    adapter,
+                    dispatch_state="active",
+                    listener_state="attached",
+                    lifecycle_checkpoint=data.get("lifecycle_checkpoint") or "signal_dispatched",
+                    mark_dispatch=True,
+                    mark_sync=True,
+                )
             )
         return {
             "ok": True,
@@ -1156,10 +1746,19 @@ class GatewayRuntimeService:
                 "first_refresh_required": False,
                 "diagnostic_state": health["diagnostic_state"],
                 "diagnostic_summary": health["diagnostic_summary"],
+                **self._coordination_values(
+                    adapter,
+                    dispatch_state="active",
+                    listener_state="attached",
+                    lifecycle_checkpoint="refresh",
+                    mark_dispatch=True,
+                    mark_sync=True,
+                ),
             }
         )
         self._sync_configuration_issue(adapter, data)
         self._sync_connectivity_issue(adapter, health, data)
+        self._sync_protocol_runtime_issue(adapter)
         signal = self.dispatch_runtime_signal(
             {
                 **data,
@@ -1230,6 +1829,7 @@ class GatewayRuntimeService:
             recommended_action="reload_runtime" if stale else "repair_runtime",
             state=self._issue_state_progress_value(),
         )
+        self._sync_protocol_runtime_issue(adapter)
         signal = self.dispatch_runtime_signal(
             {
                 **data,
@@ -1250,6 +1850,292 @@ class GatewayRuntimeService:
                 "repaired": True,
             },
             "message": {"type": "success", "text": "Runtime repair requested"},
+        }
+
+    def request_edge_cache_action(self, payload=None):
+        data = self._as_dict(payload)
+        adapter = self._resolve_adapter(data.get("adapter_code") or data.get("code"))
+        if not adapter:
+            return {"ok": False, "errors": ["Adapter not found"]}
+        action = str(data.get("action") or "replay").strip().lower()
+        if action not in {"replay", "review_dead_letter"}:
+            return {"ok": False, "errors": [f"Unsupported edge cache action: {action}"]}
+        issue_key = f"runtime:{adapter.code}:{'edge_replay' if action == 'replay' else 'edge_dead_letter'}"
+        signal = self.dispatch_runtime_signal(
+            {
+                **data,
+                "adapter_code": adapter.code,
+                "entry_code": adapter.entry_id.code if adapter.entry_id else data.get("entry_code"),
+                "workstation_code": adapter.workstation_id.code if adapter.workstation_id else data.get("workstation_code"),
+                "signal_kind": "edge_cache_action",
+                "change_kind": "state",
+                "ui_refresh_hint": "runtime",
+                "reason": "edge_replay_requested" if action == "replay" else "edge_dead_letter_review_requested",
+                "message": "Edge replay requested" if action == "replay" else "Edge dead-letter review requested",
+                "result": "requested",
+                "severity": "medium" if action == "replay" else "high",
+                "edge_cache_action": action,
+                "issue_key": issue_key,
+                "registry_action": action,
+                "source_payload_id": issue_key,
+            }
+        )
+        if signal.get("event_id"):
+            self.env["gateway.runtime.event"].sudo().browse(signal["event_id"]).exists().write(
+                {
+                    "state": "new",
+                    "processed_at": False,
+                    "result": "requested",
+                }
+            )
+        self._upsert_runtime_issue(
+            adapter,
+            issue_kind="diagnostic",
+            issue_key=issue_key,
+            name=f"{adapter.code}:{'edge_replay' if action == 'replay' else 'edge_dead_letter'}",
+            severity="medium" if action == "replay" else "high",
+            message="Edge replay requested" if action == "replay" else "Edge dead-letter review requested",
+            detail=adapter.edge_replay_summary if action == "replay" else adapter.edge_dead_letter_summary,
+            payload={
+                "action": action,
+                "signal": signal,
+                "edge_replay_summary": adapter.edge_replay_summary,
+                "edge_dead_letter_summary": adapter.edge_dead_letter_summary,
+            },
+            recommended_action="request_edge_replay" if action == "replay" else "review_edge_dead_letter",
+            state=self._issue_state_progress_value(),
+        )
+        adapter.write(
+            self._coordination_values(
+                adapter,
+                dispatch_state="active",
+                listener_state="attached",
+                lifecycle_checkpoint="edge_cache_action_requested",
+                mark_dispatch=True,
+                mark_sync=True,
+            )
+        )
+        return {
+            "ok": True,
+            "data": {
+                "adapter": self._serialize_adapter(adapter),
+                "signal": signal,
+                "action": action,
+                "requested": True,
+            },
+            "message": {
+                "type": "success",
+                "text": "Edge replay requested" if action == "replay" else "Edge dead-letter review requested",
+            },
+        }
+
+    def fetch_edge_actions(self, payload=None):
+        data = self._as_dict(payload)
+        adapter = self._resolve_adapter(data.get("adapter_code") or data.get("code"))
+        if not adapter:
+            return {"ok": False, "errors": ["Adapter not found"]}
+        limit = max(1, min(int(data.get("limit") or 20), 50))
+        domain = [
+            ("adapter_id", "=", adapter.id),
+            ("event_kind", "=", "signal"),
+            ("state", "in", ["new", "processing"]),
+        ]
+        entry = self._resolve_entry(data.get("entry_code"))
+        if entry:
+            domain.append(("entry_id", "=", entry.id))
+        events = self.env["gateway.runtime.event"].sudo().search(domain, order="occurred_at asc, id asc", limit=limit * 3)
+        actions = []
+        fetch_now = self._now()
+        for event in events:
+            payload_json = self._parse_json(event.payload_json)
+            signal_kind = str(payload_json.get("signal_kind") or "").strip().lower()
+            if not signal_kind and "edge_cache_action" in str(event.source_signal or "").strip().lower():
+                signal_kind = "edge_cache_action"
+            if signal_kind != "edge_cache_action":
+                continue
+            action_name = str(payload_json.get("edge_cache_action") or "").strip().lower()
+            if not action_name:
+                issue_key = str(payload_json.get("issue_key") or "").strip().lower()
+                message_text = str(event.message or payload_json.get("message") or "").strip().lower()
+                if issue_key.endswith(":edge_dead_letter") or "dead-letter" in message_text:
+                    action_name = "review_dead_letter"
+                elif issue_key.endswith(":edge_replay") or "replay" in message_text:
+                    action_name = "replay"
+            if action_name not in {"replay", "review_dead_letter"}:
+                continue
+            write_values = {
+                "edge_fetch_count": int(event.edge_fetch_count or 0) + 1,
+                "last_edge_fetch_at": fetch_now,
+            }
+            if event.state == "new":
+                write_values.update(
+                    {
+                        "state": "processing",
+                        "processed_at": False,
+                        "result": "fetched",
+                        "message": "Edge replay fetched by edge"
+                        if action_name == "replay"
+                        else "Edge dead-letter review fetched by edge",
+                    }
+                )
+            event.write(write_values)
+            actions.append(
+                {
+                    "id": event.id,
+                    "code": event.code,
+                    "name": event.name,
+                    "adapter_code": adapter.code,
+                    "entry_code": event.entry_id.code if event.entry_id else None,
+                    "workstation_code": event.workstation_id.code if event.workstation_id else (adapter.workstation_id.code if adapter.workstation_id else None),
+                    "app_code": event.app_id.code if event.app_id else (adapter.app_id.code if adapter.app_id else None),
+                    "state": event.state,
+                    "severity": event.severity,
+                    "occurred_at": event.occurred_at,
+                    "last_edge_fetch_at": event.last_edge_fetch_at,
+                    "edge_fetch_count": event.edge_fetch_count,
+                    "processed_at": event.processed_at,
+                    "signal": event.source_signal,
+                    "message": event.message,
+                    "result": event.result,
+                    "ui_refresh_hint": event.ui_refresh_hint,
+                    "registry_action": event.registry_action,
+                    "source_payload_id": event.source_payload_id,
+                    "edge_cache_action": action_name,
+                    "issue_key": payload_json.get("issue_key"),
+                    "payload": payload_json,
+                    "summary": {
+                        "edge_replay_summary": adapter.edge_replay_summary,
+                        "edge_dead_letter_summary": adapter.edge_dead_letter_summary,
+                    },
+                }
+            )
+            if len(actions) >= limit:
+                break
+        return {
+            "ok": True,
+            "data": {
+                "adapter": self._serialize_adapter(adapter),
+                "actions": actions,
+                "count": len(actions),
+            },
+            "message": {"type": "success", "text": f"Fetched {len(actions)} edge action(s)"},
+        }
+
+    def acknowledge_edge_action(self, payload=None):
+        data = self._as_dict(payload)
+        adapter = self._resolve_adapter(data.get("adapter_code") or data.get("code"))
+        event_code = data.get("action_event_code") or data.get("event_code") or data.get("code")
+        event_id = data.get("action_event_id") or data.get("event_id") or data.get("id")
+        Event = self.env["gateway.runtime.event"].sudo()
+        event = Event.browse(int(event_id)).exists() if event_id else Event.browse()
+        if not event and event_code:
+            event = Event.search([("code", "=", event_code)], limit=1)
+        if not event:
+            return {"ok": False, "errors": ["Edge action event not found"]}
+        if not adapter:
+            adapter = event.adapter_id
+        if not adapter:
+            return {"ok": False, "errors": ["Adapter not found"]}
+        payload_json = self._parse_json(event.payload_json)
+        signal_kind = str(payload_json.get("signal_kind") or "").strip().lower()
+        if not signal_kind and "edge_cache_action" in str(event.source_signal or "").strip().lower():
+            signal_kind = "edge_cache_action"
+        action_name = str(payload_json.get("edge_cache_action") or data.get("edge_cache_action") or "").strip().lower()
+        if not action_name:
+            issue_key = str(payload_json.get("issue_key") or "").strip().lower()
+            message_text = str(event.message or payload_json.get("message") or "").strip().lower()
+            if issue_key.endswith(":edge_dead_letter") or "dead-letter" in message_text:
+                action_name = "review_dead_letter"
+            elif issue_key.endswith(":edge_replay") or "replay" in message_text:
+                action_name = "replay"
+        if signal_kind != "edge_cache_action" or action_name not in {"replay", "review_dead_letter"}:
+            return {"ok": False, "errors": ["Unsupported edge action event"]}
+        state = str(data.get("state") or "").strip().lower()
+        result = str(data.get("result") or "").strip().lower()
+        if state not in {"new", "processing", "processed", "failed", "cancelled"}:
+            if result in {"processed", "completed", "done", "handled", "replayed", "reviewed", "accepted", "noop"}:
+                state = "processed"
+            elif result in {"failed", "error"}:
+                state = "failed"
+            elif result in {"cancelled", "canceled"}:
+                state = "cancelled"
+            else:
+                state = "processed"
+        terminal = state in {"processed", "failed", "cancelled"}
+        processed_at = self._now() if terminal else False
+        message = data.get("message") or event.message or ("Edge replay handled" if action_name == "replay" else "Edge dead-letter review handled")
+        note_payload = {
+            "acknowledged_at": processed_at or self._now(),
+            "state": state,
+            "result": data.get("result") or event.result,
+            "detail": data.get("detail"),
+            "summary": data.get("summary"),
+            "edge_cache_action": action_name,
+        }
+        event.write(
+            {
+                "state": state,
+                "processed_at": processed_at,
+                "result": data.get("result") or event.result,
+                "message": message,
+                "note": json.dumps(note_payload, ensure_ascii=False, default=str),
+            }
+        )
+        lifecycle_checkpoint = "edge_cache_action_processed" if state == "processed" else "edge_cache_action_failed" if state == "failed" else "edge_cache_action_cancelled"
+        adapter.write(
+            self._coordination_values(
+                adapter,
+                dispatch_state="active",
+                listener_state="attached",
+                lifecycle_checkpoint=lifecycle_checkpoint,
+                mark_dispatch=True,
+                mark_sync=True,
+            )
+        )
+        trace_key = payload_json.get("issue_key") or event.source_payload_id or self._fingerprint_payload(note_payload)
+        self._log_runtime_event(
+            {
+                "event_kind": "signal",
+                "name": event.source_signal or f"{adapter.code}:edge_cache_action_ack",
+                "adapter_code": adapter.code,
+                "entry_code": event.entry_id.code if event.entry_id else (adapter.entry_id.code if adapter.entry_id else None),
+                "workstation_code": event.workstation_id.code if event.workstation_id else (adapter.workstation_id.code if adapter.workstation_id else None),
+                "app_code": event.app_id.code if event.app_id else (adapter.app_id.code if adapter.app_id else None),
+                "change_kind": "state",
+                "discovery_state": "bound",
+                "source_signal": event.source_signal or f"{adapter.code}:edge_cache_action_ack",
+                "source_payload_id": trace_key,
+                "state_version": self._fingerprint_payload({"code": event.code, "state": state, "result": data.get("result")}),
+                "registry_action": action_name,
+                "ui_refresh_hint": data.get("ui_refresh_hint") or "runtime",
+                "message": message,
+                "severity": "high" if state == "failed" else event.severity or "medium",
+                "result": data.get("result") or ("processed" if state == "processed" else state),
+                "payload": {
+                    "action_event_code": event.code,
+                    "edge_cache_action": action_name,
+                    "issue_key": payload_json.get("issue_key"),
+                    "state": state,
+                    "detail": data.get("detail"),
+                    "summary": data.get("summary"),
+                },
+            }
+        )
+        return {
+            "ok": True,
+            "data": {
+                "adapter": self._serialize_adapter(adapter),
+                "action": {
+                    "code": event.code,
+                    "state": event.state,
+                    "result": event.result,
+                    "edge_cache_action": action_name,
+                    "last_edge_fetch_at": event.last_edge_fetch_at,
+                    "edge_fetch_count": event.edge_fetch_count,
+                    "processed_at": event.processed_at,
+                },
+            },
+            "message": {"type": "success", "text": "Edge action acknowledged"},
         }
 
     def load_runtime(self, payload=None):
@@ -1279,6 +2165,7 @@ class GatewayRuntimeService:
         self._sync_configuration_issue(adapter, data)
         self._resolve_runtime_issue(adapter, issue_kind="repair", detail="Runtime load completed", payload=data)
         self._sync_connectivity_issue(adapter, self._adapter_health_from_adapter(adapter), data)
+        self._sync_protocol_runtime_issue(adapter)
         signal = self.dispatch_runtime_signal(
             {
                 **data,
@@ -1329,6 +2216,7 @@ class GatewayRuntimeService:
             payload=data,
             recommended_action="load_runtime",
         )
+        self._sync_protocol_runtime_issue(adapter)
         signal = self.dispatch_runtime_signal(
             {
                 **data,
@@ -1360,6 +2248,7 @@ class GatewayRuntimeService:
             return unload_result
         repair_result = self.repair_runtime(data)
         load_result = self.load_runtime(data)
+        self._sync_protocol_runtime_issue(adapter)
         signal = self.dispatch_runtime_signal(
             {
                 **data,
@@ -1470,6 +2359,26 @@ class GatewayRuntimeService:
                 }
             ),
         }
+        values.update(
+            self._coordination_values(
+                None,
+                dispatch_state="active",
+                listener_state="attached" if contract["supports"]["subscribe"] else "idle",
+                lifecycle_checkpoint="registered",
+                mark_dispatch=True,
+                mark_sync=True,
+                listener_contract={
+                    "supports_subscribe": contract["supports"]["subscribe"],
+                    "supports_dispatch": contract["supports"]["dispatch"],
+                    "mode": coordinator["mode"],
+                },
+                dispatch_contract={
+                    "supports_dispatch": contract["supports"]["dispatch"],
+                    "transport": contract["protocol"].get("transport") or payload.get("adapter_type") or "generic",
+                    "refresh_interval": coordinator["refresh_interval"],
+                },
+            )
+        )
         if adapter:
             adapter.write(values)
         else:
@@ -1486,6 +2395,7 @@ class GatewayRuntimeService:
             app=app,
         )
         self._sync_configuration_issue(adapter, payload)
+        self._sync_protocol_runtime_issue(adapter)
         return {
             "ok": True,
             "data": self._serialize_adapter(adapter),
@@ -1682,7 +2592,6 @@ class GatewayRuntimeService:
                     "last_heartbeat_at": heartbeat.received_at,
                     "state": "ready" if normalized["status"] == "ok" else "degraded",
                     "heartbeat_count": adapter.heartbeat_count + 1,
-                    "listener_count": (adapter.heartbeat_count or 0) + (adapter.event_count or 0) + 1,
                     "last_success_at": heartbeat.received_at if normalized["status"] == "ok" else adapter.last_success_at,
                     "last_failure_at": heartbeat.received_at if normalized["status"] != "ok" else adapter.last_failure_at,
                     "last_error": None if normalized["status"] == "ok" else normalized["message"] or adapter.last_error,
@@ -1699,9 +2608,21 @@ class GatewayRuntimeService:
                     "health_score": 90 if normalized["status"] == "ok" else 60 if normalized["status"] == "warn" else 30 if normalized["status"] == "error" else 0,
                     "diagnostic_state": heartbeat.normalized_json,
                     "diagnostic_summary": json.dumps(heartbeat_summary, ensure_ascii=False, default=str),
+                    **self._coordination_values(
+                        adapter,
+                        dispatch_state="active",
+                        listener_state="attached",
+                        lifecycle_checkpoint="heartbeat",
+                        occurred_at=heartbeat.received_at,
+                        mark_dispatch=True,
+                        mark_sync=True,
+                        listener_count=(adapter.heartbeat_count or 0) + (adapter.event_count or 0) + 1,
+                    ),
                 }
             )
             self._sync_connectivity_issue(adapter, self._adapter_health_from_adapter(adapter), payload)
+            self._sync_protocol_runtime_issue(adapter)
+            self._sync_edge_cache_issues(adapter)
             if normalized["status"] == "ok":
                 self._resolve_runtime_issue(adapter, issue_kind="repair", detail="Heartbeat healthy after repair", payload=payload)
         if entry:
@@ -1748,7 +2669,7 @@ class GatewayRuntimeService:
                 "entry_id": entry.id if entry else False,
                 "device_id": device.id if device else False,
                 "command_id": command.id if command else False,
-                "event_kind": payload.get("event_kind") or "custom",
+                "event_kind": self._event_kind_value(payload, default="custom"),
                 "change_kind": self._change_kind(payload),
                 "discovery_state": self._discovery_state(payload),
                 "severity": normalized["severity"],
@@ -1763,7 +2684,7 @@ class GatewayRuntimeService:
                     {
                         "adapter_code": normalized["adapter_code"],
                         "device_code": device.code if device else normalized["device_code"],
-                        "event_kind": payload.get("event_kind") or "custom",
+                        "event_kind": self._event_kind_value(payload, default="custom"),
                         "result": payload.get("result"),
                     }
                 ),
@@ -1777,7 +2698,20 @@ class GatewayRuntimeService:
             }
         )
         if adapter:
-            adapter.write({"event_count": adapter.event_count + 1, "listener_count": int(adapter.heartbeat_count or 0) + int(adapter.event_count or 0) + 1})
+            adapter.write(
+                {
+                    "event_count": adapter.event_count + 1,
+                    **self._coordination_values(
+                        adapter,
+                        dispatch_state="active",
+                        listener_state="attached",
+                        lifecycle_checkpoint="event_ingested",
+                        occurred_at=event.occurred_at or self._now(),
+                        mark_sync=True,
+                        listener_count=int(adapter.heartbeat_count or 0) + int(adapter.event_count or 0) + 1,
+                    ),
+                }
+            )
             if normalized["severity"] in {"high", "critical"}:
                 event_summary = {
                     "code": adapter.code,
@@ -1813,6 +2747,8 @@ class GatewayRuntimeService:
                 )
         if command and payload.get("command_result"):
             self.queue_command_execution_result(command, payload.get("command_result"))
+        if entry:
+            entry.write({"last_seen_at": event.occurred_at or self._now()})
         dispatcher = self.dispatch_topology_change if self._change_kind(payload) == "topology" else self.dispatch_state_only
         dispatcher(
             {
@@ -1829,6 +2765,7 @@ class GatewayRuntimeService:
                 "registry_action": registry_action,
                 "probe_session_id": payload.get("probe_session_id"),
                 "ui_refresh_hint": payload.get("ui_refresh_hint") or "events",
+                "lifecycle_checkpoint": "event_ingested",
             }
         )
         return {
@@ -1885,6 +2822,144 @@ class GatewayRuntimeService:
             "ok": True,
             "data": results,
             "message": {"type": "success", "text": f"Processed {len(results)} gateway commands"},
+        }
+
+    def fetch_gateway_command(self, payload=None):
+        payload = self._as_dict(payload)
+        if not self._registry_has_model("gateway.command"):
+            return self._command_error_response("No gateway.command model")
+        Command = self.env["gateway.command"].sudo()
+        command = self._resolve_command(payload)
+        if not command:
+            domain = [("state", "in", ["draft", "queued"])]
+            entry = self._resolve_entry(payload.get("entry_code"))
+            if entry:
+                domain.append(("entry_id", "=", entry.id))
+            device = self._resolve_device(payload.get("device_code"), entry=entry)
+            if device:
+                domain.append(("device_id", "=", device.id))
+            workstation_ref = payload.get("workstation_ref") or payload.get("workstation_code")
+            if workstation_ref:
+                domain.append(("workstation_ref", "=", workstation_ref))
+            app_ref = payload.get("app_ref") or payload.get("app_code")
+            if app_ref:
+                domain.append(("app_ref", "=", app_ref))
+            command = Command.search(domain, order="create_date asc, id asc", limit=1)
+        if not command:
+            return {
+                "ok": True,
+                "data": {"command": None, "summary": {"state": "empty", "attempt_count": 0, "acknowledged": False, "terminal": False}},
+                "message": {"type": "info", "text": "No queued gateway command"},
+            }
+        command.write(
+            {
+                "state": "sent",
+                "attempt_count": int(command.attempt_count or 0) + 1,
+                "last_attempt_at": self._now(),
+                "request_text": command.request_text or self._format_command_request(command),
+            }
+        )
+        runtime_adapter = self._resolve_adapter_for_command(command)
+        if runtime_adapter:
+            runtime_adapter.write(
+                {
+                    "command_count": int(runtime_adapter.command_count or 0) + 1,
+                    **self._coordination_values(
+                        runtime_adapter,
+                        dispatch_state="active",
+                        listener_state="attached",
+                        lifecycle_checkpoint="command_dispatched",
+                        mark_dispatch=True,
+                    ),
+                }
+            )
+        return {
+            "ok": True,
+            "data": self._command_response_payload(command),
+            "message": {"type": "success", "text": f"Gateway command ready: {command.code}"},
+        }
+
+    def acknowledge_gateway_command(self, payload=None):
+        payload = self._as_dict(payload)
+        command = self._resolve_command(payload)
+        if not command:
+            return self._command_error_response("Command not found")
+        acknowledged_at = self._now()
+        state = payload.get("state") or payload.get("result")
+        command_result = payload.get("command_result") or self._command_result_from_payload(payload)
+        if command_result or state in {"done", "failed", "cancelled"}:
+            outcome = command_result if command_result else {
+                "state": state,
+                "response_text": payload.get("response_text") or payload.get("message"),
+                "error_message": payload.get("error_message"),
+                "diagnostic_state": payload.get("diagnostic_state") or payload,
+            }
+            result = self.queue_command_execution_result(command, outcome)
+        else:
+            command.write(
+                {
+                    "state": "acknowledged",
+                    "processed_at": acknowledged_at,
+                    "response_text": payload.get("response_text") or command.response_text,
+                    "error_message": payload.get("error_message") or command.error_message,
+                    "diagnostic_state": self._json_dumps(payload),
+                }
+            )
+            runtime_adapter = self._resolve_adapter_for_command(command)
+            if runtime_adapter:
+                runtime_adapter.write(
+                    {
+                        **self._coordination_values(
+                            runtime_adapter,
+                            dispatch_state="active",
+                            listener_state="attached",
+                            lifecycle_checkpoint="command_acknowledged",
+                            mark_dispatch=True,
+                            mark_sync=True,
+                        ),
+                    }
+                )
+            result = self._command_response_payload(command)
+        return {
+            "ok": True,
+            "data": result,
+            "message": {"type": "success", "text": f"Gateway command acknowledged: {command.code}"},
+        }
+
+    def _command_result_from_payload(self, payload):
+        payload = self._as_dict(payload)
+        print_execution = self._as_dict(payload.get("print_execution"))
+        if not print_execution:
+            diagnostic_state = self._json_loads(payload.get("diagnostic_state"))
+            if isinstance(diagnostic_state, dict):
+                print_execution = self._as_dict(diagnostic_state.get("print_execution"))
+        if not print_execution:
+            return None
+        execution_state = (
+            print_execution.get("state")
+            or print_execution.get("execution_state")
+            or print_execution.get("status")
+            or print_execution.get("result")
+            or payload.get("state")
+            or payload.get("result")
+            or "acknowledged"
+        )
+        response_text = (
+            payload.get("response_text")
+            or print_execution.get("response_text")
+            or print_execution.get("result_text")
+            or print_execution.get("summary")
+            or print_execution.get("message")
+        )
+        return {
+            "state": execution_state,
+            "result": print_execution.get("result") or execution_state,
+            "response_text": response_text,
+            "error_message": payload.get("error_message") or print_execution.get("error_message"),
+            "diagnostic_state": payload.get("diagnostic_state") or payload,
+            "print_execution": print_execution,
+            "print_plan": self._as_dict(payload.get("print_plan")),
+            "barcode_validation": self._as_dict(payload.get("barcode_validation")),
         }
 
     def refresh_adapter_diagnostics(self, adapter_code=None, limit=200):
@@ -1950,6 +3025,13 @@ class GatewayRuntimeService:
                         "health_state": "degraded",
                         "health_score": 25,
                         "health_detail": f"Reconnect attempt {adapter.reconnect_attempts + 1} queued",
+                        **self._coordination_values(
+                            adapter,
+                            dispatch_state="paused",
+                            listener_state="suspended",
+                            lifecycle_checkpoint="stale_reconnect_queued",
+                            mark_cleanup=True,
+                        ),
                     }
                 )
                 self._upsert_runtime_issue(
@@ -1968,6 +3050,13 @@ class GatewayRuntimeService:
                         "state": "offline",
                         "health_state": "offline",
                         "health_score": 0,
+                        **self._coordination_values(
+                            adapter,
+                            dispatch_state="error",
+                            listener_state="error",
+                            lifecycle_checkpoint="stale_offline",
+                            mark_cleanup=True,
+                        ),
                     }
                 )
                 self._upsert_runtime_issue(
@@ -2005,6 +3094,14 @@ class GatewayRuntimeService:
                     "health_state": "warning",
                     "health_score": 40,
                     "health_detail": f"Reconnect requested for {adapter.code}",
+                    **self._coordination_values(
+                        adapter,
+                        dispatch_state="active",
+                        listener_state="attached",
+                        lifecycle_checkpoint="reconnect_requested",
+                        mark_dispatch=True,
+                        mark_sync=True,
+                    ),
                 }
             )
             self._upsert_runtime_issue(
@@ -2056,12 +3153,29 @@ class GatewayRuntimeService:
             "auto_reconnect": 0,
             "manual_reconnect": 0,
         }
+        driver_counts = {
+            "ready": 0,
+            "attention": 0,
+            "error": 0,
+            "unknown": 0,
+            "polling_limited": 0,
+        }
         issue_counts = {"total": 0, "open": 0, "resolved": 0, "fixable": 0, "open_fixable": 0}
+        driver_issue_counts = {"total": 0, "open": 0, "resolved": 0, "adapters": 0, "open_adapters": 0}
         adapter_payload = []
         for adapter in adapters:
             health = self._adapter_health_from_adapter(adapter)
             summary = health["summary"]
             issue_summary = self._runtime_issue_summary(adapter)
+            serialized = self._serialize_adapter(adapter)
+            adapter_summary = dict(serialized.get("summary") or {})
+            driver_state = adapter.driver_diagnostic_state or "unknown"
+            driver_counts[driver_state] = driver_counts.get(driver_state, 0) + 1
+            driver_snapshot = adapter._extract_print_driver_snapshot()
+            driver_capabilities = driver_snapshot.get("capabilities") or {}
+            driver_polling_limited = driver_capabilities.get("status_polling_supported") is False
+            if driver_polling_limited:
+                driver_counts["polling_limited"] += 1
             counts[health["health_state"]] = counts.get(health["health_state"], 0) + 1
             if summary.get("stale"):
                 counts["stale"] += 1
@@ -2074,13 +3188,38 @@ class GatewayRuntimeService:
             issue_counts["resolved"] += issue_summary["resolved"]
             issue_counts["fixable"] += issue_summary["fixable"]
             issue_counts["open_fixable"] += issue_summary["open_fixable"]
+            driver_issue_counts["total"] += int(adapter.driver_issue_count or 0)
+            driver_issue_counts["open"] += int(adapter.open_driver_issue_count or 0)
+            driver_issue_counts["resolved"] += max(0, int(adapter.driver_issue_count or 0) - int(adapter.open_driver_issue_count or 0))
+            if adapter.driver_issue_count:
+                driver_issue_counts["adapters"] += 1
+            if adapter.open_driver_issue_count:
+                driver_issue_counts["open_adapters"] += 1
+            adapter_summary.update(
+                {
+                    "code": adapter.code,
+                    "health_state": health["health_state"],
+                    "health_score": health["health_score"],
+                    "checkpoint": adapter.lifecycle_checkpoint,
+                    "supports_diagnostics": bool(adapter.supports_diagnostics),
+                    "driver_diagnostic_state": adapter.driver_diagnostic_state,
+                    "driver_diagnostic_summary": adapter.driver_diagnostic_summary,
+                    "print_driver_summary": adapter.print_driver_summary,
+                    "print_driver_state_summary": adapter.print_driver_state_summary,
+                    "print_driver_polling_summary": adapter.print_driver_polling_summary,
+                    "driver_issue_count": adapter.driver_issue_count,
+                    "open_driver_issue_count": adapter.open_driver_issue_count,
+                    "driver_polling_limited": driver_polling_limited,
+                }
+            )
             adapter_payload.append(
                 {
-                    **self._serialize_adapter(adapter),
+                    **serialized,
                     "health_state": health["health_state"],
                     "health_score": health["health_score"],
                     "health_detail": health["health_detail"],
                     "diagnostic_summary": health["summary"],
+                    "summary": adapter_summary,
                     "issue_summary": issue_summary,
                 }
             )
@@ -2088,6 +3227,8 @@ class GatewayRuntimeService:
             "generated_at": self._now(),
             "counts": counts,
             "issues": issue_counts,
+            "driver_counts": driver_counts,
+            "driver_issue_counts": driver_issue_counts,
             "adapters": adapter_payload,
         }
 
@@ -2109,22 +3250,54 @@ class GatewayRuntimeService:
         if not command:
             return {"ok": False, "errors": ["Command not found"]}
         if isinstance(outcome, dict):
-            final_state = outcome.get("state") or outcome.get("result") or "done"
-            response_text = outcome.get("response_text") or json.dumps(outcome, ensure_ascii=False, default=str)
-            error_message = outcome.get("error_message")
-            diagnostic_state = outcome.get("diagnostic_state") or response_text
+            diagnostic_state = outcome.get("diagnostic_state") or outcome
+            if isinstance(diagnostic_state, str):
+                parsed_state = self._json_loads(diagnostic_state)
+                if isinstance(parsed_state, dict):
+                    diagnostic_state = parsed_state
+            print_execution = self._as_dict(outcome.get("print_execution"))
+            if not print_execution and isinstance(diagnostic_state, dict):
+                print_execution = self._as_dict(diagnostic_state.get("print_execution"))
+            execution_state = (
+                print_execution.get("state")
+                or print_execution.get("execution_state")
+                or print_execution.get("status")
+                or print_execution.get("result")
+            )
+            execution_response_text = (
+                print_execution.get("response_text")
+                or print_execution.get("result_text")
+                or print_execution.get("summary")
+                or print_execution.get("message")
+            )
+            final_state = execution_state or outcome.get("state") or outcome.get("result") or "done"
+            response_text = (
+                outcome.get("response_text")
+                or execution_response_text
+                or json.dumps(outcome, ensure_ascii=False, default=str)
+            )
+            if str(execution_state or "").strip().lower() == "failed" and execution_response_text:
+                response_text = execution_response_text
+            error_message = outcome.get("error_message") or print_execution.get("error_message")
         else:
             final_state = outcome
             response_text = str(outcome)
             error_message = None
             diagnostic_state = response_text
-        if final_state not in {"done", "failed"}:
+        normalized_state = str(final_state or "").strip().lower()
+        if normalized_state in {"queued", "submitted", "accepted", "pending"}:
+            final_state = "acknowledged"
+        elif normalized_state in {"processing", "running", "in_progress", "sent"}:
+            final_state = "sent"
+        elif normalized_state in {"done", "failed", "cancelled", "acknowledged"}:
+            final_state = normalized_state
+        else:
             final_state = "done"
         values = {
             "state": final_state,
-            "response_text": response_text if final_state == "done" else command.response_text,
+            "response_text": response_text,
             "error_message": error_message if final_state == "failed" else command.error_message,
-            "diagnostic_state": diagnostic_state,
+            "diagnostic_state": self._json_dumps(diagnostic_state) if isinstance(diagnostic_state, (dict, list, tuple)) else diagnostic_state,
             "processed_at": self._now(),
         }
         if final_state == "failed" and not values["error_message"]:
@@ -2132,7 +3305,27 @@ class GatewayRuntimeService:
         command.write(values)
         runtime_adapter = self._resolve_adapter_for_command(command)
         if runtime_adapter:
-            adapter_values = {"command_count": runtime_adapter.command_count + 1}
+            checkpoint = (
+                "command_completed"
+                if final_state == "done"
+                else "command_failed"
+                if final_state == "failed"
+                else "command_acknowledged"
+                if final_state == "acknowledged"
+                else "command_dispatched"
+            )
+            adapter_values = {
+                "command_count": runtime_adapter.command_count + 1,
+                "diagnostic_state": self._json_dumps(diagnostic_state) if isinstance(diagnostic_state, (dict, list, tuple)) else diagnostic_state,
+                **self._coordination_values(
+                    runtime_adapter,
+                    dispatch_state="active",
+                    listener_state="attached",
+                    lifecycle_checkpoint=checkpoint,
+                    mark_dispatch=True,
+                    mark_sync=True,
+                ),
+            }
             if final_state == "done":
                 adapter_summary = {
                     "code": runtime_adapter.code,
@@ -2152,7 +3345,7 @@ class GatewayRuntimeService:
                         "diagnostic_summary": json.dumps(adapter_summary, ensure_ascii=False, default=str),
                     }
                 )
-            else:
+            elif final_state == "failed":
                 adapter_summary = {
                     "code": runtime_adapter.code,
                     "adapter_type": runtime_adapter.adapter_type,
@@ -2172,10 +3365,27 @@ class GatewayRuntimeService:
                         "diagnostic_summary": json.dumps(adapter_summary, ensure_ascii=False, default=str),
                     }
                 )
+            else:
+                adapter_summary = {
+                    "code": runtime_adapter.code,
+                    "adapter_type": runtime_adapter.adapter_type,
+                    "health_state": "healthy",
+                    "health_score": max(int(runtime_adapter.health_score or 0), 70),
+                    "last_command_state": final_state,
+                    "last_command_code": command.code,
+                    "last_command_at": values["processed_at"],
+                }
+                adapter_values.update(
+                    {
+                        "health_state": "healthy",
+                        "health_score": max(int(runtime_adapter.health_score or 0), 70),
+                        "diagnostic_summary": json.dumps(adapter_summary, ensure_ascii=False, default=str),
+                    }
+                )
             runtime_adapter.write(adapter_values)
             if final_state == "done":
                 self._resolve_runtime_issue(runtime_adapter, issue_kind="command_failure", detail="Latest command completed successfully", payload={"command_code": command.code})
-            else:
+            elif final_state == "failed":
                 self._upsert_runtime_issue(
                     runtime_adapter,
                     issue_kind="command_failure",
@@ -2185,13 +3395,28 @@ class GatewayRuntimeService:
                     payload={"command_code": command.code, "diagnostic_state": diagnostic_state},
                     recommended_action="review_runtime_events",
                 )
+            else:
+                self._resolve_runtime_issue(
+                    runtime_adapter,
+                    issue_kind="command_failure",
+                    detail=f"Latest command {final_state}",
+                    payload={"command_code": command.code, "state": final_state},
+                )
+            self._sync_driver_diagnostic_issue(runtime_adapter)
         self._log_runtime_event(
             {
                 "event_kind": "command",
                 "name": f"Command {command.code} {final_state}",
+                "adapter_code": runtime_adapter.code if runtime_adapter else False,
+                "entry_code": command.entry_id.code if command.entry_id else False,
+                "workstation_code": command.workstation_ref or (runtime_adapter.workstation_id.code if runtime_adapter and runtime_adapter.workstation_id else False),
+                "app_code": command.app_ref or (runtime_adapter.app_id.code if runtime_adapter and runtime_adapter.app_id else False),
                 "command_id": command.id,
                 "entry_id": command.entry_id.id if command.entry_id else False,
                 "device_id": command.device_id.id if command.device_id else False,
+                "change_kind": "state",
+                "ui_refresh_hint": "commands",
+                "source_signal": "gateway.command",
                 "message": values.get("error_message") if final_state == "failed" else "Command processed",
                 "severity": "high" if final_state == "failed" else "low",
                 "result": final_state,
@@ -2290,10 +3515,233 @@ class GatewayRuntimeService:
         except Exception:
             return {}
 
+    def _print_execution_summary(self, *, state=None, request_payload=None, response_payload=None, diagnostic_state=None):
+        request_payload = self._safe_json(request_payload)
+        response_payload = self._safe_json(response_payload)
+        diagnostic_state = self._safe_json(diagnostic_state)
+        execution_payload = (
+            diagnostic_state.get("print_execution")
+            or response_payload.get("print_execution")
+            or request_payload.get("print_execution")
+            or {}
+        )
+        print_plan = (
+            diagnostic_state.get("print_plan")
+            or response_payload.get("print_plan")
+            or request_payload.get("print_plan")
+            or execution_payload.get("print_plan")
+            or {}
+        )
+        barcode_validation = (
+            diagnostic_state.get("barcode_validation")
+            or response_payload.get("barcode_validation")
+            or request_payload.get("barcode_validation")
+            or execution_payload.get("barcode_validation")
+            or {}
+        )
+        execution_state = (
+            execution_payload.get("execution_state")
+            or execution_payload.get("state")
+            or state
+            or request_payload.get("state")
+            or response_payload.get("state")
+            or diagnostic_state.get("state")
+            or request_payload.get("execution_state")
+            or response_payload.get("execution_state")
+            or diagnostic_state.get("execution_state")
+            or "unknown"
+        )
+        simulated = (
+            execution_payload.get("simulated")
+            if "simulated" in execution_payload
+            else diagnostic_state.get("simulated")
+            if "simulated" in diagnostic_state
+            else response_payload.get("simulated")
+            if "simulated" in response_payload
+            else request_payload.get("simulated")
+            if "simulated" in request_payload
+            else (execution_payload.get("service_mode") or response_payload.get("service_mode") or request_payload.get("service_mode"))
+            in {"simulated", "mock"}
+        )
+        execution_mode = "simulated" if simulated else "real"
+        status = (
+            execution_payload.get("status")
+            or response_payload.get("status")
+            or diagnostic_state.get("status")
+            or ("printed" if execution_state == "done" else "failed" if execution_state == "failed" else "pending")
+        )
+        printed_copies = response_payload.get("printed_copies")
+        if printed_copies is None:
+            printed_copies = diagnostic_state.get("printed_copies")
+        if printed_copies is None:
+            printed_copies = request_payload.get("printed_copies")
+        if printed_copies is None:
+            printed_copies = execution_payload.get("printed_copies")
+        driver_ready = (
+            execution_payload.get("driver_ready")
+            if "driver_ready" in execution_payload
+            else diagnostic_state.get("driver_ready")
+            if "driver_ready" in diagnostic_state
+            else response_payload.get("driver_ready")
+            if "driver_ready" in response_payload
+            else request_payload.get("driver_ready")
+            if "driver_ready" in request_payload
+            else None
+        )
+        driver_capabilities = (
+            execution_payload.get("driver_capabilities")
+            or diagnostic_state.get("driver_capabilities")
+            or response_payload.get("driver_capabilities")
+            or request_payload.get("driver_capabilities")
+            or {}
+        )
+        if not isinstance(driver_capabilities, dict):
+            driver_capabilities = {}
+        return {
+            "state": execution_state,
+            "execution_state": execution_state,
+            "execution_mode": execution_payload.get("service_mode") or execution_mode,
+            "simulated": simulated,
+            "status": status,
+            "result": (
+                execution_payload.get("result")
+                or response_payload.get("result")
+                or diagnostic_state.get("result")
+                or ("printed" if execution_state == "done" else "failed" if execution_state == "failed" else "pending")
+            ),
+            "completed": execution_state == "done",
+            "terminal": execution_state in {"done", "failed", "cancelled"},
+            "printer_name": execution_payload.get("printer_name") or print_plan.get("printer_name") or request_payload.get("printer_name"),
+            "printer_status": execution_payload.get("printer_status") or response_payload.get("printer_status") or diagnostic_state.get("printer_status") or request_payload.get("printer_status"),
+            "print_job": execution_payload.get("print_job") or print_plan.get("print_job") or request_payload.get("print_job"),
+            "label_template": execution_payload.get("label_template") or print_plan.get("label_template") or request_payload.get("label_template"),
+            "copies": execution_payload.get("copies") or print_plan.get("copies") or request_payload.get("copies"),
+            "printed_copies": printed_copies,
+            "request_id": execution_payload.get("request_id") or print_plan.get("request_id") or request_payload.get("request_id") or diagnostic_state.get("request_id"),
+            "barcode_id": execution_payload.get("barcode_id") or print_plan.get("barcode_id") or barcode_validation.get("barcode") or request_payload.get("barcode_id"),
+            "result_text": execution_payload.get("result_text") or response_payload.get("response_text") or response_payload.get("message") or diagnostic_state.get("message"),
+            "service_summary": execution_payload.get("summary") or response_payload.get("summary") or diagnostic_state.get("summary"),
+            "error_message": (
+                execution_payload.get("error_message")
+                or response_payload.get("error_message")
+                or diagnostic_state.get("error_message")
+                or response_payload.get("error")
+                or response_payload.get("message")
+                or diagnostic_state.get("message")
+            ),
+            "service_mode": execution_payload.get("service_mode"),
+            "service_endpoint": execution_payload.get("service_endpoint") or execution_payload.get("service_url"),
+            "service_job_id": execution_payload.get("service_job_id"),
+            "service_status_code": execution_payload.get("service_status_code"),
+            "service_error_code": execution_payload.get("service_error_code"),
+            "service_error_detail": execution_payload.get("service_error_detail"),
+            "service_completed_at": execution_payload.get("service_completed_at"),
+            "service_accepted_at": execution_payload.get("service_accepted_at"),
+            "service_status_url": execution_payload.get("service_status_url"),
+            "service_checked_at": execution_payload.get("service_checked_at"),
+            "service_document_url": execution_payload.get("service_document_url"),
+            "service_preview_url": execution_payload.get("service_preview_url"),
+            "service_printer_code": execution_payload.get("service_printer_code"),
+            "service_request": execution_payload.get("service_request") or {},
+            "service_response": execution_payload.get("service_response") or {},
+            "driver_origin": execution_payload.get("driver_origin") or diagnostic_state.get("driver_origin") or response_payload.get("driver_origin") or request_payload.get("driver_origin"),
+            "driver_ready": driver_ready,
+            "driver_label": execution_payload.get("driver_label") or diagnostic_state.get("driver_label") or response_payload.get("driver_label") or request_payload.get("driver_label"),
+            "driver_type": execution_payload.get("driver_type") or diagnostic_state.get("driver_type") or response_payload.get("driver_type") or request_payload.get("driver_type"),
+            "driver_path": execution_payload.get("driver_path") or diagnostic_state.get("driver_path") or response_payload.get("driver_path") or request_payload.get("driver_path"),
+            "driver_capabilities": driver_capabilities,
+            "driver_diagnostics": {
+                "origin": execution_payload.get("driver_origin") or diagnostic_state.get("driver_origin") or response_payload.get("driver_origin") or request_payload.get("driver_origin"),
+                "ready": driver_ready,
+                "label": execution_payload.get("driver_label") or diagnostic_state.get("driver_label") or response_payload.get("driver_label") or request_payload.get("driver_label"),
+                "type": execution_payload.get("driver_type") or diagnostic_state.get("driver_type") or response_payload.get("driver_type") or request_payload.get("driver_type"),
+                "path": execution_payload.get("driver_path") or diagnostic_state.get("driver_path") or response_payload.get("driver_path") or request_payload.get("driver_path"),
+                "status_polling_supported": driver_capabilities.get("status_polling_supported"),
+                "supports_refresh_status": driver_capabilities.get("supports_refresh_status"),
+                "supports_status_endpoint": driver_capabilities.get("supports_status_endpoint"),
+            },
+            "print_plan": print_plan,
+            "barcode_validation": barcode_validation,
+        }
+
     def _serialize_adapter(self, record):
         capability = self.build_capability_payload(adapter=record, payload={"adapter_code": record.code})
         coordinator = self._coordinator_state_payload(adapter=record, payload={"adapter_code": record.code})
         issue_summary = self._runtime_issue_summary(record)
+        diagnostic_summary = self._parse_json(record.diagnostic_summary)
+        diagnostic_state = self._parse_json(record.diagnostic_state)
+        edge_diagnostics = self._edge_diagnostics_snapshot(record.diagnostic_state)
+        edge_registry = self._edge_registry_snapshot(record.diagnostic_state)
+        edge_replay = self._edge_replay_snapshot(record.diagnostic_state)
+        edge_dead_letter = self._edge_dead_letter_snapshot(record.diagnostic_state)
+        edge_replay_history = self._edge_replay_history_snapshot(record.diagnostic_state)
+        edge_last_replay_cycle = self._edge_last_replay_cycle_snapshot(record.diagnostic_state)
+        edge_protocol_runtime = self._edge_protocol_runtime_snapshot(record.diagnostic_state)
+        edge_cache_summary = self._as_dict(edge_diagnostics.get("cache"))
+        edge_last_replay_cycle = self._as_dict(edge_diagnostics.get("last_replay_cycle"))
+        summary = {
+            "state": record.state,
+            "health_state": record.health_state,
+            "health_score": record.health_score,
+            "lifecycle_state": record.lifecycle_state,
+            "lifecycle_checkpoint": record.lifecycle_checkpoint,
+            "dispatch_state": record.dispatch_state,
+            "listener_state": record.listener_state,
+            "event_count": record.event_count,
+            "command_count": record.command_count,
+            "listener_count": record.listener_count,
+            "issue_count": issue_summary.get("total", 0),
+            "open_issue_count": issue_summary.get("open", 0),
+            "repair_issue_count": issue_summary.get("fixable", 0),
+            "driver_issue_count": record.driver_issue_count,
+            "open_driver_issue_count": record.open_driver_issue_count,
+            "driver_issue_summary": record.driver_issue_summary,
+            "last_error": record.last_error,
+            "last_success_at": record.last_success_at,
+            "last_failure_at": record.last_failure_at,
+            "diagnostic_summary": diagnostic_summary,
+            "diagnostic_state": diagnostic_state,
+            "driver_diagnostic_state": record.driver_diagnostic_state,
+            "driver_diagnostic_summary": record.driver_diagnostic_summary,
+            "driver_diagnostic_detail": record.driver_diagnostic_detail,
+            "edge_diagnostic_state": edge_diagnostics.get("state"),
+            "edge_diagnostic_summary": edge_diagnostics.get("summary"),
+            "edge_registry_summary": edge_registry.get("summary"),
+            "edge_replay_summary": edge_replay.get("summary"),
+            "edge_replay_due_count": record.edge_replay_due_count,
+            "edge_replay_scheduled_count": record.edge_replay_scheduled_count,
+            "edge_replay_coalesced_count": int(edge_replay.get("coalesced_count") or edge_replay.get("duplicate_count") or 0),
+            "edge_replay_latest_coalesced_at": edge_replay.get("latest_coalesced_at") or edge_replay.get("latest_duplicate_at"),
+            "edge_replay_history_summary": edge_replay_history.get("summary"),
+            "edge_last_replay_outcome": (edge_last_replay_cycle.get("cycle_digest") or {}).get("outcome"),
+            "edge_last_replay_summary": record.edge_last_replay_summary,
+            "edge_dead_letter_summary": edge_dead_letter.get("summary"),
+            "edge_cache_summary": edge_cache_summary,
+            "edge_last_replay_cycle": edge_last_replay_cycle,
+            "edge_protocol_runtime_summary": edge_protocol_runtime.get("summary"),
+            "edge_protocol_runtime_count": edge_protocol_runtime.get("count"),
+            "edge_protocol_runtime_entry_count": edge_protocol_runtime.get("entry_count"),
+            "edge_protocol_runtime_state": edge_protocol_runtime.get("state"),
+            "edge_protocol_runtime_state_counts": edge_protocol_runtime.get("state_counts"),
+            "edge_protocol_runtime_kind_counts": edge_protocol_runtime.get("kind_counts"),
+            "edge_action_count": record.edge_action_count,
+            "pending_edge_action_count": record.pending_edge_action_count,
+            "processing_edge_action_count": record.processing_edge_action_count,
+            "processed_edge_action_count": record.processed_edge_action_count,
+            "edge_action_summary": record.edge_action_summary,
+            "print_driver_summary": record.print_driver_summary,
+            "print_driver_state_summary": record.print_driver_state_summary,
+            "print_driver_polling_summary": record.print_driver_polling_summary,
+            "console_summary": record.console_summary,
+            "console_attention_summary": record.console_attention_summary,
+            "attention_route_summary": record.attention_route_summary,
+            "capability_summary": record.capability_summary,
+            "coordinator_mode": record.coordinator_mode,
+            "adapter_type": record.adapter_type,
+            "entry": record.entry_id.code if record.entry_id else None,
+            "workstation": record.workstation_id.code if record.workstation_id else None,
+            "device_code": record.device_code,
+        }
         return {
             "id": record.id,
             "name": record.name,
@@ -2307,11 +3755,55 @@ class GatewayRuntimeService:
             "health_state": record.health_state,
             "health_score": record.health_score,
             "health_detail": record.health_detail,
-            "diagnostic_summary": self._parse_json(record.diagnostic_summary),
-            "diagnostic_state": self._parse_json(record.diagnostic_state),
+            "diagnostic_summary": diagnostic_summary,
+            "diagnostic_state": diagnostic_state,
+            "edge_diagnostics": edge_diagnostics,
+            "edge_diagnostic_state": edge_diagnostics.get("state"),
+            "edge_diagnostic_summary": edge_diagnostics.get("summary"),
+            "edge_registry": edge_registry,
+            "edge_registry_summary": edge_registry.get("summary"),
+            "edge_replay": edge_replay,
+            "edge_replay_summary": edge_replay.get("summary"),
+            "edge_replay_due_count": record.edge_replay_due_count,
+            "edge_replay_scheduled_count": record.edge_replay_scheduled_count,
+            "edge_replay_coalesced_count": int(edge_replay.get("coalesced_count") or edge_replay.get("duplicate_count") or 0),
+            "edge_replay_latest_coalesced_at": edge_replay.get("latest_coalesced_at") or edge_replay.get("latest_duplicate_at"),
+            "edge_replay_history": edge_replay_history,
+            "edge_replay_history_summary": edge_replay_history.get("summary"),
+            "edge_last_replay_cycle": edge_last_replay_cycle,
+            "edge_last_replay_outcome": (edge_last_replay_cycle.get("cycle_digest") or {}).get("outcome"),
+            "edge_last_replay_summary": record.edge_last_replay_summary,
+            "edge_dead_letter": edge_dead_letter,
+            "edge_dead_letter_summary": edge_dead_letter.get("summary"),
+            "edge_cache_summary": edge_cache_summary,
+            "edge_last_replay_cycle": edge_last_replay_cycle,
+            "edge_protocol_runtime": edge_protocol_runtime,
+            "edge_protocol_runtime_summary": edge_protocol_runtime.get("summary"),
+            "edge_protocol_runtime_count": edge_protocol_runtime.get("count"),
+            "edge_protocol_runtime_entry_count": edge_protocol_runtime.get("entry_count"),
+            "edge_protocol_runtime_state": edge_protocol_runtime.get("state"),
+            "edge_protocol_runtime_state_counts": edge_protocol_runtime.get("state_counts"),
+            "edge_protocol_runtime_kind_counts": edge_protocol_runtime.get("kind_counts"),
+            "edge_action_count": record.edge_action_count,
+            "pending_edge_action_count": record.pending_edge_action_count,
+            "processing_edge_action_count": record.processing_edge_action_count,
+            "processed_edge_action_count": record.processed_edge_action_count,
+            "edge_action_summary": record.edge_action_summary,
+            "driver_diagnostic_state": record.driver_diagnostic_state,
+            "driver_diagnostic_summary": record.driver_diagnostic_summary,
+            "driver_diagnostic_detail": record.driver_diagnostic_detail,
+            "print_driver_summary": record.print_driver_summary,
+            "print_driver_state_summary": record.print_driver_state_summary,
+            "print_driver_polling_summary": record.print_driver_polling_summary,
+            "console_summary": record.console_summary,
+            "console_attention_summary": record.console_attention_summary,
+            "attention_route_summary": record.attention_route_summary,
             "coordinator_mode": record.coordinator_mode,
             "update_interval_seconds": record.update_interval_seconds,
             "retry_after_seconds": record.retry_after_seconds,
+            "driver_issue_count": record.driver_issue_count,
+            "open_driver_issue_count": record.open_driver_issue_count,
+            "driver_issue_summary": record.driver_issue_summary,
             "last_update_success": record.last_update_success,
             "last_exception_class": record.last_exception_class,
             "last_exception_message": record.last_exception_message,
@@ -2356,6 +3848,7 @@ class GatewayRuntimeService:
             "capability": capability,
             "coordinator": coordinator,
             "issue_summary": issue_summary,
+            "summary": summary,
         }
 
     def _serialize_heartbeat(self, record):
@@ -2373,6 +3866,13 @@ class GatewayRuntimeService:
         }
 
     def _serialize_event(self, record):
+        payload = self._parse_json(record.payload_json)
+        normalized = self._parse_json(record.normalized_json)
+        print_execution = self._print_execution_summary(
+            state=payload.get("state") or payload.get("result") or record.state,
+            request_payload=payload,
+            diagnostic_state=payload,
+        )
         return {
             "id": record.id,
             "name": record.name,
@@ -2394,6 +3894,33 @@ class GatewayRuntimeService:
             "ui_refresh_hint": record.ui_refresh_hint,
             "message": record.message,
             "result": record.result,
+            "last_edge_fetch_at": record.last_edge_fetch_at,
+            "edge_fetch_count": record.edge_fetch_count,
+            "print_execution": print_execution,
+            "summary": {
+                "state": record.state,
+                "event_kind": record.event_kind,
+                "change_kind": record.change_kind,
+                "discovery_state": record.discovery_state,
+                "severity": record.severity,
+                "has_command": bool(record.command_id),
+                "has_result": bool(record.result),
+                "adapter": record.adapter_id.code if record.adapter_id else None,
+                "entry": record.entry_id.code if record.entry_id else None,
+                "device": record.device_id.code if record.device_id else None,
+                "command": record.command_id.code if record.command_id else None,
+                "message": record.message,
+                "result": record.result,
+                "last_edge_fetch_at": record.last_edge_fetch_at,
+                "edge_fetch_count": record.edge_fetch_count,
+                "source_signal": record.source_signal,
+                "ui_refresh_hint": record.ui_refresh_hint,
+                "barcode_validation": payload.get("barcode_validation"),
+                "print_plan": payload.get("print_plan"),
+                "print_execution": print_execution,
+                "payload": payload,
+                "normalized": normalized,
+            },
         }
 
     def _serialize_probe_session(self, record):
@@ -2437,11 +3964,68 @@ class GatewayRuntimeService:
         }
 
     def _serialize_command(self, record):
+        request_payload = self._safe_json(record.payload_json)
+        request_text_payload = self._safe_json(record.request_text)
+        response_text_payload = self._safe_json(record.response_text)
+        diagnostic_state = self._safe_json(record.diagnostic_state)
+        print_execution = self._print_execution_summary(
+            state=record.state,
+            request_payload=request_payload or request_text_payload,
+            response_payload=response_text_payload,
+            diagnostic_state=diagnostic_state,
+        )
+        print_plan = (
+            diagnostic_state.get("print_plan")
+            or response_text_payload.get("print_plan")
+            or request_payload.get("print_plan")
+            or request_text_payload.get("print_plan")
+            or {}
+        )
+        barcode_validation = (
+            diagnostic_state.get("barcode_validation")
+            or response_text_payload.get("barcode_validation")
+            or request_payload.get("barcode_validation")
+            or request_text_payload.get("barcode_validation")
+            or {}
+        )
         return {
             "id": record.id,
             "code": record.code,
+            "name": record.name,
             "state": record.state,
+            "command_type": record.command_type,
+            "entry_code": record.entry_id.code if record.entry_id else None,
+            "device_code": record.device_id.code if record.device_id else None,
+            "workstation_ref": record.workstation_ref,
+            "app_ref": record.app_ref,
+            "payload_json": record.payload_json,
+            "request_text": record.request_text,
+            "response_text": record.response_text,
+            "error_message": record.error_message,
             "attempt_count": record.attempt_count,
+            "last_attempt_at": record.last_attempt_at,
             "processed_at": record.processed_at,
             "diagnostic_state": record.diagnostic_state,
+            "print_execution": print_execution,
+            "queue_state": "terminal" if record.state in {"done", "failed", "cancelled"} else "acknowledged" if record.state == "acknowledged" else "in_flight" if record.state == "sent" else "queued" if record.state in {"draft", "queued"} else "unknown",
+            "summary": {
+                "state": record.state,
+                "attempt_count": record.attempt_count,
+                "acknowledged": record.state in {"acknowledged", "done", "failed", "cancelled"},
+                "terminal": record.state in {"done", "failed", "cancelled"},
+                "has_response": bool(record.response_text),
+                "has_error": bool(record.error_message),
+                "request_summary": request_text_payload or request_payload,
+                "response_summary": response_text_payload,
+                "diagnostic_summary": diagnostic_state,
+                "print_plan": print_plan,
+                "barcode_validation": barcode_validation,
+                "print_execution": print_execution,
+            },
+            "request_summary": request_text_payload or request_payload,
+            "response_summary": response_text_payload,
+            "diagnostic_summary": diagnostic_state,
+            "print_plan": print_plan,
+            "barcode_validation": barcode_validation,
+            "print_execution": print_execution,
         }

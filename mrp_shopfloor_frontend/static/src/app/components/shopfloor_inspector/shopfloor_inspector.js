@@ -17,7 +17,10 @@ export class ShopfloorInspector extends Component {
     static props = {
         responseSummary: Object,
         commandQueueStatus: Object,
+        gatewayRuntimeSummary: [Object, Boolean],
+        metrics: [Object, Boolean],
         commands: Array,
+        exceptions: Array,
         timelineEntries: Array,
         logEntries: Array,
         activity: Array,

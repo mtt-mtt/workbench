@@ -19,6 +19,8 @@ export class ShopfloorExecutionScreen extends Component {
         selectedQueueContext: Object,
         selectedQueueItem: Object,
         logEntries: Array,
+        gatewayRuntimeSummary: [Object, Boolean],
+        metrics: [Object, Boolean],
         workstation: Object,
         sessionRef: [String, Boolean],
         onStartExecution: Function,

@@ -1,15 +1,21 @@
 /** @odoo-module **/
 
 import { Component, useState } from "@odoo/owl";
+import { findLatestRuntimeEntry, normalizeRuntimeEntry } from "../../../../utils/shopfloor_runtime_entries";
+import { ShopfloorFeedbackBar } from "../../../../components/shopfloor_status_components/shopfloor_feedback_bar";
 import { ShopfloorStatusSummary } from "../../../../components/shopfloor_status_components/shopfloor_status_summary";
-import { deviceSummaryItems, summarizeDevices } from "../../../../components/shopfloor_status_components/shopfloor_status_metrics";
+import {
+    deviceStateTone,
+    deviceSummaryItems,
+    summarizeDevices,
+} from "../../../../components/shopfloor_status_components/shopfloor_status_metrics";
 import { ShopfloorDeviceActionBar } from "./device_action_bar/device_action_bar";
 import { ShopfloorDeviceActionConfirm } from "./device_action_confirm/device_action_confirm";
 import { ShopfloorDeviceActionLog } from "./device_action_log/device_action_log";
 import { ShopfloorDeviceDetail } from "./device_detail/device_detail";
 import { ShopfloorDeviceList } from "./device_list/device_list";
 import { ShopfloorDeviceToolbar } from "./device_toolbar/device_toolbar";
-import { gatewayCommandSummaryItems, summarizeGatewayCommands } from "./device_command_status";
+import { gatewayCommandFeedback, gatewayCommandSummaryItems, sortGatewayCommands, summarizeGatewayCommands } from "./device_command_status";
 import { filterDevices, groupByLabel, groupDevices, stateFilterLabel } from "./devices_filtering";
 
 function normalizeKey(value) {
@@ -100,6 +106,7 @@ function createActionEntry(device, action) {
 export class ShopfloorDevicesScreen extends Component {
     static template = "mrp_shopfloor_frontend.ShopfloorDevicesScreen";
     static components = {
+        ShopfloorFeedbackBar,
         ShopfloorDeviceActionBar,
         ShopfloorDeviceActionConfirm,
         ShopfloorDeviceActionLog,
@@ -112,6 +119,9 @@ export class ShopfloorDevicesScreen extends Component {
         devices: Array,
         commands: Array,
         selectedDevice: Object,
+        logEntries: Array,
+        gatewayRuntimeSummary: [Object, Boolean],
+        metrics: [Object, Boolean],
         onOpenDevice: Function,
         onQueueDeviceAction: Function,
     };
@@ -178,6 +188,45 @@ export class ShopfloorDevicesScreen extends Component {
         return deviceSummaryItems(this.visibleDeviceSummary);
     }
 
+    get deviceFeedback() {
+        const selectedDevice = this.props.selectedDevice;
+        const draft = this.actionDraft;
+        if (draft) {
+            return {
+                label: `Draft ${draft.label || "device action"}`,
+                detail: `${draft.deviceName || "Device"} | ${draft.command || "custom"} | ${draft.deviceState || "unknown"}`,
+                tone: draft.tone || "info",
+            };
+        }
+
+        if (this.commandSummary?.total) {
+            const feedback = gatewayCommandFeedback(this.commandSummary);
+            return {
+                label: feedback.label,
+                detail: feedback.detail,
+                tone: feedback.tone,
+            };
+        }
+
+        if (selectedDevice && selectedDevice.code !== "DEVICE-EMPTY") {
+            return {
+                label: selectedDevice.name || "Selected device",
+                detail: `${selectedDevice.kind || "Device"} | ${selectedDevice.state || "unknown"} | ${selectedDevice.signal || "no signal"}`,
+                tone: deviceStateTone(selectedDevice.state || "unknown"),
+            };
+        }
+
+        return {
+            label: "Device actions",
+            detail: "Select a device to preview a local command draft.",
+            tone: "secondary",
+        };
+    }
+
+    get latestRuntimeEntry() {
+        return normalizeRuntimeEntry(findLatestRuntimeEntry(this.props.logEntries || []));
+    }
+
     get selectedDeviceActionCandidates() {
         const selectedDevice = this.props.selectedDevice;
         if (!selectedDevice || selectedDevice.code === "DEVICE-EMPTY") {
@@ -199,11 +248,18 @@ export class ShopfloorDevicesScreen extends Component {
     }
 
     get recentActions() {
-        return Array.isArray(this.props.commands) && this.props.commands.length
-            ? this.props.commands
-            : Array.isArray(this.state.recentActions)
-                ? this.state.recentActions
-                : [];
+        const selectedCode = this.props.selectedDevice?.code || null;
+        if (Array.isArray(this.props.commands) && this.props.commands.length) {
+            const orderedCommands = sortGatewayCommands(this.props.commands);
+            const matchingCommands = selectedCode
+                ? orderedCommands.filter(
+                      (item) =>
+                          String(item.deviceCode || item.device_code || item.target || "") === String(selectedCode)
+                  )
+                : orderedCommands;
+            return matchingCommands.length ? matchingCommands : orderedCommands;
+        }
+        return sortGatewayCommands(this.state.recentActions);
     }
 
     get recentActionCount() {

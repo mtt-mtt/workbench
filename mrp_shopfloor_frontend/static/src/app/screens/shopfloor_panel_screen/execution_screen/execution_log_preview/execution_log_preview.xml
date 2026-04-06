@@ -3,14 +3,36 @@
     <t t-name="mrp_shopfloor_frontend.ShopfloorExecutionLogPreview" owl="1">
         <div class="o_mrp_shopfloor_detail_panel o_mrp_shopfloor_detail_panel--compact">
             <div class="o_mrp_shopfloor_card_label">Execution log preview</div>
+            <div class="o_mrp_shopfloor_banner o_mrp_shopfloor_banner--info mb-2" t-if="latestRuntimeEntry">
+                <strong><t t-esc="latestRuntimeEntry.title || latestRuntimeEntry.label || 'Driver diagnostics'"/></strong>
+                <span><t t-esc="latestRuntimeEntry.detail || latestRuntimeEntry.statusLabel || latestRuntimeEntry.status || 'Runtime event recorded.'"/></span>
+            </div>
             <div class="o_mrp_shopfloor_timeline o_mrp_shopfloor_timeline--compact">
                 <t t-foreach="props.logEntries" t-as="entry" t-key="entry.id">
                     <div class="o_mrp_shopfloor_timeline_item">
                         <div class="o_mrp_shopfloor_timeline_item_head">
                             <strong><t t-esc="entry.title"/></strong>
-                            <span class="badge rounded-pill text-bg-secondary"><t t-esc="entry.kind"/></span>
+                            <div class="d-flex gap-1 align-items-center flex-wrap">
+                                <span t-att-class="entryStatusClass(entry)">
+                                    <t t-esc="entry.statusLabel || entry.status || 'Info'"/>
+                                </span>
+                                <span t-att-class="entryKindClass(entry)"><t t-esc="entry.kind"/></span>
+                                <small class="text-muted" t-if="entry.timestamp"><t t-esc="entry.timestamp"/></small>
+                            </div>
                         </div>
                         <small><t t-esc="entry.detail || entry.status"/></small>
+                        <div class="o_mrp_shopfloor_detail_meta mt-2" t-if="entry.printExecutionLabel or entry.printExecutionDetails">
+                            <t t-if="entry.printExecutionLabel">
+                                <span class="badge rounded-pill" t-att-class="'text-bg-' + (entry.printExecutionTone || 'info')">
+                                    <t t-esc="entry.printExecutionLabel"/>
+                                </span>
+                            </t>
+                            <t t-if="entry.printExecutionDetails && entry.printExecutionDetails.length">
+                                <t t-foreach="entry.printExecutionDetails" t-as="detail" t-key="detail.key">
+                                    <span><t t-esc="detail.label"/></span>
+                                </t>
+                            </t>
+                        </div>
                     </div>
                 </t>
             </div>

@@ -1,6 +1,7 @@
 /** @odoo-module **/
 
 import { Component, useState } from "@odoo/owl";
+import { ShopfloorFeedbackBar } from "../../../../../components/shopfloor_status_components/shopfloor_feedback_bar";
 import { ShopfloorStatusSummary } from "../../../../../components/shopfloor_status_components/shopfloor_status_summary";
 import { exceptionSummaryItems } from "../../../../../components/shopfloor_status_components/shopfloor_status_metrics";
 
@@ -50,11 +51,24 @@ const EXCEPTION_ACTIONS = [
 export class ShopfloorExceptionActions extends Component {
     static template = "mrp_shopfloor_frontend.ShopfloorExceptionActions";
     static components = {
+        ShopfloorFeedbackBar,
         ShopfloorStatusSummary,
     };
     static props = {
         summary: Object,
         branchSummary: Object,
+        latestRuntimeEntry: {
+            type: Object,
+            optional: true,
+        },
+        gatewayRuntimeSummary: {
+            type: [Object, Boolean],
+            optional: true,
+        },
+        metrics: {
+            type: [Object, Boolean],
+            optional: true,
+        },
         onReportException: Function,
     };
 
@@ -84,6 +98,75 @@ export class ShopfloorExceptionActions extends Component {
             `Resolved ${this.branchSummary.resolvedCount || 0}`,
             `Closed ${this.branchSummary.closedCount || 0}`,
         ].join(" | ");
+    }
+
+    get sharedProtocolRuntimeFeedback() {
+        const metrics = this.props.metrics || {};
+        const sharedAttention = metrics.protocolRuntimeAttention;
+        const attentionCount = sharedAttention === null || sharedAttention === undefined ? null : Number(sharedAttention) || 0;
+        const label = metrics.protocolRuntimeLabel || null;
+        const detail = metrics.protocolRuntimeDetail || null;
+        const tone = String(metrics.protocolRuntimeTone || "").trim().toLowerCase() || null;
+        if (!label && !detail && !tone && attentionCount === null) {
+            return null;
+        }
+        const resolvedTone =
+            tone ||
+            (attentionCount !== null ? (attentionCount > 0 ? "warning" : "success") : null) ||
+            "secondary";
+        const resolvedLabel =
+            label ||
+            (attentionCount !== null
+                ? attentionCount > 0
+                    ? `Protocol runtime attention ${attentionCount}`
+                    : "Protocol runtime ready"
+                : resolvedTone === "danger"
+                  ? "Protocol runtime error"
+                  : resolvedTone === "warning"
+                    ? "Protocol runtime attention"
+                    : resolvedTone === "success"
+                      ? "Protocol runtime ready"
+                      : "Protocol runtime");
+        const resolvedDetail =
+            detail ||
+            (attentionCount !== null
+                ? attentionCount > 0
+                    ? `${attentionCount} protocol runtime(s) need follow-up.`
+                    : "Protocol runtime attention is clear."
+                : `${resolvedLabel} reported.`);
+        return {
+            label: resolvedLabel,
+            detail: resolvedDetail,
+            tone: resolvedTone,
+            attentionCount,
+        };
+    }
+
+    get runtimeFeedback() {
+        const sharedFeedback = this.sharedProtocolRuntimeFeedback;
+        if (sharedFeedback) {
+            return sharedFeedback;
+        }
+        const runtimeEntry = this.props.latestRuntimeEntry || null;
+        const runtimeSummary = this.props.gatewayRuntimeSummary || null;
+        if (runtimeEntry) {
+            return {
+                label: runtimeEntry.title || runtimeEntry.label || "Driver diagnostics",
+                detail:
+                    [runtimeEntry.detail, runtimeEntry.timestamp ? `Changed ${runtimeEntry.timestamp}` : null]
+                        .filter(Boolean)
+                        .join(" | ") || "Runtime event recorded.",
+                tone: runtimeEntry.statusTone || runtimeEntry.status || "info",
+            };
+        }
+        if (runtimeSummary) {
+            return {
+                label: runtimeSummary.label || "Driver diagnostics",
+                detail: runtimeSummary.detail || runtimeSummary.summary || "Runtime diagnostics available.",
+                tone: runtimeSummary.stateTone || runtimeSummary.state || "secondary",
+            };
+        }
+        return null;
     }
 
     get actions() {

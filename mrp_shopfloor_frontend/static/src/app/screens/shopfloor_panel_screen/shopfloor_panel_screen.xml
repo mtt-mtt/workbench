@@ -23,6 +23,12 @@
                 </div>
             </div>
             <div class="o_mrp_shopfloor_panel_stage_body o_mrp_shopfloor_panel_stage_body--panel">
+                <t t-if="panelNotice">
+                    <section t-attf-class="o_mrp_shopfloor_banner o_mrp_shopfloor_banner--#{panelNotice.tone}">
+                        <strong><t t-esc="panelNotice.title"/></strong>
+                        <span><t t-esc="panelNotice.detail"/></span>
+                    </section>
+                </t>
                 <t t-component="activeScreen" t-props="activeScreenProps"/>
             </div>
         </section>

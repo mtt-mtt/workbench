@@ -17,6 +17,20 @@
                 <span>MO <t t-esc="props.selectedQueueContext.production_id || 'n/a'"/></span>
                 <span>Ref <t t-esc="props.selectedQueueContext.reference || 'n/a'"/></span>
             </div>
+            <div class="o_mrp_shopfloor_detail_meta" t-if="sharedProtocolRuntimeAttentionCount !== null || latestRuntimeEntry || runtimeSummary">
+                <span t-att-class="runtimeStateClass">
+                    <t t-esc="runtimeAttentionLabel"/>
+                </span>
+                <span>
+                    <t t-esc="runtimeFeedbackTitle"/>
+                </span>
+                <span>
+                    <t t-esc="runtimeAttentionDetail"/>
+                </span>
+                <span t-if="latestRuntimeEntry?.timestamp">
+                    Changed <t t-esc="latestRuntimeEntry.timestamp"/>
+                </span>
+            </div>
         </div>
     </t>
 </templates>

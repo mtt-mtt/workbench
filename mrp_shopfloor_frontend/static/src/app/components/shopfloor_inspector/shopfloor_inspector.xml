@@ -4,25 +4,37 @@
         <aside class="o_mrp_shopfloor_side">
             <ShopfloorResponseCard
                 responseSummary="props.responseSummary"
+                gatewayRuntimeSummary="props.gatewayRuntimeSummary"
+                metrics="props.metrics"
+                exceptions="props.exceptions"
                 lastResponseText="props.lastResponseText"
             />
             <ShopfloorCommandQueueCard
                 commandQueueStatus="props.commandQueueStatus"
                 commands="props.commands"
+                exceptions="props.exceptions"
             />
             <ShopfloorTimelineCard
                 title="'Execution timeline'"
                 entries="props.timelineEntries"
                 emptyMessage="'No timeline events yet.'"
                 compact="true"
+                gatewayRuntimeSummary="props.gatewayRuntimeSummary"
+                metrics="props.metrics"
             />
             <ShopfloorTimelineCard
                 title="'Execution log'"
                 entries="props.logEntries"
                 emptyMessage="'No execution log entries yet.'"
                 compact="true"
+                gatewayRuntimeSummary="props.gatewayRuntimeSummary"
+                metrics="props.metrics"
             />
-            <ShopfloorActivityCard activity="props.activity"/>
+            <ShopfloorActivityCard
+                activity="props.activity"
+                gatewayRuntimeSummary="props.gatewayRuntimeSummary"
+                metrics="props.metrics"
+            />
         </aside>
     </t>
 </templates>
