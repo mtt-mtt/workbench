@@ -184,6 +184,7 @@ export class ShopfloorPanelScreen extends Component {
         sessionRef: [String, Boolean],
         workstation: Object,
         metrics: Object,
+        ui: [Object, Boolean],
         connectivity: Object,
         lastResponse: [Object, Boolean],
         onStartExecution: Function,
@@ -194,6 +195,8 @@ export class ShopfloorPanelScreen extends Component {
         onOpenDevice: Function,
         onRefreshQueue: Function,
         onQueueDeviceAction: Function,
+        onToggleFullscreen: Function,
+        onToggleFocusMode: Function,
     };
 
     get activeScreen() {
@@ -209,6 +212,14 @@ export class ShopfloorPanelScreen extends Component {
             gatewayRuntimeSummary: this.props.gatewayRuntimeSummary,
             sessionRef: this.props.sessionRef,
             lastResponse: this.props.lastResponse,
+            ui: this.props.ui,
+            onStartExecution: this.props.onStartExecution,
+            onPauseExecution: this.props.onPauseExecution,
+            onFinishExecution: this.props.onFinishExecution,
+            onReportException: this.props.onReportException,
+            onRefreshQueue: this.props.onRefreshQueue,
+            onToggleFullscreen: this.props.onToggleFullscreen,
+            onToggleFocusMode: this.props.onToggleFocusMode,
         };
     }
 

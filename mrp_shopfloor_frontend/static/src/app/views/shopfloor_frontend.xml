@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <templates xml:space="preserve">
     <t t-name="mrp_shopfloor_frontend.ShopfloorApp" owl="1">
-        <div class="o_mrp_shopfloor_app">
+        <div t-att-class="state.focusMode ? 'o_mrp_shopfloor_app o_mrp_shopfloor_app--focus' : 'o_mrp_shopfloor_app'">
             <div class="o_mrp_shopfloor_backdrop"/>
             <div class="o_mrp_shopfloor_shell">
                 <header class="o_mrp_shopfloor_header">
@@ -9,7 +9,7 @@
                         <div class="o_mrp_shopfloor_kicker">Shopfloor Workbench</div>
                         <h1>Execution shell for the manufacturing floor</h1>
                         <p class="o_mrp_shopfloor_subtitle">
-                            A focused workstation UI with queue navigation, execution control, device visibility, and exception reporting.
+                            Large-touch operator workbench for queue navigation, execution control, device visibility, and exception reporting.
                         </p>
                     </div>
                     <div class="o_mrp_shopfloor_header_actions">
@@ -69,6 +69,7 @@
                             sessionRef="sessionRef"
                             workstation="workstation"
                             metrics="metrics"
+                            ui="uiState"
                             connectivity="connectivity"
                             lastResponse="lastResponse"
                             onStartExecution="startExecution"
@@ -79,6 +80,8 @@
                             onOpenDevice="openDevice"
                             onQueueDeviceAction="queueDeviceAction"
                             onRefreshQueue="refreshDemoMetrics"
+                            onToggleFullscreen="toggleFullscreen"
+                            onToggleFocusMode="toggleFocusMode"
                         />
                     </main>
 

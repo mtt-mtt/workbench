@@ -23,6 +23,11 @@ export class ShopfloorFrontendAction extends Component {
     };
 
     setup() {
+        this._scannerBuffer = "";
+        this._scannerTimer = null;
+        this._lastScannerKeyAt = 0;
+        this._boundKeydown = this.onWindowKeydown.bind(this);
+        this._boundFullscreenChange = this.onFullscreenChange.bind(this);
         this.notification = useService("notification");
         const action = this.props.action || {};
         this.routerService = createShopfloorRouter(action?.params?.route || "dashboard");
@@ -35,6 +40,10 @@ export class ShopfloorFrontendAction extends Component {
         this.state = useState({
             ready: false,
             loadError: null,
+            fullscreen: false,
+            focusMode: true,
+            lastScannerCode: null,
+            scannerHint: "Ready for scanner input",
         });
 
         onWillStart(async () => {
@@ -54,11 +63,17 @@ export class ShopfloorFrontendAction extends Component {
 
         onMounted(() => {
             document.body.classList.add("o_shopfloor_frontend");
+            window.addEventListener("keydown", this._boundKeydown);
+            document.addEventListener("fullscreenchange", this._boundFullscreenChange);
+            this.onFullscreenChange();
             this.updateDocumentTitle();
         });
 
         onWillUnmount(() => {
             document.body.classList.remove("o_shopfloor_frontend");
+            window.removeEventListener("keydown", this._boundKeydown);
+            document.removeEventListener("fullscreenchange", this._boundFullscreenChange);
+            this.clearScannerBuffer();
         });
     }
 
@@ -68,6 +83,16 @@ export class ShopfloorFrontendAction extends Component {
 
     get shellRoute() {
         return this.router.state.current || this.router.state.route;
+    }
+
+    get uiState() {
+        return {
+            fullscreen: this.state.fullscreen,
+            focusMode: this.state.focusMode,
+            lastScannerCode: this.state.lastScannerCode,
+            scannerHint: this.state.scannerHint,
+            shortcutSummary: "Alt+1-5 panels · F2/F3/F4 run control · F8 refresh · Ctrl+Shift+F fullscreen",
+        };
     }
 
     updateDocumentTitle(route = this.shellRoute) {
@@ -153,6 +178,214 @@ export class ShopfloorFrontendAction extends Component {
         } catch (error) {
             this.notification.add(error.message || "Failed to refresh panels", { type: "warning" });
         }
+    }
+
+    onFullscreenChange() {
+        this.state.fullscreen = Boolean(document.fullscreenElement);
+    }
+
+    clearScannerBuffer() {
+        if (this._scannerTimer) {
+            clearTimeout(this._scannerTimer);
+            this._scannerTimer = null;
+        }
+        this._scannerBuffer = "";
+        this._lastScannerKeyAt = 0;
+    }
+
+    scheduleScannerReset() {
+        if (this._scannerTimer) {
+            clearTimeout(this._scannerTimer);
+        }
+        this._scannerTimer = setTimeout(() => {
+            this.clearScannerBuffer();
+        }, 180);
+    }
+
+    isEditableTarget(target) {
+        if (!target) {
+            return false;
+        }
+        const tagName = String(target.tagName || "").toLowerCase();
+        return (
+            tagName === "input" ||
+            tagName === "textarea" ||
+            tagName === "select" ||
+            target.isContentEditable === true
+        );
+    }
+
+    async toggleFullscreen() {
+        try {
+            if (document.fullscreenElement) {
+                await document.exitFullscreen();
+            } else {
+                await document.documentElement.requestFullscreen();
+            }
+        } catch (error) {
+            this.notification.add(error.message || "Fullscreen request failed", { type: "warning" });
+        }
+    }
+
+    toggleFocusMode() {
+        this.state.focusMode = !this.state.focusMode;
+        this.store.pushActivity(this.state.focusMode ? "Focus mode enabled" : "Focus mode disabled");
+    }
+
+    matchScannerTarget(code) {
+        const normalizedCode = String(code || "").trim().toLowerCase();
+        if (!normalizedCode) {
+            return null;
+        }
+        const queueItem = (this.queue || []).find((item) =>
+            [
+                item?.reference,
+                item?.workorder_ref,
+                item?.production_ref,
+                item?.name,
+            ]
+                .filter(Boolean)
+                .some((value) => String(value).trim().toLowerCase() === normalizedCode)
+        );
+        if (queueItem) {
+            return {
+                type: "queue",
+                value: queueItem,
+            };
+        }
+        const device = (this.devices || []).find((item) =>
+            [item?.code, item?.name, item?.signal, item?.value]
+                .filter(Boolean)
+                .some((value) => String(value).trim().toLowerCase() === normalizedCode)
+        );
+        if (device) {
+            return {
+                type: "device",
+                value: device,
+            };
+        }
+        return null;
+    }
+
+    async handleScannerCode(code) {
+        const trimmedCode = String(code || "").trim();
+        if (!trimmedCode) {
+            return;
+        }
+        this.state.lastScannerCode = trimmedCode;
+        const target = this.matchScannerTarget(trimmedCode);
+        if (!target) {
+            this.state.scannerHint = `Scanned ${trimmedCode} but found no matching queue or device`;
+            this.notification.add(this.state.scannerHint, { type: "warning" });
+            this.store.pushActivity(`Scanner miss ${trimmedCode}`);
+            return;
+        }
+        this.state.focusMode = true;
+        if (target.type === "queue") {
+            this.state.scannerHint = `Scanned ${trimmedCode} and opened queue ${target.value.reference || target.value.name}`;
+            this.notification.add(this.state.scannerHint, { type: "success" });
+            const queueId = target.value.queue_id || target.value.id;
+            await this.openQueueItem({
+                currentTarget: {
+                    dataset: {
+                        queueId,
+                    },
+                },
+                preventDefault() {},
+            });
+            return;
+        }
+        this.state.scannerHint = `Scanned ${trimmedCode} and opened device ${target.value.code || target.value.name}`;
+        this.notification.add(this.state.scannerHint, { type: "success" });
+        await this.openDevice({
+            currentTarget: {
+                dataset: {
+                    deviceCode: target.value.code,
+                },
+            },
+            preventDefault() {},
+        });
+    }
+
+    async onWindowKeydown(ev) {
+        if (ev.defaultPrevented) {
+            return;
+        }
+        const editable = this.isEditableTarget(ev.target);
+        if (ev.ctrlKey && ev.shiftKey && (ev.key === "F" || ev.key === "f")) {
+            ev.preventDefault();
+            await this.toggleFullscreen();
+            return;
+        }
+        if (ev.ctrlKey && ev.shiftKey && (ev.key === "M" || ev.key === "m")) {
+            ev.preventDefault();
+            this.toggleFocusMode();
+            return;
+        }
+        if (editable) {
+            return;
+        }
+        if (ev.altKey && ["1", "2", "3", "4", "5"].includes(ev.key)) {
+            ev.preventDefault();
+            const routes = {
+                1: "dashboard",
+                2: "queue",
+                3: "execution",
+                4: "devices",
+                5: "exceptions",
+            };
+            await this.navigate(routes[ev.key], { replace: true });
+            return;
+        }
+        if (ev.key === "F2") {
+            ev.preventDefault();
+            await this.startExecution();
+            return;
+        }
+        if (ev.key === "F3") {
+            ev.preventDefault();
+            await this.pauseExecution();
+            return;
+        }
+        if (ev.key === "F4") {
+            ev.preventDefault();
+            await this.finishExecution();
+            return;
+        }
+        if (ev.key === "F8") {
+            ev.preventDefault();
+            await this.refreshDemoMetrics();
+            return;
+        }
+        if (ev.key === "Escape" && this.state.focusMode) {
+            ev.preventDefault();
+            this.state.focusMode = false;
+            this.state.scannerHint = "Focus mode dismissed";
+            return;
+        }
+        if (ev.ctrlKey || ev.metaKey || ev.altKey) {
+            return;
+        }
+        if (ev.key === "Enter") {
+            const scannedCode = this._scannerBuffer;
+            this.clearScannerBuffer();
+            if (scannedCode.length >= 3) {
+                ev.preventDefault();
+                await this.handleScannerCode(scannedCode);
+            }
+            return;
+        }
+        if (ev.key.length !== 1) {
+            return;
+        }
+        const now = Date.now();
+        if (!this._lastScannerKeyAt || now - this._lastScannerKeyAt > 80) {
+            this._scannerBuffer = "";
+        }
+        this._lastScannerKeyAt = now;
+        this._scannerBuffer += ev.key;
+        this.state.scannerHint = `Scanner buffer ${this._scannerBuffer}`;
+        this.scheduleScannerReset();
     }
 
     async openQueueItem(ev) {

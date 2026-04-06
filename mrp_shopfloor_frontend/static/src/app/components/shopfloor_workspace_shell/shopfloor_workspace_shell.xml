@@ -1,9 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <templates xml:space="preserve">
     <t t-name="mrp_shopfloor_frontend.ShopfloorWorkspaceShell" owl="1">
-        <section class="o_mrp_shopfloor_card o_mrp_shopfloor_card--hero">
+        <section class="o_mrp_shopfloor_card o_mrp_shopfloor_card--hero o_mrp_shopfloor_workspace_hero">
             <div class="o_mrp_shopfloor_card_label">Current workstation</div>
-            <div class="o_mrp_shopfloor_card_value"><t t-esc="props.workstation.name"/></div>
+            <div class="o_mrp_shopfloor_workspace_hero_head">
+                <div class="o_mrp_shopfloor_card_value"><t t-esc="props.workstation.name"/></div>
+                <div class="o_mrp_shopfloor_workspace_hero_actions">
+                    <button type="button" class="btn btn-light btn-lg" t-on-click="toggleFocusMode">
+                        <t t-esc="focusLabel"/>
+                    </button>
+                    <button type="button" class="btn btn-outline-light btn-lg" t-on-click="toggleFullscreen">
+                        <t t-esc="fullscreenLabel"/>
+                    </button>
+                </div>
+            </div>
             <div class="o_mrp_shopfloor_meta">
                 <span><t t-esc="props.workstation.code"/></span>
                 <span><t t-esc="props.workstation.profile"/></span>
@@ -38,8 +48,28 @@
                     <t t-esc="gatewayProtocolRuntimeSummary"/>
                 </p>
             </t>
+            <div class="o_mrp_shopfloor_focus_deck">
+                <div class="o_mrp_shopfloor_card_label">Current task</div>
+                <div class="o_mrp_shopfloor_focus_deck_head">
+                    <strong><t t-esc="taskDeckLabel"/></strong>
+                    <span class="badge rounded-pill text-bg-dark"><t t-esc="props.currentPanel"/></span>
+                </div>
+                <p class="o_mrp_shopfloor_focus_deck_meta"><t t-esc="taskDeckMeta"/></p>
+                <div class="o_mrp_shopfloor_focus_deck_actions">
+                    <t t-foreach="taskActions" t-as="action" t-key="action.key">
+                        <button type="button"
+                                class="btn o_mrp_shopfloor_touch_button"
+                                t-att-class="action.tone"
+                                t-att-data-handler="action.handler"
+                                t-on-click="runTaskAction">
+                            <span><t t-esc="action.label"/></span>
+                            <small><t t-esc="action.hint"/></small>
+                        </button>
+                    </t>
+                </div>
+            </div>
         </section>
-        <section class="o_mrp_shopfloor_card o_mrp_shopfloor_card--summary">
+        <section t-att-class="summaryClassName">
             <div class="o_mrp_shopfloor_metric">
                 <span>Pending jobs</span>
                 <strong><t t-esc="props.metrics.pendingJobs"/></strong>

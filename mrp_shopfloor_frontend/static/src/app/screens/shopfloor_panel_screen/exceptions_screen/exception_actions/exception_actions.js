@@ -1,6 +1,6 @@
 /** @odoo-module **/
 
-import { Component, useState } from "@odoo/owl";
+import { Component, onMounted, onWillUnmount, useState } from "@odoo/owl";
 import { ShopfloorFeedbackBar } from "../../../../../components/shopfloor_status_components/shopfloor_feedback_bar";
 import { ShopfloorStatusSummary } from "../../../../../components/shopfloor_status_components/shopfloor_status_summary";
 import { exceptionSummaryItems } from "../../../../../components/shopfloor_status_components/shopfloor_status_metrics";
@@ -75,6 +75,17 @@ export class ShopfloorExceptionActions extends Component {
     setup() {
         this.state = useState({
             pendingAction: null,
+        });
+        this.onDocumentKeydown = (ev) => {
+            if (ev?.key === "Escape" && this.hasPendingAction) {
+                this.cancelAction(ev);
+            }
+        };
+        onMounted(() => {
+            document.addEventListener("keydown", this.onDocumentKeydown);
+        });
+        onWillUnmount(() => {
+            document.removeEventListener("keydown", this.onDocumentKeydown);
         });
     }
 
@@ -193,6 +204,31 @@ export class ShopfloorExceptionActions extends Component {
         return `${action.label} will move this exception to ${action.state} with ${action.severity} severity.`;
     }
 
+    get pendingActionTone() {
+        const action = this.state.pendingAction;
+        if (!action) {
+            return "secondary";
+        }
+        if (action.severity === "critical") {
+            return "danger";
+        }
+        if (action.severity === "medium") {
+            return "warning";
+        }
+        if (action.severity === "low") {
+            return "success";
+        }
+        return "secondary";
+    }
+
+    get pendingActionToneClass() {
+        return `o_mrp_shopfloor_exception_modal--${this.pendingActionTone}`;
+    }
+
+    get pendingActionBadgeClass() {
+        return `text-bg-${this.pendingActionTone}`;
+    }
+
     requestAction(ev) {
         const dataset = ev?.currentTarget?.dataset || {};
         this.state.pendingAction = {
@@ -215,6 +251,10 @@ export class ShopfloorExceptionActions extends Component {
     cancelAction(ev) {
         ev?.preventDefault?.();
         this.state.pendingAction = null;
+    }
+
+    stopModalClick(ev) {
+        ev?.stopPropagation?.();
     }
 
     reportException(ev) {

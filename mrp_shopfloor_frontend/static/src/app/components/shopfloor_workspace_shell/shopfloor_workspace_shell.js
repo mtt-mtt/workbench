@@ -12,10 +12,54 @@ export class ShopfloorWorkspaceShell extends Component {
         gatewayRuntimeSummary: [Object, Boolean],
         sessionRef: [String, Boolean],
         lastResponse: [Object, Boolean],
+        ui: {
+            type: [Object, Boolean],
+            optional: true,
+        },
+        onStartExecution: {
+            type: Function,
+            optional: true,
+        },
+        onPauseExecution: {
+            type: Function,
+            optional: true,
+        },
+        onFinishExecution: {
+            type: Function,
+            optional: true,
+        },
+        onReportException: {
+            type: Function,
+            optional: true,
+        },
+        onRefreshQueue: {
+            type: Function,
+            optional: true,
+        },
+        onToggleFullscreen: {
+            type: Function,
+            optional: true,
+        },
+        onToggleFocusMode: {
+            type: Function,
+            optional: true,
+        },
     };
 
     get backendStateLabel() {
         return this.props.lastResponse ? "Booted" : "Seed";
+    }
+
+    get ui() {
+        return this.props.ui || {};
+    }
+
+    get fullscreenLabel() {
+        return this.ui.fullscreen ? "Exit fullscreen" : "Fullscreen";
+    }
+
+    get focusLabel() {
+        return this.ui.focusMode ? "Exit focus" : "Focus";
     }
 
     get sessionLabel() {
@@ -199,5 +243,115 @@ export class ShopfloorWorkspaceShell extends Component {
             return this.gatewayProtocolRuntimeTone;
         }
         return this.gatewayRuntimeAttentionTone;
+    }
+
+    get summaryClassName() {
+        return this.ui.focusMode
+            ? "o_mrp_shopfloor_card o_mrp_shopfloor_card--summary o_mrp_shopfloor_workspace_metrics is-focused"
+            : "o_mrp_shopfloor_card o_mrp_shopfloor_card--summary o_mrp_shopfloor_workspace_metrics";
+    }
+
+    get taskDeckLabel() {
+        const labels = {
+            dashboard: "Monitor line health and keep the workstation synced",
+            queue: "Pick the next unit of work and scan into execution",
+            execution: "Run the current work order with large primary controls",
+            devices: "Confirm device state and queue device-side actions",
+            exceptions: "Resolve or escalate blocked work quickly",
+        };
+        return labels[this.props.currentPanel] || "Keep the workstation focused on the next operator action";
+    }
+
+    get taskDeckMeta() {
+        const parts = [
+            this.ui.lastScannerCode ? `Last scan ${this.ui.lastScannerCode}` : null,
+            this.ui.scannerHint || null,
+            this.ui.shortcutSummary || null,
+        ].filter(Boolean);
+        return parts.join(" · ");
+    }
+
+    get taskActions() {
+        if (this.props.currentPanel === "execution") {
+            return [
+                { key: "start", label: "Start", hint: "F2", tone: "btn-primary", handler: "startExecution" },
+                { key: "pause", label: "Pause", hint: "F3", tone: "btn-outline-warning", handler: "pauseExecution" },
+                { key: "finish", label: "Finish", hint: "F4", tone: "btn-outline-success", handler: "finishExecution" },
+                { key: "exception", label: "Raise exception", hint: "Escalate flow", tone: "btn-outline-danger", handler: "raiseException" },
+            ];
+        }
+        return [
+            { key: "refresh", label: "Refresh state", hint: "F8", tone: "btn-light", handler: "refreshQueue" },
+            { key: "focus", label: this.focusLabel, hint: "Ctrl+Shift+M", tone: "btn-outline-light", handler: "toggleFocusMode" },
+            { key: "fullscreen", label: this.fullscreenLabel, hint: "Ctrl+Shift+F", tone: "btn-outline-light", handler: "toggleFullscreen" },
+            { key: "exception", label: "Raise exception", hint: "Quick operator note", tone: "btn-outline-danger", handler: "raiseException" },
+        ];
+    }
+
+    startExecution(ev) {
+        this.props.onStartExecution?.(ev);
+    }
+
+    pauseExecution(ev) {
+        this.props.onPauseExecution?.(ev);
+    }
+
+    finishExecution(ev) {
+        this.props.onFinishExecution?.(ev);
+    }
+
+    refreshQueue(ev) {
+        this.props.onRefreshQueue?.(ev);
+    }
+
+    toggleFullscreen(ev) {
+        this.props.onToggleFullscreen?.(ev);
+    }
+
+    toggleFocusMode(ev) {
+        this.props.onToggleFocusMode?.(ev);
+    }
+
+    raiseException() {
+        this.props.onReportException?.({
+            currentTarget: {
+                dataset: {
+                    severity: "medium",
+                    state: "new",
+                    action: "follow_up",
+                    message: "Operator quick exception",
+                },
+            },
+            preventDefault() {},
+        });
+    }
+
+    runTaskAction(ev) {
+        const handler = ev?.currentTarget?.dataset?.handler || null;
+        if (handler === "startExecution") {
+            this.startExecution(ev);
+            return;
+        }
+        if (handler === "pauseExecution") {
+            this.pauseExecution(ev);
+            return;
+        }
+        if (handler === "finishExecution") {
+            this.finishExecution(ev);
+            return;
+        }
+        if (handler === "refreshQueue") {
+            this.refreshQueue(ev);
+            return;
+        }
+        if (handler === "toggleFocusMode") {
+            this.toggleFocusMode(ev);
+            return;
+        }
+        if (handler === "toggleFullscreen") {
+            this.toggleFullscreen(ev);
+            return;
+        }
+        this.raiseException();
     }
 }

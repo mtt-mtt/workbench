@@ -19,7 +19,7 @@
                 <div class="o_mrp_shopfloor_exception_action_grid">
                     <t t-foreach="actions" t-as="action" t-key="action.key">
                         <button type="button"
-                                class="btn btn-sm"
+                                class="btn o_mrp_shopfloor_touch_button"
                                 t-att-class="action.buttonClass"
                                 t-att-data-action="action.key"
                                 t-att-data-label="action.label"
@@ -29,27 +29,39 @@
                                 t-att-data-state="action.state"
                                 t-att-data-description="action.description"
                                 t-on-click="requestAction">
-                            <t t-esc="action.label"/>
+                            <span><t t-esc="action.label"/></span>
+                            <small><t t-esc="action.description"/></small>
                         </button>
                     </t>
                 </div>
-                <t t-if="hasPendingAction">
-                    <div class="o_mrp_shopfloor_exception_transition_confirm">
-                        <div class="o_mrp_shopfloor_api_head">
-                            <div>
-                                <div class="o_mrp_shopfloor_card_label">Confirm transition</div>
-                                <div class="o_mrp_shopfloor_detail_title"><t t-esc="pendingActionTitle"/></div>
-                            </div>
-                            <span class="badge rounded-pill text-bg-secondary">
-                                <t t-esc="pendingAction.key"/>
-                            </span>
+            </div>
+        </section>
+        <t t-if="hasPendingAction">
+            <div class="o_mrp_shopfloor_modal_backdrop" t-on-click="cancelAction">
+                <div class="o_mrp_shopfloor_modal_card o_mrp_shopfloor_exception_modal" t-att-class="pendingActionToneClass" t-on-click.stop="stopModalClick">
+                    <div class="o_mrp_shopfloor_modal_header">
+                        <div>
+                            <div class="o_mrp_shopfloor_card_label">Confirm transition</div>
+                            <div class="o_mrp_shopfloor_detail_title"><t t-esc="pendingActionTitle"/></div>
                         </div>
-                        <p class="o_mrp_shopfloor_api_detail">
-                            <t t-esc="pendingActionSummary"/>
+                        <span class="badge rounded-pill" t-att-class="pendingActionBadgeClass">
+                            <t t-esc="pendingAction.key"/>
+                        </span>
+                    </div>
+                    <p class="o_mrp_shopfloor_api_detail o_mrp_shopfloor_modal_lead">
+                        <t t-esc="pendingActionSummary"/>
+                    </p>
+                    <div class="o_mrp_shopfloor_modal_body">
+                        <div class="o_mrp_shopfloor_modal_detail">
+                            <span class="badge rounded-pill text-bg-secondary">Severity <t t-esc="pendingAction.severity"/></span>
+                            <span class="badge rounded-pill text-bg-secondary">Next state <t t-esc="pendingAction.state"/></span>
+                        </div>
+                        <p class="o_mrp_shopfloor_modal_hint">
+                            <t t-esc="pendingAction.description"/>
                         </p>
-                        <div class="o_mrp_shopfloor_exception_actions">
+                        <div class="o_mrp_shopfloor_exception_actions o_mrp_shopfloor_modal_actions">
                             <button type="button"
-                                    class="btn btn-sm btn-primary"
+                                    class="btn btn-lg btn-primary"
                                     t-att-data-action="pendingAction.key"
                                     t-att-data-label="pendingAction.label"
                                     t-att-data-confirm-label="pendingAction.confirmLabel"
@@ -58,13 +70,17 @@
                                     t-att-data-state="pendingAction.state"
                                     t-att-data-description="pendingAction.description"
                                     t-on-click="confirmAction">
-                                Confirm
+                                <span>Confirm</span>
+                                <small>Apply this change now</small>
                             </button>
-                            <button type="button" class="btn btn-sm btn-outline-light" t-on-click="cancelAction">Cancel</button>
+                            <button type="button" class="btn btn-lg btn-outline-light" t-on-click="cancelAction">
+                                <span>Cancel</span>
+                                <small>Leave the exception unchanged</small>
+                            </button>
                         </div>
                     </div>
-                </t>
+                </div>
             </div>
-        </section>
+        </t>
     </t>
 </templates>
